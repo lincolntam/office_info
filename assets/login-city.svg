@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-label="城市天際線背景">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#c8d4d7"/>
+      <stop offset=".38" stop-color="#9db5bd"/>
+      <stop offset=".63" stop-color="#e2b68f"/>
+      <stop offset="1" stop-color="#20313d"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" x2="1">
+      <stop offset="0" stop-color="#0f1f2b"/>
+      <stop offset="1" stop-color="#35515f"/>
+    </linearGradient>
+    <filter id="soft">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+  <rect width="640" height="480" fill="url(#sky)"/>
+  <circle cx="540" cy="104" r="132" fill="#f6d2a9" opacity=".36" filter="url(#soft)"/>
+  <path d="M0 236c82-18 120-4 178-20 96-26 179-18 260-28 90-11 139 0 202-18v310H0z" fill="url(#water)" opacity=".72"/>
+  <path d="M0 265l52-18 58 9 44-21 64 13 58-24 87 9 80-25 75 18 122-28v282H0z" fill="#142330" opacity=".72"/>
+  <g fill="#263846">
+    <rect x="22" y="318" width="34" height="162"/>
+    <rect x="68" y="290" width="45" height="190"/>
+    <rect x="124" y="340" width="38" height="140"/>
+    <rect x="173" y="270" width="52" height="210"/>
+    <rect x="238" y="306" width="40" height="174"/>
+    <rect x="292" y="250" width="62" height="230"/>
+    <rect x="372" y="292" width="38" height="188"/>
+    <rect x="430" y="218" width="70" height="262"/>
+    <rect x="520" y="276" width="44" height="204"/>
+    <rect x="582" y="238" width="32" height="242"/>
+  </g>
+  <g fill="#c8d3d8" opacity=".26">
+    <path d="M86 291h23v189H86z"/>
+    <path d="M309 250h29v230h-29z"/>
+    <path d="M456 218h19v262h-19z"/>
+    <path d="M591 238h8v242h-8z"/>
+  </g>
+  <g stroke="#e8f0f2" stroke-width="1" opacity=".16">
+    <path d="M0 322h640"/>
+    <path d="M0 365h640"/>
+    <path d="M0 410h640"/>
+    <path d="M42 318v162M91 290v190M143 340v140M199 270v210M258 306v174M323 250v230M391 292v188M465 218v262M542 276v204M598 238v242"/>
+  </g>
+  <rect width="640" height="480" fill="#06111a" opacity=".26"/>
+</svg>

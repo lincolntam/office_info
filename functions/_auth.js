@@ -28,6 +28,10 @@ function base64UrlDecode(value) {
 }
 
 async function hmac(secret, payload) {
+  return hmacBytes(secret, payload);
+}
+
+async function hmacBytes(secret, payload) {
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(secret),
@@ -35,7 +39,7 @@ async function hmac(secret, payload) {
     false,
     ["sign", "verify"],
   );
-  return crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+  return new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(payload)));
 }
 
 async function pbkdf2(password, salt, iterations = 210000) {
@@ -71,8 +75,19 @@ async function hashPassword(password) {
   return `pbkdf2$${iterations}$${salt}$${hash}`;
 }
 
-async function verifyPassword(password, stored) {
+async function verifyPassword(password, stored, env = {}) {
   if (!stored) return false;
+
+  if (stored.startsWith("hmac-sha256$")) {
+    const [, saltText, expectedText] = stored.split("$");
+    if (!saltText || !expectedText) return false;
+
+    const secret = getPasswordSecret(env);
+    const salt = base64UrlDecode(saltText);
+    const expected = base64UrlDecode(expectedText);
+    const actual = await hmacBytes(secret, `${base64UrlEncode(salt)}.${password}`);
+    return timingSafeEqual(actual, expected);
+  }
 
   if (stored.startsWith("pbkdf2$")) {
     const [, iterationText, salt, expected] = stored.split("$");
@@ -83,9 +98,23 @@ async function verifyPassword(password, stored) {
   return timingSafeEqual(password, stored);
 }
 
+function getPasswordSecret(env) {
+  const secret = env.JWT_SECRET || env.LOGIN_SESSION_SECRET;
+  if (!secret || String(secret).length < 32) {
+    throw new Error("JWT_SECRET or LOGIN_SESSION_SECRET must be at least 32 characters");
+  }
+  return String(secret);
+}
+
+function toBytes(value) {
+  if (typeof value === "string") return encoder.encode(value);
+  if (value instanceof ArrayBuffer) return new Uint8Array(value);
+  return value;
+}
+
 function timingSafeEqual(a, b) {
-  const left = encoder.encode(a);
-  const right = encoder.encode(b);
+  const left = toBytes(a);
+  const right = toBytes(b);
   if (left.length !== right.length) return false;
 
   let diff = 0;

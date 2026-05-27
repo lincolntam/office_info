@@ -7,34 +7,52 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body class="login-body">
-    <main class="login-page" aria-label="登入頁">
-      <section class="login-panel">
-        <div class="login-brand">
-          <span>Office Info</span>
-          <strong>登入</strong>
-          <p>使用你的共用登入帳戶連接所有網站。</p>
-        </div>
+    <main class="login-page" aria-label="640 乘 480 登入頁">
+      <section class="login-stage" aria-label="Office Info 登入">
+        <img class="login-bg" src="./assets/login-city.svg" alt="" />
+        <div class="login-shade"></div>
+        <div class="login-stripes" aria-hidden="true"></div>
 
-        <form id="loginForm" class="login-form">
-          <label>
-            <span>Email</span>
-            <input id="loginEmail" name="email" type="email" autocomplete="email" required />
+        <form id="loginForm" class="login-form" autocomplete="on">
+          <h1>LOGO</h1>
+          <p class="login-kicker">LOGIN TO YOUR ACCOUNT</p>
+          <div class="login-rule" aria-hidden="true"></div>
+
+          <div class="login-fields">
+            <label>
+              <span class="sr-only">Email 或 User name</span>
+              <input
+                id="loginEmail"
+                name="identifier"
+                type="text"
+                placeholder="User name / Email"
+                autocomplete="username"
+                required
+              />
+            </label>
+            <label>
+              <span class="sr-only">密碼</span>
+              <input
+                id="loginPassword"
+                name="password"
+                type="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                required
+              />
+            </label>
+          </div>
+
+          <a class="forgot-link" href="./login.html" aria-label="忘記密碼">Have forgotten my password</a>
+
+          <label class="remember-row">
+            <input type="checkbox" name="remember" checked />
+            <span>Remember me on this computer</span>
           </label>
-          <label>
-            <span>密碼</span>
-            <input
-              id="loginPassword"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-            />
-          </label>
-          <button id="loginSubmit" type="submit">登入</button>
+
+          <button id="loginSubmit" type="submit">LOGIN</button>
           <p id="loginMessage" class="login-message" role="status">請輸入帳戶資料。</p>
         </form>
-
-        <a class="login-back" href="./index.html">返回資訊顯示</a>
       </section>
     </main>
     <script src="./script.js"></script>
