@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#d8e7bf"/>
+      <stop offset="0.4" stop-color="#637c57"/>
+      <stop offset="1" stop-color="#1f3525"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.55" cy="0.02" r="0.5">
+      <stop offset="0" stop-color="#fff8cc" stop-opacity="0.95"/>
+      <stop offset="0.28" stop-color="#e6f1bd" stop-opacity="0.48"/>
+      <stop offset="1" stop-color="#e6f1bd" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+  <rect width="640" height="480" fill="url(#sky)"/>
+  <rect width="640" height="480" fill="url(#sun)"/>
+  <g opacity="0.88">
+    <rect x="-16" y="0" width="86" height="480" fill="#15251c"/>
+    <rect x="558" y="-8" width="104" height="488" fill="#182219"/>
+    <rect x="86" y="-10" width="26" height="320" fill="#203522" opacity="0.72"/>
+    <rect x="486" y="-10" width="34" height="360" fill="#203522" opacity="0.7"/>
+    <rect x="398" y="-20" width="18" height="310" fill="#243b27" opacity="0.62"/>
+  </g>
+  <g filter="url(#blur)" opacity="0.72">
+    <circle cx="138" cy="76" r="82" fill="#263f25"/>
+    <circle cx="256" cy="58" r="95" fill="#49633c"/>
+    <circle cx="416" cy="70" r="96" fill="#5f7747"/>
+    <circle cx="546" cy="78" r="88" fill="#293c26"/>
+  </g>
+  <path d="M0 355 C86 315 165 308 246 330 C337 354 423 340 520 305 C574 285 614 286 640 300 L640 480 L0 480 Z" fill="#1b3322"/>
+  <path d="M0 412 C76 375 155 366 245 382 C330 397 417 388 505 354 C565 331 610 334 640 346 L640 480 L0 480 Z" fill="#294929"/>
+  <path d="M0 445 C103 412 198 411 304 426 C421 443 539 420 640 394 L640 480 L0 480 Z" fill="#426931"/>
+  <g opacity="0.72">
+    <path d="M42 414 C64 384 102 384 130 410 C99 404 75 411 42 414 Z" fill="#6f8b3d"/>
+    <path d="M122 438 C150 408 207 410 242 440 C199 431 163 432 122 438 Z" fill="#7fa049"/>
+    <path d="M370 430 C406 397 470 400 512 434 C458 422 420 423 370 430 Z" fill="#86a94e"/>
+  </g>
+  <g opacity="0.68" stroke="#cfe2a8" stroke-linecap="round">
+    <path d="M82 480 C102 432 116 399 135 368" stroke-width="3"/>
+    <path d="M250 480 C264 438 286 396 304 356" stroke-width="3"/>
+    <path d="M458 480 C472 440 500 400 526 368" stroke-width="3"/>
+    <path d="M566 480 C552 438 532 412 508 388" stroke-width="2"/>
+  </g>
+  <rect width="640" height="480" fill="#07110b" opacity="0.18"/>
+</svg>

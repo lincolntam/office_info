@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>資訊顯示</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="display-shell" aria-label="640 乘 480 資訊顯示">
+      <div id="stage" class="stage" aria-label="Smart Stack 資訊頁">
+        <section id="home" class="stack-panel" aria-label="首頁">
+          <article class="smart-card home-card">
+            <img class="card-media" src="./assets/space-launch.svg" alt="" />
+            <div class="hero-scrim"></div>
+            <div class="card-topline">
+              <span>首頁</span>
+              <span>香港</span>
+            </div>
+            <div class="home-clock">
+              <time id="clock" datetime="">00:00</time>
+              <p id="dateText">5月27日 週三</p>
+            </div>
+            <div class="summary-pill">
+              <span>今日摘要</span>
+              <strong>日程、音樂與天氣已準備好。</strong>
+            </div>
+          </article>
+        </section>
+
+        <section id="spotify" class="stack-panel" aria-label="Spotify 正在播放">
+          <article class="smart-card music-card">
+            <img id="albumBackdrop" class="album-backdrop" src="./assets/spotify-album.svg" alt="" />
+            <div class="hero-scrim music-scrim"></div>
+            <div class="music-topline">
+              <span class="spotify-mark" aria-label="Spotify">
+                <span></span>
+              </span>
+              <button id="spotifyLogin" class="device-pill" type="button">連接 Spotify</button>
+            </div>
+            <div class="music-copy">
+              <p id="trackTitle">Good To Be</p>
+              <span id="trackArtist">Mark Ambor</span>
+            </div>
+            <button id="playPause" class="widget-play-button" type="button" aria-label="暫停">
+              <span class="pause-icon" aria-hidden="true"></span>
+            </button>
+            <div class="spotify-widget-controls" aria-label="Spotify 控制">
+              <button type="button" aria-label="加入歌曲">＋</button>
+              <div class="wave-progress" aria-hidden="true">
+                <span></span>
+              </div>
+              <span id="progressBar" class="widget-progress"></span>
+              <button type="button" aria-label="下一首">⏭</button>
+              <button type="button" aria-label="連線裝置">◉</button>
+              <button type="button" aria-label="播放佇列">▱</button>
+            </div>
+            <p id="playState" class="play-state">正在播放</p>
+          </article>
+        </section>
+
+        <section id="weather" class="stack-panel" aria-label="天氣">
+          <article class="smart-card weather-card">
+            <img class="weather-photo" src="./assets/weather-forest.svg" alt="" />
+            <div class="weather-page-scrim"></div>
+            <div class="weather-glass" aria-label="香港天氣">
+              <header class="weather-header">
+                <div>
+                  <strong>香港</strong>
+                  <span id="weatherLocation">香港天文台</span>
+                </div>
+                <time id="weatherDate" datetime="">載入中<br />請稍候</time>
+              </header>
+              <div class="weather-center">
+                <strong id="weatherTemp">--°</strong>
+                <div class="weather-icon" aria-hidden="true">
+                  <span class="sun-core"></span>
+                  <span class="cloud cloud-a"></span>
+                  <span class="cloud cloud-b"></span>
+                </div>
+                <p id="weatherDesc">載入中</p>
+              </div>
+              <div class="weather-stats">
+                <div>
+                  <span class="drop-icon" aria-hidden="true"></span>
+                  <strong id="weatherHumidity">--%</strong>
+                </div>
+                <div>
+                  <span class="wind-icon" aria-hidden="true"></span>
+                  <strong id="weatherRain">-- mm</strong>
+                </div>
+                <div class="unit-toggle" aria-label="溫度單位">
+                  <strong>C°</strong>
+                  <span>F°</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+
+      <nav class="stack-dots" aria-label="頁面切換">
+        <button class="dot is-active" type="button" aria-label="前往首頁" data-panel="0"></button>
+        <button class="dot" type="button" aria-label="前往 Spotify 正在播放" data-panel="1"></button>
+        <button class="dot" type="button" aria-label="前往天氣" data-panel="2"></button>
+      </nav>
+
+      <button id="fullscreenToggle" class="fullscreen-toggle" type="button" aria-label="進入全螢幕">
+        全螢幕
+      </button>
+    </main>
+
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
