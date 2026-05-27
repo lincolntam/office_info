@@ -9,6 +9,8 @@ const SPOTIFY_REDIRECT_URI =
   window.location.origin === "null"
     ? "http://127.0.0.1:5500/index.html"
     : `${window.location.origin}${window.location.pathname}`;
+const FALLBACK_SPOTIFY_TRACK_URL =
+  "https://open.spotify.com/track/3R8iyJpmhI9ABDmTpetV2D?si=45c7c6dc3ad540bb";
 
 const els = {
   clock: document.querySelector("#clock"),
@@ -31,6 +33,11 @@ const els = {
   weatherDesc: document.querySelector("#weatherDesc"),
   weatherHumidity: document.querySelector("#weatherHumidity"),
   weatherRain: document.querySelector("#weatherRain"),
+  loginForm: document.querySelector("#loginForm"),
+  loginEmail: document.querySelector("#loginEmail"),
+  loginPassword: document.querySelector("#loginPassword"),
+  loginSubmit: document.querySelector("#loginSubmit"),
+  loginMessage: document.querySelector("#loginMessage"),
 };
 
 const nowPlaying = {
@@ -84,6 +91,25 @@ function renderNowPlaying() {
   els.trackTitle.textContent = nowPlaying.title;
   els.trackArtist.textContent = nowPlaying.artist;
   els.albumBackdrop.src = nowPlaying.albumImage;
+}
+
+async function loadFallbackSpotifyAlbum() {
+  if (!els.albumBackdrop) return;
+
+  try {
+    const response = await fetch(
+      `https://open.spotify.com/oembed?url=${encodeURIComponent(FALLBACK_SPOTIFY_TRACK_URL)}`,
+    );
+    if (!response.ok) throw new Error("Spotify oEmbed failed");
+
+    const data = await response.json();
+    if (data.thumbnail_url) {
+      nowPlaying.albumImage = data.thumbnail_url;
+      els.albumBackdrop.src = data.thumbnail_url;
+    }
+  } catch {
+    els.albumBackdrop.src = nowPlaying.albumImage;
+  }
 }
 
 function setSpotifyConnectedUi(isConnected) {
@@ -414,6 +440,7 @@ async function loadSpotifyPlaybackState(token) {
     setSpotifyConnectedUi(true);
     els.trackTitle.textContent = "沒有播放內容";
     els.trackArtist.textContent = "開啟 Spotify 播放歌曲";
+    els.albumBackdrop.src = nowPlaying.albumImage;
     els.progressBar.style.width = "0%";
     currentTrackId = null;
     currentDurationMs = 0;
@@ -528,81 +555,136 @@ function scrollToHash() {
   updateActivePanel();
 }
 
-dots.forEach((dot) => {
-  dot.addEventListener("click", () => {
-    const panelIndex = Number(dot.dataset.panel);
-    panels[panelIndex].scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-});
+function initLoginPage() {
+  if (!els.loginForm) return;
 
-els.playPause.addEventListener("click", () => {
-  playing = !playing;
-  els.playPause.classList.toggle("is-paused", !playing);
-  els.playPause.setAttribute("aria-label", playing ? "暫停" : "播放");
-  els.playState.textContent = playing ? "正在播放" : "已暫停";
-  if (spotifyPlayer) {
-    spotifyPlayer.togglePlay();
-  }
-});
+  fetch("./api/me")
+    .then((response) => (response.ok ? response.json() : null))
+    .then((data) => {
+      if (data?.user) {
+        els.loginMessage.textContent = `已登入：${data.user.email}`;
+      }
+    })
+    .catch(() => {
+      els.loginMessage.textContent =
+        "本機或 GitHub Pages 不會連接 D1，部署到 Cloudflare Pages 後可登入。";
+    });
 
-els.saveTrack.addEventListener("click", saveCurrentTrack);
-els.nextTrack.addEventListener("click", nextSpotifyTrack);
-els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
-els.showQueue.addEventListener("click", showSpotifyQueue);
+  els.loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    els.loginSubmit.disabled = true;
+    els.loginMessage.textContent = "登入中...";
 
-els.spotifyLogin.addEventListener("click", async () => {
-  const token = await getSpotifyToken();
-  if (!token) {
-    await loginSpotify();
-    return;
-  }
+    try {
+      const response = await fetch("./api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: els.loginEmail.value,
+          password: els.loginPassword.value,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
 
-  if (!spotifyDeviceId) {
-    els.playState.textContent = "播放器啟動中";
-    setupSpotifyWebPlayback();
-    if (window.Spotify?.Player && window.onSpotifyWebPlaybackSDKReady) {
-      await window.onSpotifyWebPlaybackSDKReady();
+      if (!response.ok) {
+        throw new Error(data.error || "登入失敗。");
+      }
+
+      els.loginMessage.textContent = `登入成功：${data.user.email}`;
+      setTimeout(() => {
+        window.location.href = "./index.html";
+      }, 650);
+    } catch (error) {
+      els.loginMessage.textContent = error.message || "登入失敗。";
+    } finally {
+      els.loginSubmit.disabled = false;
     }
-    return;
-  }
+  });
+}
 
-  await transferPlaybackToBrowser(true);
-});
+function initDisplayPage() {
+  if (!stage || !els.clock) return;
 
-els.fullscreenToggle.addEventListener("click", async () => {
-  if (!document.fullscreenElement) {
-    await document.documentElement.requestFullscreen();
-  } else {
-    await document.exitFullscreen();
-  }
-});
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      const panelIndex = Number(dot.dataset.panel);
+      panels[panelIndex].scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 
-document.addEventListener("fullscreenchange", () => {
-  const isFullscreen = Boolean(document.fullscreenElement);
-  els.fullscreenToggle.textContent = isFullscreen ? "離開" : "全螢幕";
-  els.fullscreenToggle.setAttribute(
-    "aria-label",
-    isFullscreen ? "離開全螢幕" : "進入全螢幕",
-  );
+  els.playPause.addEventListener("click", () => {
+    playing = !playing;
+    els.playPause.classList.toggle("is-paused", !playing);
+    els.playPause.setAttribute("aria-label", playing ? "暫停" : "播放");
+    els.playState.textContent = playing ? "正在播放" : "已暫停";
+    if (spotifyPlayer) {
+      spotifyPlayer.togglePlay();
+    }
+  });
+
+  els.saveTrack.addEventListener("click", saveCurrentTrack);
+  els.nextTrack.addEventListener("click", nextSpotifyTrack);
+  els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
+  els.showQueue.addEventListener("click", showSpotifyQueue);
+
+  els.spotifyLogin.addEventListener("click", async () => {
+    const token = await getSpotifyToken();
+    if (!token) {
+      await loginSpotify();
+      return;
+    }
+
+    if (!spotifyDeviceId) {
+      els.playState.textContent = "播放器啟動中";
+      setupSpotifyWebPlayback();
+      if (window.Spotify?.Player && window.onSpotifyWebPlaybackSDKReady) {
+        await window.onSpotifyWebPlaybackSDKReady();
+      }
+      return;
+    }
+
+    await transferPlaybackToBrowser(true);
+  });
+
+  els.fullscreenToggle.addEventListener("click", async () => {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  });
+
+  document.addEventListener("fullscreenchange", () => {
+    const isFullscreen = Boolean(document.fullscreenElement);
+    els.fullscreenToggle.textContent = isFullscreen ? "離開" : "全螢幕";
+    els.fullscreenToggle.setAttribute(
+      "aria-label",
+      isFullscreen ? "離開全螢幕" : "進入全螢幕",
+    );
+    resizeStage();
+  });
+
+  stage.addEventListener("scroll", updateActivePanel, { passive: true });
+  window.addEventListener("resize", resizeStage);
+
+  setInterval(updateProgressBar, 1000);
+
   resizeStage();
-});
+  renderNowPlaying();
+  loadFallbackSpotifyAlbum();
+  updateClock();
+  setupSpotifyWebPlayback();
+  handleSpotifyCallback();
+  refreshSpotifyDisplay();
+  loadHkoWeather();
+  scrollToHash();
+  requestAnimationFrame(scrollToHash);
+  setTimeout(scrollToHash, 150);
+  updateActivePanel();
+  setInterval(updateClock, 1000);
+  setInterval(refreshSpotifyDisplay, 30000);
+  setInterval(loadHkoWeather, 10 * 60 * 1000);
+}
 
-stage.addEventListener("scroll", updateActivePanel, { passive: true });
-window.addEventListener("resize", resizeStage);
-
-setInterval(updateProgressBar, 1000);
-
-resizeStage();
-renderNowPlaying();
-updateClock();
-setupSpotifyWebPlayback();
-handleSpotifyCallback();
-refreshSpotifyDisplay();
-loadHkoWeather();
-scrollToHash();
-requestAnimationFrame(scrollToHash);
-setTimeout(scrollToHash, 150);
-updateActivePanel();
-setInterval(updateClock, 1000);
-setInterval(refreshSpotifyDisplay, 30000);
-setInterval(loadHkoWeather, 10 * 60 * 1000);
+initLoginPage();
+initDisplayPage();
