@@ -4,7 +4,7 @@ const dots = [...document.querySelectorAll(".dot")];
 
 const SPOTIFY_CLIENT_ID = "a80e7a713b0d4232b9503300e8f47faf";
 const SPOTIFY_SCOPES =
-  "streaming user-read-email user-read-private user-read-currently-playing user-read-playback-state user-modify-playback-state";
+  "streaming user-read-email user-read-private user-read-currently-playing user-read-playback-state user-modify-playback-state user-library-modify";
 const SPOTIFY_REDIRECT_URI =
   window.location.origin === "null"
     ? "http://127.0.0.1:5500/index.html"
@@ -20,6 +20,10 @@ const els = {
   playState: document.querySelector("#playState"),
   progressBar: document.querySelector("#progressBar"),
   spotifyLogin: document.querySelector("#spotifyLogin"),
+  saveTrack: document.querySelector("#saveTrack"),
+  nextTrack: document.querySelector("#nextTrack"),
+  connectDevice: document.querySelector("#connectDevice"),
+  showQueue: document.querySelector("#showQueue"),
   fullscreenToggle: document.querySelector("#fullscreenToggle"),
   weatherDate: document.querySelector("#weatherDate"),
   weatherLocation: document.querySelector("#weatherLocation"),
@@ -36,9 +40,13 @@ const nowPlaying = {
 };
 
 let playing = true;
-let progress = 38;
 let spotifyPlayer = null;
 let spotifyDeviceId = null;
+let currentTrackId = null;
+let currentDurationMs = 0;
+let currentProgressMs = 0;
+let currentProgressUpdatedAt = 0;
+let isSpotifyPlaying = false;
 
 function updateClock() {
   const now = new Date();
@@ -101,14 +109,31 @@ function renderSpotifyTrack(track) {
   const duration = item.duration_ms || 1;
   const progressMs = track.progress_ms || 0;
 
+  currentTrackId = item.id || null;
+  currentDurationMs = duration;
+  currentProgressMs = progressMs;
+  currentProgressUpdatedAt = Date.now();
+  isSpotifyPlaying = Boolean(track.is_playing);
+
   els.trackTitle.textContent = item.name || "未知歌曲";
   els.trackArtist.textContent =
     item.artists?.map((artist) => artist.name).join(", ") || "未知藝人";
   els.albumBackdrop.src = image;
-  els.progressBar.style.width = `${Math.min((progressMs / duration) * 100, 100)}%`;
+  updateProgressBar();
   els.playState.textContent = track.is_playing ? "正在播放" : "已暫停";
   els.playPause.classList.toggle("is-paused", !track.is_playing);
   setSpotifyConnectedUi(true);
+}
+
+function updateProgressBar() {
+  if (!currentDurationMs) {
+    els.progressBar.style.width = "0%";
+    return;
+  }
+
+  const elapsed = isSpotifyPlaying ? Date.now() - currentProgressUpdatedAt : 0;
+  const progressNow = Math.min(currentProgressMs + elapsed, currentDurationMs);
+  els.progressBar.style.width = `${(progressNow / currentDurationMs) * 100}%`;
 }
 
 async function sha256(text) {
@@ -237,6 +262,62 @@ async function transferPlaybackToBrowser(shouldPlay = true) {
   setSpotifyConnectedUi(true);
 }
 
+async function spotifyApi(path, options = {}) {
+  const token = await getSpotifyToken();
+  if (!token) throw new Error("Missing Spotify token");
+
+  return fetch(`https://api.spotify.com/v1${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+}
+
+async function saveCurrentTrack() {
+  if (!currentTrackId) {
+    els.playState.textContent = "沒有可加入歌曲";
+    return;
+  }
+
+  try {
+    const response = await spotifyApi(`/me/tracks?ids=${encodeURIComponent(currentTrackId)}`, {
+      method: "PUT",
+    });
+    els.playState.textContent = response.ok ? "已加入音樂庫" : "加入失敗";
+  } catch {
+    els.playState.textContent = "加入失敗";
+  }
+}
+
+async function nextSpotifyTrack() {
+  try {
+    if (spotifyPlayer?.nextTrack) {
+      await spotifyPlayer.nextTrack();
+    } else {
+      await spotifyApi("/me/player/next", { method: "POST" });
+    }
+    els.playState.textContent = "下一首";
+    setTimeout(refreshSpotifyDisplay, 700);
+  } catch {
+    els.playState.textContent = "未能跳到下一首";
+  }
+}
+
+async function showSpotifyQueue() {
+  try {
+    const response = await spotifyApi("/me/player/queue");
+    if (!response.ok) throw new Error("Queue failed");
+    const data = await response.json();
+    const next = data.queue?.[0];
+    els.playState.textContent = next ? `下一首：${next.name}` : "佇列是空的";
+  } catch {
+    els.playState.textContent = "無法讀取佇列";
+  }
+}
+
 function setupSpotifyWebPlayback() {
   window.onSpotifyWebPlaybackSDKReady = async () => {
     const token = await getSpotifyToken();
@@ -334,6 +415,10 @@ async function loadSpotifyPlaybackState(token) {
     els.trackTitle.textContent = "沒有播放內容";
     els.trackArtist.textContent = "開啟 Spotify 播放歌曲";
     els.progressBar.style.width = "0%";
+    currentTrackId = null;
+    currentDurationMs = 0;
+    currentProgressMs = 0;
+    isSpotifyPlaying = false;
     els.playPause.classList.add("is-paused");
     els.playState.textContent = "未在播放";
     return;
@@ -460,6 +545,11 @@ els.playPause.addEventListener("click", () => {
   }
 });
 
+els.saveTrack.addEventListener("click", saveCurrentTrack);
+els.nextTrack.addEventListener("click", nextSpotifyTrack);
+els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
+els.showQueue.addEventListener("click", showSpotifyQueue);
+
 els.spotifyLogin.addEventListener("click", async () => {
   const token = await getSpotifyToken();
   if (!token) {
@@ -500,11 +590,7 @@ document.addEventListener("fullscreenchange", () => {
 stage.addEventListener("scroll", updateActivePanel, { passive: true });
 window.addEventListener("resize", resizeStage);
 
-setInterval(() => {
-  if (!playing) return;
-  progress = progress >= 100 ? 0 : progress + 0.8;
-  els.progressBar.style.width = `${progress}%`;
-}, 1000);
+setInterval(updateProgressBar, 1000);
 
 resizeStage();
 renderNowPlaying();

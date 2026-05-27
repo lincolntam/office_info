@@ -200,43 +200,8 @@ button {
   z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 30px 32px 0;
-}
-
-.spotify-mark {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(235, 248, 255, 0.9);
-  color: rgba(12, 42, 48, 0.9);
-}
-
-.spotify-mark span,
-.spotify-mark::before,
-.spotify-mark::after {
-  width: 20px;
-  height: 8px;
-  border-top: 3px solid currentColor;
-  border-radius: 50%;
-}
-
-.spotify-mark::before,
-.spotify-mark::after {
-  position: absolute;
-  content: "";
-}
-
-.spotify-mark::before {
-  width: 22px;
-  transform: translateY(-6px);
-}
-
-.spotify-mark::after {
-  width: 16px;
-  transform: translateY(6px);
 }
 
 .device-pill {
@@ -329,8 +294,8 @@ button {
   left: 30px;
   z-index: 1;
   display: grid;
-  grid-template-columns: 36px 96px minmax(0, 1fr) 42px 42px 42px;
-  gap: 16px;
+  grid-template-columns: 36px minmax(0, 1fr) 42px 42px 42px;
+  gap: 14px;
   align-items: center;
 }
 
@@ -348,19 +313,20 @@ button {
   cursor: pointer;
 }
 
-.wave-progress {
-  height: 10px;
-  background:
-    radial-gradient(circle at 5px 5px, rgba(235, 248, 255, 0.94) 0 3px, transparent 4px) 0 0 / 18px 10px,
-    linear-gradient(90deg, transparent, transparent);
+.progress-shell {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(235, 248, 255, 0.24);
 }
 
 .widget-progress {
   display: block;
-  width: 38%;
-  height: 4px;
+  width: 0%;
+  height: 100%;
   border-radius: 999px;
-  background: rgba(235, 248, 255, 0.74);
+  background: rgba(235, 248, 255, 0.92);
+  transition: width 180ms linear;
 }
 
 .play-state {
