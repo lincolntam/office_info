@@ -965,20 +965,56 @@ button {
     linear-gradient(160deg, #697982, #2d3b41 55%, #151b1f);
 }
 
+.weather-card.is-raining {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(220, 232, 238, 0.22), transparent 34%),
+    linear-gradient(180deg, #2f4654 0%, #111d24 100%);
+}
+
+.weather-card.is-storm {
+  background:
+    radial-gradient(circle at 42% 38%, rgba(255, 255, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #313941 0%, #101419 100%);
+}
+
+.weather-card.is-fog {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.32), transparent 34%),
+    linear-gradient(180deg, #8e9ca2 0%, #46565d 100%);
+}
+
 .weather-card .weather-photo {
-  opacity: 0.42;
-  mix-blend-mode: screen;
-  filter: blur(0.2px) saturate(0.72) brightness(1.16);
+  opacity: 0.78;
+  mix-blend-mode: normal;
+  filter: blur(0.2px) saturate(1.02) contrast(1.04) brightness(0.92);
+  transform: scale(1.02);
 }
 
 .weather-card.is-sunny .weather-photo {
-  opacity: 0.5;
+  opacity: 0.72;
+  filter: blur(0.2px) saturate(1.08) contrast(1.02) brightness(1.08);
+}
+
+.weather-card.is-cloudy .weather-photo,
+.weather-card.is-fog .weather-photo {
+  opacity: 0.74;
+  filter: blur(0.2px) saturate(0.86) contrast(1.05) brightness(0.82);
+}
+
+.weather-card.is-raining .weather-photo {
+  opacity: 0.82;
+  filter: blur(0.2px) saturate(0.72) contrast(1.08) brightness(0.66);
+}
+
+.weather-card.is-storm .weather-photo {
+  opacity: 0.86;
+  filter: blur(0.2px) saturate(0.55) contrast(1.16) brightness(0.55);
 }
 
 .weather-page-scrim {
   background:
-    radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.34), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.2));
+    radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.22), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.18));
 }
 
 .weather-condition {
@@ -1001,13 +1037,13 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.68);
   border-radius: 34px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08)),
-    rgba(255, 255, 255, 0.06);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07)),
+    rgba(255, 255, 255, 0.035);
   box-shadow:
     inset 1px 1px 0 rgba(255, 255, 255, 0.68),
     inset -1px -1px 0 rgba(255, 255, 255, 0.18),
     0 18px 36px rgba(52, 78, 96, 0.18);
-  backdrop-filter: blur(7px) saturate(1.08);
+  backdrop-filter: blur(5px) saturate(1.05);
 }
 
 .weather-card .weather-glass::after {
@@ -1076,6 +1112,18 @@ button {
   display: none;
 }
 
+.weather-card.is-raining .sun-core,
+.weather-card.is-storm .sun-core,
+.weather-card.is-fog .sun-core {
+  display: none;
+}
+
+.weather-card.is-raining .cloud-a,
+.weather-card.is-storm .cloud-a,
+.weather-card.is-fog .cloud-a {
+  display: block;
+}
+
 .weather-card .cloud-a {
   right: 7px;
   bottom: 12px;
@@ -1141,4 +1189,13 @@ button {
   color: rgba(59, 64, 68, 0.82);
   font-size: 12px;
   font-weight: 700;
+}
+
+.weather-card.is-raining h2,
+.weather-card.is-storm h2,
+.weather-card.is-fog h2,
+.weather-card.is-raining .weather-caption,
+.weather-card.is-storm .weather-caption,
+.weather-card.is-fog .weather-caption {
+  color: rgba(255, 255, 255, 0.86);
 }

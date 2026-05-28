@@ -29,6 +29,7 @@ const els = {
   showQueue: document.querySelector("#showQueue"),
   weatherDate: document.querySelector("#weatherDate"),
   weatherCard: document.querySelector("#weatherCard"),
+  weatherPhoto: document.querySelector("#weatherPhoto"),
   weatherLocation: document.querySelector("#weatherLocation"),
   weatherTemp: document.querySelector("#weatherTemp"),
   weatherDesc: document.querySelector("#weatherDesc"),
@@ -53,6 +54,22 @@ const nowPlaying = {
   title: "Good To Be",
   artist: "Mark Ambor",
   albumImage: "./assets/spotify-album.svg",
+};
+
+const WEATHER_BACKGROUNDS = {
+  SUNNY: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1280&q=80",
+  CLOUDY: "https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?auto=format&fit=crop&w=1280&q=80",
+  RAINING: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1280&q=80",
+  STORM: "https://images.unsplash.com/photo-1500674425229-f692875b0ab7?auto=format&fit=crop&w=1280&q=80",
+  FOG: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
+};
+
+const WEATHER_LABELS = {
+  SUNNY: "SUNNY",
+  CLOUDY: "CLOUDY",
+  RAINING: "RAINING",
+  STORM: "STORM",
+  FOG: "FOG",
 };
 
 let playing = true;
@@ -558,10 +575,33 @@ function pickHkoTemperature(report) {
 }
 
 function describeHkoWeather(forecastText, iconList) {
-  if (forecastText?.includes("雨") || forecastText?.includes("雷暴")) return "CLOUDY";
-  if (forecastText?.includes("多雲") || forecastText?.includes("天陰")) return "CLOUDY";
-  if (forecastText?.includes("天晴") || iconList?.includes(50) || iconList?.includes(51)) return "SUNNY";
+  const text = forecastText || "";
+  const icons = Array.isArray(iconList) ? iconList : [];
+
+  if (/雷暴|狂風|暴雨|大雨|驟雨較多/.test(text) || icons.some((icon) => icon >= 60 && icon <= 65)) {
+    return "STORM";
+  }
+
+  if (/雨|驟雨|毛毛雨/.test(text) || icons.some((icon) => icon >= 53 && icon <= 59)) {
+    return "RAINING";
+  }
+
+  if (/霧|薄霧|煙霞/.test(text)) return "FOG";
+  if (/天晴|陽光/.test(text) || icons.includes(50) || icons.includes(51)) return "SUNNY";
+  if (/多雲|天陰|密雲/.test(text) || icons.some((icon) => icon >= 52 && icon <= 54)) return "CLOUDY";
+
   return "CLOUDY";
+}
+
+function setWeatherVisual(condition) {
+  const normalized = WEATHER_BACKGROUNDS[condition] ? condition : "CLOUDY";
+  Object.keys(WEATHER_BACKGROUNDS).forEach((key) => {
+    els.weatherCard?.classList.toggle(`is-${key.toLowerCase()}`, key === normalized);
+  });
+
+  if (els.weatherPhoto && els.weatherPhoto.src !== WEATHER_BACKGROUNDS[normalized]) {
+    els.weatherPhoto.src = WEATHER_BACKGROUNDS[normalized];
+  }
 }
 
 async function loadHkoWeather() {
@@ -585,8 +625,7 @@ async function loadHkoWeather() {
 
     const condition = describeHkoWeather(forecast.forecastDesc, report.icon);
     const value = temp ? Math.round(temp.value) : null;
-    els.weatherCard?.classList.toggle("is-sunny", condition === "SUNNY");
-    els.weatherCard?.classList.toggle("is-cloudy", condition !== "SUNNY");
+    setWeatherVisual(condition);
     els.weatherLocation.textContent = temp?.place || "香港";
     els.weatherTemp.textContent = value !== null ? `${value}°` : "--°";
     els.weatherHumidity.textContent = humidity ? `濕度 ${humidity.value}%` : "濕度 --%";
@@ -594,8 +633,9 @@ async function loadHkoWeather() {
       rainfall?.max !== undefined ? `雨量 ${rainfall.max} ${rainfall.unit}` : "雨量 -- mm";
     els.weatherLow.textContent = value !== null ? `最低 ${Math.max(value - 3, 0)}°` : "最低 --°";
     els.weatherHigh.textContent = value !== null ? `最高 ${value + 4}°` : "最高 --°";
-    els.weatherDesc.textContent = condition;
+    els.weatherDesc.textContent = WEATHER_LABELS[condition] || "CLOUDY";
   } catch {
+    setWeatherVisual("CLOUDY");
     els.weatherDesc.textContent = "CLOUDY";
   }
 }
