@@ -578,14 +578,13 @@ function describeHkoWeather(forecastText, iconList) {
   const text = forecastText || "";
   const icons = Array.isArray(iconList) ? iconList : [];
 
-  if (/雷暴|狂風|暴雨|大雨|驟雨較多/.test(text) || icons.some((icon) => icon >= 60 && icon <= 65)) {
-    return "STORM";
-  }
+  if (icons.includes(65)) return "STORM";
+  if (icons.some((icon) => [53, 54, 62, 63, 64].includes(icon))) return "RAINING";
+  if (icons.some((icon) => [50, 51].includes(icon))) return "SUNNY";
+  if (icons.some((icon) => [52, 60, 61].includes(icon))) return "CLOUDY";
 
-  if (/雨|驟雨|毛毛雨/.test(text) || icons.some((icon) => icon >= 53 && icon <= 59)) {
-    return "RAINING";
-  }
-
+  if (/雷暴|狂風雷暴|暴雨/.test(text)) return "STORM";
+  if (/雨|驟雨|毛毛雨/.test(text)) return "RAINING";
   if (/霧|薄霧|煙霞/.test(text)) return "FOG";
   if (/天晴|陽光/.test(text) || icons.includes(50) || icons.includes(51)) return "SUNNY";
   if (/多雲|天陰|密雲/.test(text) || icons.some((icon) => icon >= 52 && icon <= 54)) return "CLOUDY";

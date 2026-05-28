@@ -1020,19 +1020,19 @@ button {
 .weather-condition {
   position: relative;
   z-index: 2;
-  margin: 55px 0 0;
+  margin: 62px 0 0;
   color: rgba(255, 255, 255, 0.94);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .weather-card .weather-glass {
-  top: 122px;
-  left: 216px;
-  width: 208px;
-  height: 235px;
+  top: 124px;
+  left: 220px;
+  width: 200px;
+  height: 246px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.68);
   border-radius: 34px;
@@ -1069,7 +1069,7 @@ button {
 .weather-mini-label {
   position: relative;
   z-index: 2;
-  margin: 18px 0 0 24px;
+  margin: 18px 0 0 22px;
   color: rgba(255, 255, 255, 0.94);
   font-size: 14px;
   font-weight: 850;
@@ -1078,9 +1078,9 @@ button {
 .weather-card .weather-icon {
   position: relative;
   z-index: 2;
-  width: 116px;
-  height: 84px;
-  margin: 12px auto 0;
+  width: 112px;
+  height: 82px;
+  margin: 13px auto 0;
 }
 
 .weather-card .sun-core {
@@ -1147,9 +1147,9 @@ button {
   position: relative;
   z-index: 2;
   display: block;
-  margin-top: 26px;
+  margin-top: 34px;
   color: rgba(255, 255, 255, 0.95);
-  font-size: 74px;
+  font-size: 78px;
   font-weight: 220;
   line-height: 0.9;
   text-align: center;
@@ -1161,25 +1161,29 @@ button {
   display: flex;
   justify-content: center;
   gap: 13px;
-  margin: 23px 0 0;
+  margin: 21px 0 0;
   color: rgba(255, 255, 255, 0.86);
   font-size: 13px;
   font-weight: 800;
 }
 
 .weather-card h2 {
-  position: relative;
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 390px;
   z-index: 2;
-  margin: 378px 0 0;
+  margin: 0;
   color: rgba(36, 42, 48, 0.86);
   font-size: 24px;
   font-weight: 900;
+  text-align: center;
 }
 
 .weather-caption {
   position: absolute;
   right: 54px;
-  bottom: 28px;
+  bottom: 34px;
   left: 54px;
   z-index: 2;
   display: flex;
