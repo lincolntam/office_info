@@ -733,8 +733,7 @@ function renderMarketMetric(prefix, quote, metricElement) {
   const name = quote?.symbol || "--";
   els[`${prefix}Name`].textContent = prefix === "hsi" ? "HSI" : name;
   els[`${prefix}Change`].textContent = formatMarketPercent(quote?.changePercent);
-  els[`${prefix}Value`].textContent =
-    typeof quote?.change === "number" ? `${quote.change >= 0 ? "+" : ""}${formatMarketNumber(quote.change)}` : "--";
+  els[`${prefix}Value`].textContent = formatMarketNumber(quote?.price);
   metricElement?.classList.toggle("is-down", Number(quote?.changePercent || 0) < 0);
 }
 
@@ -764,8 +763,9 @@ async function loadMarketData(symbol = localStorage.getItem("marketSymbol") || "
     renderMarketMetric("custom", data.custom, document.querySelector(".market-metric.is-custom"));
     els.hsiLine.setAttribute("d", buildMarketPath(data.hsi?.series, allValues));
     els.customLine.setAttribute("d", buildMarketPath(data.custom?.series, allValues));
-    els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 1 month`;
-    localStorage.setItem("marketSymbol", cleanSymbol);
+    els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢`;
+    localStorage.setItem("marketSymbol", data.custom?.symbol || cleanSymbol);
+    els.marketSymbolInput.value = data.custom?.symbol || cleanSymbol;
   } catch {
     els.marketStatus.textContent = "暫時無法讀取市場資料";
   }

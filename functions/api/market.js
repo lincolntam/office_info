@@ -3,11 +3,14 @@ import { json } from "../_auth.js";
 const YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart";
 
 function normalizeSymbol(value) {
-  return String(value || "")
+  const symbol = String(value || "")
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9.^=-]/g, "")
     .slice(0, 24);
+  if (/^\d{1,4}$/.test(symbol)) return `${symbol.padStart(4, "0")}.HK`;
+  if (/^\d{5}$/.test(symbol)) return `${symbol}.HK`;
+  return symbol;
 }
 
 function compactSeries(timestamps = [], quote = {}) {
@@ -22,7 +25,7 @@ function compactSeries(timestamps = [], quote = {}) {
 }
 
 async function fetchQuote(symbol) {
-  const endpoint = `${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=1mo&interval=1d`;
+  const endpoint = `${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=1d&interval=5m`;
   const response = await fetch(endpoint, {
     cf: { cacheTtl: 300, cacheEverything: true },
     headers: { "User-Agent": "office-info-dashboard/1.0" },
