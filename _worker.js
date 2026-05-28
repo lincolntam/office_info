@@ -33,14 +33,6 @@ export default {
       return spotlight();
     }
 
-    if (url.pathname === "/" || url.pathname === "/index.html") {
-      const session = await readSession(request, getSessionSecret(env));
-      if (!session) {
-        const next = encodeURIComponent(`${url.pathname}${url.search}${url.hash}`);
-        return Response.redirect(`${url.origin}/login?next=${next}`, 302);
-      }
-    }
-
     return serveAsset(request, env);
   },
 };
