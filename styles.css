@@ -1020,12 +1020,13 @@ button {
 .weather-condition {
   position: relative;
   z-index: 2;
-  margin: 58px 0 0;
-  color: rgba(255, 255, 255, 0.94);
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
+  margin: 59px 0 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.34);
 }
 
 .weather-card .weather-glass {
@@ -1070,10 +1071,11 @@ button {
 .weather-mini-label {
   position: relative;
   z-index: 2;
-  margin: 18px 0 0 22px;
-  color: rgba(255, 255, 255, 0.94);
-  font-size: 14px;
-  font-weight: 850;
+  margin: 18px 0 0 23px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 680;
+  letter-spacing: 0.02em;
 }
 
 .weather-card .weather-icon {
@@ -1148,12 +1150,13 @@ button {
   position: relative;
   z-index: 2;
   display: block;
-  margin-top: 20px;
+  margin-top: 18px;
   color: rgba(255, 255, 255, 0.95);
-  font-size: 76px;
-  font-weight: 220;
+  font-size: 80px;
+  font-weight: 180;
   line-height: 0.9;
   text-align: center;
+  text-shadow: 0 8px 30px rgba(0, 0, 0, 0.14);
 }
 
 .weather-range {
@@ -1161,11 +1164,12 @@ button {
   z-index: 2;
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin: 9px 0 0;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 13px;
-  font-weight: 800;
+  gap: 11px;
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: 0.01em;
 }
 
 .weather-card h2 {
@@ -1184,18 +1188,19 @@ button {
 .weather-caption {
   position: absolute;
   right: 0;
-  bottom: 48px;
+  bottom: 47px;
   left: 0;
   z-index: 2;
   display: flex;
   justify-content: center;
-  gap: 18px;
+  gap: 17px;
   margin: 0;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 13px;
-  font-weight: 850;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
   text-align: center;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.42);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.38);
 }
 
 .weather-caption span {
