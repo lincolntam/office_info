@@ -349,6 +349,24 @@ button {
     #18191b;
 }
 
+.market-card.is-up {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%),
+    radial-gradient(circle at 76% 87%, rgba(17, 207, 132, 0.58), transparent 36%),
+    radial-gradient(circle at 72% 70%, rgba(0, 123, 78, 0.36), transparent 42%),
+    radial-gradient(circle at 18% 12%, rgba(203, 255, 67, 0.14), transparent 32%),
+    #111715;
+}
+
+.market-card.is-down {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%),
+    radial-gradient(circle at 76% 87%, rgba(255, 72, 72, 0.54), transparent 36%),
+    radial-gradient(circle at 72% 70%, rgba(135, 18, 38, 0.4), transparent 42%),
+    radial-gradient(circle at 18% 12%, rgba(255, 103, 93, 0.18), transparent 32%),
+    #191313;
+}
+
 .market-card::before {
   position: absolute;
   inset: 0;
@@ -876,6 +894,7 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 20px;
+  row-gap: 0;
   align-items: start;
   width: 430px;
   margin: 0 auto;
@@ -1085,15 +1104,16 @@ button {
 }
 
 .login-form.is-signup {
-  padding-top: 58px;
+  row-gap: 12px;
+  padding-top: 56px;
 }
 
 .login-form.is-signup .login-kicker {
-  margin-top: 35px;
+  margin-top: 31px;
 }
 
 .login-form.is-signup .login-rule {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .login-form.is-signup .forgot-link,

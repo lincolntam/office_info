@@ -76,6 +76,13 @@ const WEATHER_BACKGROUNDS = {
   FOG: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
 };
 
+const WEATHER_TIME_BACKGROUNDS = {
+  morning: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1280&q=80",
+  afternoon: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1280&q=80",
+  evening: "https://images.unsplash.com/photo-1494548162494-384bba4ab999?auto=format&fit=crop&w=1280&q=80",
+  night: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1280&q=80",
+};
+
 const WEATHER_LABELS = {
   SUNNY: "SUNNY",
   CLOUDY: "CLOUDY",
@@ -635,14 +642,35 @@ function describeHkoWeather(forecastText, iconList, report) {
 
 function setWeatherVisual(condition) {
   const normalized = WEATHER_BACKGROUNDS[condition] ? condition : "CLOUDY";
-  els.weatherCard?.classList.remove("is-sunny", "is-cloudy", "is-raining", "is-storm", "is-fog");
+  const period = getWeatherTimePeriod();
+  const background = WEATHER_TIME_BACKGROUNDS[period] || WEATHER_BACKGROUNDS[normalized];
+  els.weatherCard?.classList.remove(
+    "is-sunny",
+    "is-cloudy",
+    "is-raining",
+    "is-storm",
+    "is-fog",
+    "time-morning",
+    "time-afternoon",
+    "time-evening",
+    "time-night",
+  );
   Object.keys(WEATHER_BACKGROUNDS).forEach((key) => {
     els.weatherCard?.classList.toggle(`is-${key.toLowerCase()}`, key === normalized);
   });
+  els.weatherCard?.classList.add(`time-${period}`);
 
-  if (els.weatherPhoto && els.weatherPhoto.src !== WEATHER_BACKGROUNDS[normalized]) {
-    els.weatherPhoto.src = WEATHER_BACKGROUNDS[normalized];
+  if (els.weatherPhoto && els.weatherPhoto.src !== background) {
+    els.weatherPhoto.src = background;
   }
+}
+
+function getWeatherTimePeriod(date = new Date()) {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "afternoon";
+  if (hour >= 17 && hour < 20) return "evening";
+  return "night";
 }
 
 async function fetchHkoWeather() {
@@ -758,9 +786,13 @@ async function loadMarketData(symbol = localStorage.getItem("marketSymbol") || "
     const hsiValues = toRelativeValues(data.hsi?.series);
     const customValues = toRelativeValues(data.custom?.series);
     const allValues = [...hsiValues, ...customValues].filter((value) => typeof value === "number");
+    const hsiChange = Number(data.hsi?.changePercent || 0);
+    const marketCard = document.querySelector(".market-card");
 
     renderMarketMetric("hsi", data.hsi, document.querySelector(".market-metric.is-hsi"));
     renderMarketMetric("custom", data.custom, document.querySelector(".market-metric.is-custom"));
+    marketCard?.classList.toggle("is-up", hsiChange >= 0);
+    marketCard?.classList.toggle("is-down", hsiChange < 0);
     els.hsiLine.setAttribute("d", buildMarketPath(data.hsi?.series, allValues));
     els.customLine.setAttribute("d", buildMarketPath(data.custom?.series, allValues));
     els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢`;
