@@ -11,6 +11,7 @@ const SPOTIFY_REDIRECT_URI =
     : `${window.location.origin}${window.location.pathname}`;
 const FALLBACK_SPOTIFY_TRACK_URL =
   "https://open.spotify.com/track/3R8iyJpmhI9ABDmTpetV2D?si=45c7c6dc3ad540bb";
+const AUTO_ROTATE_MS = 5 * 60 * 1000;
 
 const els = {
   clock: document.querySelector("#clock"),
@@ -37,6 +38,17 @@ const els = {
   weatherRain: document.querySelector("#weatherRain"),
   weatherLow: document.querySelector("#weatherLow"),
   weatherHigh: document.querySelector("#weatherHigh"),
+  marketForm: document.querySelector("#marketForm"),
+  marketSymbolInput: document.querySelector("#marketSymbolInput"),
+  hsiName: document.querySelector("#hsiName"),
+  hsiChange: document.querySelector("#hsiChange"),
+  hsiValue: document.querySelector("#hsiValue"),
+  customName: document.querySelector("#customName"),
+  customChange: document.querySelector("#customChange"),
+  customValue: document.querySelector("#customValue"),
+  hsiLine: document.querySelector("#hsiLine"),
+  customLine: document.querySelector("#customLine"),
+  marketStatus: document.querySelector("#marketStatus"),
   loginForm: document.querySelector("#loginForm"),
   loginKicker: document.querySelector("#loginKicker"),
   loginEmail: document.querySelector("#loginEmail"),
@@ -81,6 +93,8 @@ let currentProgressMs = 0;
 let currentProgressUpdatedAt = 0;
 let isSpotifyPlaying = false;
 let isSignupMode = false;
+let activePanelIndex = 0;
+let lastPanelMoveAt = Date.now();
 
 function isLocalStatic() {
   return location.protocol === "file:" || location.hostname === "127.0.0.1" || location.hostname === "localhost";
@@ -133,7 +147,30 @@ function setActiveDot(index) {
 
 function updateActivePanel() {
   const index = Math.round(stage.scrollTop / stage.clientHeight);
-  setActiveDot(Math.max(0, Math.min(index, panels.length - 1)));
+  const nextIndex = Math.max(0, Math.min(index, panels.length - 1));
+  if (nextIndex !== activePanelIndex) {
+    activePanelIndex = nextIndex;
+    lastPanelMoveAt = Date.now();
+  }
+  setActiveDot(nextIndex);
+}
+
+function scrollToPanel(index, behavior = "smooth") {
+  const panel = panels[index];
+  if (!panel) return;
+  panel.scrollIntoView({ behavior, block: "start" });
+}
+
+function markPanelActivity() {
+  lastPanelMoveAt = Date.now();
+}
+
+function rotatePanelIfIdle() {
+  if (!stage || panels.length < 2) return;
+  if (Date.now() - lastPanelMoveAt < AUTO_ROTATE_MS) return;
+  const nextIndex = activePanelIndex >= panels.length - 1 ? 0 : activePanelIndex + 1;
+  lastPanelMoveAt = Date.now();
+  scrollToPanel(nextIndex);
 }
 
 function resizeStage() {
@@ -656,6 +693,84 @@ async function loadHkoWeather() {
   }
 }
 
+function formatMarketNumber(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "--";
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: value >= 100 ? 0 : 2,
+  }).format(value);
+}
+
+function formatMarketPercent(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "--%";
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
+}
+
+function buildMarketPath(series, allValues) {
+  const rawValues = series?.map((point) => point.value).filter((value) => typeof value === "number") || [];
+  if (rawValues.length < 2 || allValues.length < 2) return "";
+  const base = rawValues[0] || 1;
+  const values = rawValues.map((value) => ((value - base) / base) * 100);
+
+  const min = Math.min(...allValues);
+  const max = Math.max(...allValues);
+  const range = max - min || 1;
+  const width = 480;
+  const height = 132;
+  const xStart = 20;
+  const yStart = 30;
+
+  return values
+    .map((value, index) => {
+      const x = xStart + (index / Math.max(values.length - 1, 1)) * width;
+      const y = yStart + height - ((value - min) / range) * height;
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
+function renderMarketMetric(prefix, quote, metricElement) {
+  const name = quote?.symbol || "--";
+  els[`${prefix}Name`].textContent = prefix === "hsi" ? "HSI" : name;
+  els[`${prefix}Change`].textContent = formatMarketPercent(quote?.changePercent);
+  els[`${prefix}Value`].textContent =
+    typeof quote?.change === "number" ? `${quote.change >= 0 ? "+" : ""}${formatMarketNumber(quote.change)}` : "--";
+  metricElement?.classList.toggle("is-down", Number(quote?.changePercent || 0) < 0);
+}
+
+async function loadMarketData(symbol = localStorage.getItem("marketSymbol") || "0700.HK") {
+  if (!els.marketForm) return;
+  const cleanSymbol = String(symbol || "0700.HK").trim().toUpperCase() || "0700.HK";
+  els.marketSymbolInput.value = cleanSymbol;
+  els.marketStatus.textContent = "更新市場資料中...";
+
+  try {
+    const response = await fetch(`/api/market?symbol=${encodeURIComponent(cleanSymbol)}`, {
+      credentials: "include",
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Market request failed");
+
+    const toRelativeValues = (series = []) => {
+      const values = series.map((point) => point.value).filter((value) => typeof value === "number");
+      const base = values[0] || 1;
+      return values.map((value) => ((value - base) / base) * 100);
+    };
+    const hsiValues = toRelativeValues(data.hsi?.series);
+    const customValues = toRelativeValues(data.custom?.series);
+    const allValues = [...hsiValues, ...customValues].filter((value) => typeof value === "number");
+
+    renderMarketMetric("hsi", data.hsi, document.querySelector(".market-metric.is-hsi"));
+    renderMarketMetric("custom", data.custom, document.querySelector(".market-metric.is-custom"));
+    els.hsiLine.setAttribute("d", buildMarketPath(data.hsi?.series, allValues));
+    els.customLine.setAttribute("d", buildMarketPath(data.custom?.series, allValues));
+    els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 1 month`;
+    localStorage.setItem("marketSymbol", cleanSymbol);
+  } catch {
+    els.marketStatus.textContent = "暫時無法讀取市場資料";
+  }
+}
+
 function scrollToHash() {
   const panelIndex = panels.findIndex((panel) => `#${panel.id}` === window.location.hash);
   if (panelIndex < 0) return;
@@ -745,8 +860,9 @@ async function initDisplayPage() {
 
   dots.forEach((dot) => {
     dot.addEventListener("click", () => {
+      markPanelActivity();
       const panelIndex = Number(dot.dataset.panel);
-      panels[panelIndex].scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToPanel(panelIndex);
     });
   });
 
@@ -764,6 +880,11 @@ async function initDisplayPage() {
   els.nextTrack.addEventListener("click", nextSpotifyTrack);
   els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
   els.showQueue.addEventListener("click", showSpotifyQueue);
+  els.marketForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    markPanelActivity();
+    loadMarketData(els.marketSymbolInput.value);
+  });
 
   els.spotifyLogin.addEventListener("click", async () => {
     const token = await getSpotifyToken();
@@ -785,6 +906,10 @@ async function initDisplayPage() {
   });
 
   stage.addEventListener("scroll", updateActivePanel, { passive: true });
+  stage.addEventListener("wheel", markPanelActivity, { passive: true });
+  stage.addEventListener("touchstart", markPanelActivity, { passive: true });
+  stage.addEventListener("pointerdown", markPanelActivity);
+  window.addEventListener("keydown", markPanelActivity);
   window.addEventListener("resize", resizeStage);
 
   setInterval(updateProgressBar, 1000);
@@ -798,6 +923,7 @@ async function initDisplayPage() {
   handleSpotifyCallback();
   refreshSpotifyDisplay();
   loadHkoWeather();
+  loadMarketData();
   scrollToHash();
   requestAnimationFrame(scrollToHash);
   setTimeout(scrollToHash, 150);
@@ -805,6 +931,8 @@ async function initDisplayPage() {
   setInterval(updateClock, 1000);
   setInterval(refreshSpotifyDisplay, 30000);
   setInterval(loadHkoWeather, 10 * 60 * 1000);
+  setInterval(loadMarketData, 5 * 60 * 1000);
+  setInterval(rotatePanelIfIdle, 15000);
 }
 
 initLoginPage();

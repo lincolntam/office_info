@@ -340,6 +340,168 @@ button {
   font-weight: 750;
 }
 
+.market-card {
+  padding: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 34%),
+    radial-gradient(circle at 18% 12%, rgba(203, 255, 67, 0.16), transparent 32%),
+    radial-gradient(circle at 88% 20%, rgba(25, 100, 255, 0.18), transparent 34%),
+    #18191b;
+}
+
+.market-card::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.28)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03), transparent 44%, rgba(255, 255, 255, 0.025));
+  pointer-events: none;
+}
+
+.market-topline,
+.market-metrics,
+.market-chart,
+.market-status {
+  position: relative;
+  z-index: 1;
+}
+
+.market-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 17px;
+  font-weight: 760;
+}
+
+.market-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.market-form input {
+  width: 106px;
+  height: 31px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0 13px;
+  outline: none;
+  font-size: 13px;
+  font-weight: 720;
+  text-transform: uppercase;
+}
+
+.market-form button {
+  height: 31px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(236, 241, 248, 0.9);
+  color: rgba(15, 17, 19, 0.92);
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.market-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 34px;
+  margin-top: 34px;
+}
+
+.market-metric p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 15px;
+  font-weight: 620;
+}
+
+.market-metric p span {
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.market-metric strong {
+  display: block;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 35px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.market-metric em {
+  display: block;
+  margin-top: 9px;
+  font-size: 17px;
+  font-style: normal;
+  font-weight: 720;
+}
+
+.market-metric.is-hsi p,
+.market-metric.is-hsi em {
+  color: #d4ff3f;
+}
+
+.market-metric.is-custom p,
+.market-metric.is-custom em {
+  color: #2470ff;
+}
+
+.market-metric.is-down em {
+  color: #ff5b67;
+}
+
+.market-chart {
+  display: block;
+  width: 100%;
+  height: 190px;
+  margin-top: 28px;
+  overflow: visible;
+}
+
+.market-grid {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.market-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.hsi-line {
+  stroke: #d4ff3f;
+  filter: drop-shadow(0 0 8px rgba(212, 255, 63, 0.28));
+}
+
+.custom-line {
+  stroke: #2470ff;
+  filter: drop-shadow(0 0 8px rgba(36, 112, 255, 0.32));
+}
+
+.market-status {
+  margin: 7px 0 0;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 12px;
+  font-weight: 620;
+  text-align: center;
+}
+
 .weather-card {
   border-radius: 40px;
   background: #172214;

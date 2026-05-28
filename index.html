@@ -72,12 +72,46 @@
             </p>
           </article>
         </section>
+
+        <section id="market" class="stack-panel" aria-label="市場資訊">
+          <article class="smart-card market-card">
+            <div class="market-topline">
+              <span>市場</span>
+              <form id="marketForm" class="market-form">
+                <label>
+                  <span class="sr-only">自訂股票代號</span>
+                  <input id="marketSymbolInput" type="text" value="0700.HK" spellcheck="false" />
+                </label>
+                <button type="submit">更新</button>
+              </form>
+            </div>
+            <div class="market-metrics">
+              <div class="market-metric is-hsi">
+                <p><span></span><b id="hsiName">HSI</b></p>
+                <strong id="hsiChange">--%</strong>
+                <em id="hsiValue">--</em>
+              </div>
+              <div class="market-metric is-custom">
+                <p><span></span><b id="customName">0700.HK</b></p>
+                <strong id="customChange">--%</strong>
+                <em id="customValue">--</em>
+              </div>
+            </div>
+            <svg id="marketChart" class="market-chart" viewBox="0 0 520 190" role="img" aria-label="市場走勢圖">
+              <path class="market-grid" d="M20 50 H500 M20 105 H500 M20 160 H500" />
+              <path id="hsiLine" class="market-line hsi-line" d="" />
+              <path id="customLine" class="market-line custom-line" d="" />
+            </svg>
+            <p id="marketStatus" class="market-status">HSI 與自訂 symbol 走勢</p>
+          </article>
+        </section>
       </div>
 
       <nav class="stack-dots" aria-label="頁面切換">
         <button class="dot is-active" type="button" aria-label="前往首頁" data-panel="0"></button>
         <button class="dot" type="button" aria-label="前往 Spotify 正在播放" data-panel="1"></button>
         <button class="dot" type="button" aria-label="前往天氣" data-panel="2"></button>
+        <button class="dot" type="button" aria-label="前往市場資訊" data-panel="3"></button>
       </nav>
     </main>
 
