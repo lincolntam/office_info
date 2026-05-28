@@ -1,4 +1,4 @@
-import { createSession, hashPassword, json, sessionCookie, verifyPassword } from "../_auth.js";
+import { createSession, json, sessionCookie, verifyPassword } from "../_auth.js";
 
 export async function onRequestPost({ request, env }) {
   try {
@@ -8,7 +8,7 @@ export async function onRequestPost({ request, env }) {
 
     const secret = env.LOGIN_SESSION_SECRET || env.JWT_SECRET;
     if (!secret) {
-      return json({ error: "未設定 LOGIN_SESSION_SECRET。" }, 500);
+      return json({ error: "未設定 LOGIN_SESSION_SECRET 或 JWT_SECRET。" }, 500);
     }
 
     const body = await request.json().catch(() => null);
@@ -27,12 +27,6 @@ export async function onRequestPost({ request, env }) {
 
     if (!user || !(await verifyPassword(password, user.password, env))) {
       return json({ error: "帳戶或密碼不正確。" }, 401);
-    }
-
-    if (!String(user.password).startsWith("pbkdf2$")) {
-      await env.GLOBAL_LOGIN_DB.prepare("UPDATE users SET password = ? WHERE id = ?")
-        .bind(await hashPassword(password), user.id)
-        .run();
     }
 
     const token = await createSession(user, secret);

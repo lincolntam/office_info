@@ -37,7 +37,7 @@ async function hmacBytes(secret, payload) {
     encoder.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign", "verify"],
+    ["sign"],
   );
   return new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(payload)));
 }
