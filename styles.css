@@ -1030,7 +1030,7 @@ button {
 
 .weather-card .weather-glass {
   top: 119px;
-  left: 220px;
+  left: 50%;
   width: 200px;
   height: 255px;
   overflow: hidden;
@@ -1044,6 +1044,7 @@ button {
     inset -1px -1px 0 rgba(255, 255, 255, 0.18),
     0 18px 36px rgba(52, 78, 96, 0.18);
   backdrop-filter: blur(5px) saturate(1.05);
+  transform: translateX(-50%);
 }
 
 .weather-card .weather-glass::after {
