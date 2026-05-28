@@ -8,16 +8,12 @@
   </head>
   <body>
     <main class="display-shell" aria-label="640 乘 480 資訊顯示">
-      <a class="login-link" href="./login.html" aria-label="前往登入頁">登入</a>
       <div id="stage" class="stage" aria-label="Smart Stack 資訊頁">
         <section id="home" class="stack-panel" aria-label="首頁">
           <article class="smart-card home-card">
             <img id="homeBackdrop" class="card-media" src="./assets/space-launch.svg" alt="" />
             <div class="hero-scrim"></div>
-            <div class="card-topline">
-              <span>首頁</span>
-              <span>香港</span>
-            </div>
+            <div class="lock-status" aria-hidden="true">鎖定</div>
             <div class="home-clock">
               <time id="clock" datetime="">00:00</time>
               <p id="dateText">5月27日 週三</p>
@@ -57,41 +53,29 @@
         </section>
 
         <section id="weather" class="stack-panel" aria-label="天氣">
-          <article class="smart-card weather-card">
+          <article id="weatherCard" class="smart-card weather-card is-cloudy">
             <img class="weather-photo" src="./assets/weather-forest.svg" alt="" />
             <div class="weather-page-scrim"></div>
+            <p id="weatherDesc" class="weather-condition">CLOUDY</p>
             <div class="weather-glass" aria-label="香港天氣">
-              <header class="weather-header">
-                <div>
-                  <strong>香港</strong>
-                  <span id="weatherLocation">香港天文台</span>
-                </div>
-                <time id="weatherDate" datetime="">載入中<br />請稍候</time>
-              </header>
-              <div class="weather-center">
-                <strong id="weatherTemp">--°</strong>
-                <div class="weather-icon" aria-hidden="true">
-                  <span class="sun-core"></span>
-                  <span class="cloud cloud-a"></span>
-                  <span class="cloud cloud-b"></span>
-                </div>
-                <p id="weatherDesc">載入中</p>
+              <div class="weather-mini-label">室外天氣</div>
+              <div class="weather-icon" aria-hidden="true">
+                <span class="sun-core"></span>
+                <span class="cloud cloud-a"></span>
+                <span class="cloud cloud-b"></span>
               </div>
-              <div class="weather-stats">
-                <div>
-                  <span class="drop-icon" aria-hidden="true"></span>
-                  <strong id="weatherHumidity">--%</strong>
-                </div>
-                <div>
-                  <span class="wind-icon" aria-hidden="true"></span>
-                  <strong id="weatherRain">-- mm</strong>
-                </div>
-                <div class="unit-toggle" aria-label="溫度單位">
-                  <strong>C°</strong>
-                  <span>F°</span>
-                </div>
-              </div>
+              <strong id="weatherTemp">--°</strong>
+              <p class="weather-range">
+                <span id="weatherLow">最低 --°</span>
+                <span id="weatherHigh">最高 --°</span>
+              </p>
             </div>
+            <h2>Weather Information</h2>
+            <p class="weather-caption">
+              <span id="weatherLocation">香港</span>
+              <span id="weatherHumidity">濕度 --%</span>
+              <span id="weatherRain">雨量 -- mm</span>
+            </p>
           </article>
         </section>
       </div>
@@ -101,10 +85,6 @@
         <button class="dot" type="button" aria-label="前往 Spotify 正在播放" data-panel="1"></button>
         <button class="dot" type="button" aria-label="前往天氣" data-panel="2"></button>
       </nav>
-
-      <button id="fullscreenToggle" class="fullscreen-toggle" type="button" aria-label="進入全螢幕">
-        全螢幕
-      </button>
     </main>
 
     <script src="https://sdk.scdn.co/spotify-player.js"></script>

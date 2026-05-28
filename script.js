@@ -27,18 +27,26 @@ const els = {
   nextTrack: document.querySelector("#nextTrack"),
   connectDevice: document.querySelector("#connectDevice"),
   showQueue: document.querySelector("#showQueue"),
-  fullscreenToggle: document.querySelector("#fullscreenToggle"),
   weatherDate: document.querySelector("#weatherDate"),
+  weatherCard: document.querySelector("#weatherCard"),
   weatherLocation: document.querySelector("#weatherLocation"),
   weatherTemp: document.querySelector("#weatherTemp"),
   weatherDesc: document.querySelector("#weatherDesc"),
   weatherHumidity: document.querySelector("#weatherHumidity"),
   weatherRain: document.querySelector("#weatherRain"),
+  weatherLow: document.querySelector("#weatherLow"),
+  weatherHigh: document.querySelector("#weatherHigh"),
   loginForm: document.querySelector("#loginForm"),
+  loginKicker: document.querySelector("#loginKicker"),
   loginEmail: document.querySelector("#loginEmail"),
   loginPassword: document.querySelector("#loginPassword"),
   loginSubmit: document.querySelector("#loginSubmit"),
   loginMessage: document.querySelector("#loginMessage"),
+  signupToggle: document.querySelector("#signupToggle"),
+  signupUsernameField: document.querySelector("#signupUsernameField"),
+  signupUsername: document.querySelector("#signupUsername"),
+  signupCodeField: document.querySelector("#signupCodeField"),
+  signupCode: document.querySelector("#signupCode"),
 };
 
 const nowPlaying = {
@@ -55,6 +63,7 @@ let currentDurationMs = 0;
 let currentProgressMs = 0;
 let currentProgressUpdatedAt = 0;
 let isSpotifyPlaying = false;
+let isSignupMode = false;
 
 function isLocalStatic() {
   return location.protocol === "file:" || location.hostname === "127.0.0.1" || location.hostname === "localhost";
@@ -89,6 +98,13 @@ function updateClock() {
     day: "numeric",
     weekday: "short",
   }).format(now);
+  updateHomeScaleTime();
+}
+
+function updateHomeScaleTime() {
+  if (!els.clock) return;
+  const [hours, minutes] = els.clock.textContent.split(":");
+  els.clock.innerHTML = `<span>${hours}</span><span>${minutes}</span>`;
 }
 
 function setActiveDot(index) {
@@ -542,12 +558,10 @@ function pickHkoTemperature(report) {
 }
 
 function describeHkoWeather(forecastText, iconList) {
-  if (forecastText?.includes("雨")) return "有雨";
-  if (forecastText?.includes("雷暴")) return "雷暴";
-  if (forecastText?.includes("多雲")) return "多雲";
-  if (forecastText?.includes("天晴")) return "天晴";
-  if (iconList?.includes(51)) return "酷熱";
-  return "天氣";
+  if (forecastText?.includes("雨") || forecastText?.includes("雷暴")) return "CLOUDY";
+  if (forecastText?.includes("多雲") || forecastText?.includes("天陰")) return "CLOUDY";
+  if (forecastText?.includes("天晴") || iconList?.includes(50) || iconList?.includes(51)) return "SUNNY";
+  return "CLOUDY";
 }
 
 async function loadHkoWeather() {
@@ -569,21 +583,20 @@ async function loadHkoWeather() {
       report.rainfall?.data?.[0];
     const updateTime = new Date(report.updateTime || forecast.updateTime || Date.now());
 
+    const condition = describeHkoWeather(forecast.forecastDesc, report.icon);
+    const value = temp ? Math.round(temp.value) : null;
+    els.weatherCard?.classList.toggle("is-sunny", condition === "SUNNY");
+    els.weatherCard?.classList.toggle("is-cloudy", condition !== "SUNNY");
     els.weatherLocation.textContent = temp?.place || "香港";
-    els.weatherTemp.textContent = temp ? `${Math.round(temp.value)}°` : "--°";
-    els.weatherHumidity.textContent = humidity ? `${humidity.value}%` : "--%";
+    els.weatherTemp.textContent = value !== null ? `${value}°` : "--°";
+    els.weatherHumidity.textContent = humidity ? `濕度 ${humidity.value}%` : "濕度 --%";
     els.weatherRain.textContent =
-      rainfall?.max !== undefined ? `${rainfall.max} ${rainfall.unit}` : "-- mm";
-    els.weatherDesc.textContent = describeHkoWeather(forecast.forecastDesc, report.icon);
-    els.weatherDate.innerHTML = new Intl.DateTimeFormat("zh-HK", {
-      month: "long",
-      day: "numeric",
-    }).format(updateTime) + "<br />" + new Intl.DateTimeFormat("zh-HK", {
-      weekday: "long",
-    }).format(updateTime);
-    els.weatherDate.dateTime = updateTime.toISOString();
+      rainfall?.max !== undefined ? `雨量 ${rainfall.max} ${rainfall.unit}` : "雨量 -- mm";
+    els.weatherLow.textContent = value !== null ? `最低 ${Math.max(value - 3, 0)}°` : "最低 --°";
+    els.weatherHigh.textContent = value !== null ? `最高 ${value + 4}°` : "最高 --°";
+    els.weatherDesc.textContent = condition;
   } catch {
-    els.weatherDesc.textContent = "未能載入";
+    els.weatherDesc.textContent = "CLOUDY";
   }
 }
 
@@ -597,6 +610,21 @@ function scrollToHash() {
 function initLoginPage() {
   if (!els.loginForm) return;
 
+  function setSignupMode(enabled) {
+    isSignupMode = enabled;
+    els.loginForm.classList.toggle("is-signup", enabled);
+    els.loginKicker.textContent = enabled ? "CREATE YOUR ACCOUNT" : "LOGIN TO YOUR ACCOUNT";
+    els.loginSubmit.textContent = enabled ? "CREATE" : "LOGIN";
+    els.signupToggle.textContent = enabled ? "BACK TO LOGIN" : "CREATE ACCOUNT";
+    els.loginEmail.placeholder = enabled ? "Email" : "User name / Email";
+    els.signupUsernameField.hidden = !enabled;
+    els.signupCodeField.hidden = !enabled;
+    els.signupUsername.required = enabled;
+    els.signupCode.required = enabled;
+    els.loginPassword.autocomplete = enabled ? "new-password" : "current-password";
+    els.loginMessage.textContent = enabled ? "請輸入邀請碼建立帳戶。" : "請輸入帳戶資料。";
+  }
+
   fetch("/api/me", { credentials: "include" })
     .then((response) => (response.ok ? response.json() : null))
     .then((data) => {
@@ -609,25 +637,37 @@ function initLoginPage() {
         "本機或 GitHub Pages 不會連接 D1，部署到 Cloudflare 後可登入。";
     });
 
+  els.signupToggle.addEventListener("click", () => setSignupMode(!isSignupMode));
+
   els.loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     els.loginSubmit.disabled = true;
-    els.loginMessage.textContent = "登入中...";
+    els.loginMessage.textContent = isSignupMode ? "建立中..." : "登入中...";
 
     try {
-      const response = await fetch("/api/login", {
+      const endpoint = isSignupMode ? "/api/signup" : "/api/login";
+      const response = await fetch(endpoint, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: els.loginEmail.value,
+          username: els.signupUsername.value,
           password: els.loginPassword.value,
+          code: els.signupCode.value,
         }),
       });
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(data.error || "登入失敗。");
+      }
+
+      if (isSignupMode) {
+        els.loginMessage.textContent = data.message || "帳戶已建立，請登入。";
+        els.loginPassword.value = "";
+        setSignupMode(false);
+        return;
       }
 
       els.loginMessage.textContent = `登入成功：${data.user.email}`;
@@ -686,24 +726,6 @@ async function initDisplayPage() {
     }
 
     await transferPlaybackToBrowser(true);
-  });
-
-  els.fullscreenToggle.addEventListener("click", async () => {
-    if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen();
-    } else {
-      await document.exitFullscreen();
-    }
-  });
-
-  document.addEventListener("fullscreenchange", () => {
-    const isFullscreen = Boolean(document.fullscreenElement);
-    els.fullscreenToggle.textContent = isFullscreen ? "離開" : "全螢幕";
-    els.fullscreenToggle.setAttribute(
-      "aria-label",
-      isFullscreen ? "離開全螢幕" : "進入全螢幕",
-    );
-    resizeStage();
   });
 
   stage.addEventListener("scroll", updateActivePanel, { passive: true });

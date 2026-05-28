@@ -14,8 +14,8 @@
         <div class="login-stripes" aria-hidden="true"></div>
 
         <form id="loginForm" class="login-form" autocomplete="on">
-          <h1>LOGO</h1>
-          <p class="login-kicker">LOGIN TO YOUR ACCOUNT</p>
+          <h1>INFO</h1>
+          <p id="loginKicker" class="login-kicker">LOGIN TO YOUR ACCOUNT</p>
           <div class="login-rule" aria-hidden="true"></div>
 
           <div class="login-fields">
@@ -30,6 +30,16 @@
                 required
               />
             </label>
+            <label id="signupUsernameField" class="signup-only" hidden>
+              <span class="sr-only">User name</span>
+              <input
+                id="signupUsername"
+                name="username"
+                type="text"
+                placeholder="New user name"
+                autocomplete="username"
+              />
+            </label>
             <label>
               <span class="sr-only">密碼</span>
               <input
@@ -39,6 +49,16 @@
                 placeholder="Password"
                 autocomplete="current-password"
                 required
+              />
+            </label>
+            <label id="signupCodeField" class="signup-only" hidden>
+              <span class="sr-only">邀請碼</span>
+              <input
+                id="signupCode"
+                name="code"
+                type="text"
+                placeholder="Invitation code"
+                autocomplete="off"
               />
             </label>
           </div>
@@ -51,6 +71,7 @@
           </label>
 
           <button id="loginSubmit" type="submit">LOGIN</button>
+          <button id="signupToggle" class="ghost-button" type="button">CREATE ACCOUNT</button>
           <p id="loginMessage" class="login-message" role="status">請輸入帳戶資料。</p>
         </form>
       </section>
