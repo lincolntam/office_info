@@ -37,13 +37,6 @@ const els = {
   weatherRain: document.querySelector("#weatherRain"),
   weatherLow: document.querySelector("#weatherLow"),
   weatherHigh: document.querySelector("#weatherHigh"),
-  teamsConnect: document.querySelector("#teamsConnect"),
-  teamsSender: document.querySelector("#teamsSender"),
-  teamsPreview: document.querySelector("#teamsPreview"),
-  teamsAvatar: document.querySelector("#teamsAvatar"),
-  teamsChatName: document.querySelector("#teamsChatName"),
-  teamsTime: document.querySelector("#teamsTime"),
-  teamsNote: document.querySelector("#teamsNote"),
   loginForm: document.querySelector("#loginForm"),
   loginKicker: document.querySelector("#loginKicker"),
   loginEmail: document.querySelector("#loginEmail"),
@@ -663,66 +656,6 @@ async function loadHkoWeather() {
   }
 }
 
-function formatTeamsTime(value) {
-  if (!value) return "未連接";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "未連接";
-  return new Intl.DateTimeFormat("zh-HK", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(date);
-}
-
-function getInitials(name = "Teams") {
-  return name
-    .replace(/\([^)]*\)/g, "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || "")
-    .join("") || "T";
-}
-
-async function loadTeamsLatest() {
-  if (!els.teamsConnect || isLocalStatic()) return;
-
-  try {
-    const response = await fetch("/api/teams/latest", { credentials: "include" });
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok || !data.connected) {
-      els.teamsConnect.textContent = "連接";
-      els.teamsNote.textContent = data.error || "連接 Microsoft Graph 後會顯示真實 Teams 訊息。";
-      return;
-    }
-
-    els.teamsConnect.textContent = "已連接";
-    els.teamsNote.textContent = data.account?.email || "Microsoft Teams 已連接";
-
-    if (!data.message) {
-      els.teamsSender.textContent = "Teams";
-      els.teamsPreview.textContent = "暫時沒有最新訊息。";
-      els.teamsAvatar.textContent = "T";
-      els.teamsChatName.textContent = "Teams";
-      els.teamsTime.textContent = "剛剛";
-      return;
-    }
-
-    const sender = data.message.senderShort || data.message.sender || "Teams";
-    els.teamsSender.textContent = sender;
-    els.teamsPreview.textContent = data.message.body || "這則訊息沒有文字內容。";
-    els.teamsAvatar.textContent = getInitials(sender);
-    els.teamsChatName.textContent = data.message.chatName || "Teams";
-    els.teamsTime.textContent = formatTeamsTime(data.message.createdDateTime);
-  } catch {
-    els.teamsConnect.textContent = "連接";
-    els.teamsNote.textContent = "暫時無法讀取 Teams。";
-  }
-}
-
 function scrollToHash() {
   const panelIndex = panels.findIndex((panel) => `#${panel.id}` === window.location.hash);
   if (panelIndex < 0) return;
@@ -831,9 +764,6 @@ async function initDisplayPage() {
   els.nextTrack.addEventListener("click", nextSpotifyTrack);
   els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
   els.showQueue.addEventListener("click", showSpotifyQueue);
-  els.teamsConnect?.addEventListener("click", () => {
-    window.location.href = "/api/microsoft/start";
-  });
 
   els.spotifyLogin.addEventListener("click", async () => {
     const token = await getSpotifyToken();
@@ -868,7 +798,6 @@ async function initDisplayPage() {
   handleSpotifyCallback();
   refreshSpotifyDisplay();
   loadHkoWeather();
-  loadTeamsLatest();
   scrollToHash();
   requestAnimationFrame(scrollToHash);
   setTimeout(scrollToHash, 150);
@@ -876,7 +805,6 @@ async function initDisplayPage() {
   setInterval(updateClock, 1000);
   setInterval(refreshSpotifyDisplay, 30000);
   setInterval(loadHkoWeather, 10 * 60 * 1000);
-  setInterval(loadTeamsLatest, 60 * 1000);
 }
 
 initLoginPage();
