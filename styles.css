@@ -1020,7 +1020,7 @@ button {
 .weather-condition {
   position: relative;
   z-index: 2;
-  margin: 62px 0 0;
+  margin: 58px 0 0;
   color: rgba(255, 255, 255, 0.94);
   font-size: 20px;
   font-weight: 900;
@@ -1029,10 +1029,10 @@ button {
 }
 
 .weather-card .weather-glass {
-  top: 124px;
+  top: 119px;
   left: 220px;
   width: 200px;
-  height: 246px;
+  height: 255px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.68);
   border-radius: 34px;
@@ -1048,7 +1048,7 @@ button {
 
 .weather-card .weather-glass::after {
   position: absolute;
-  inset: 99px 0 0;
+  inset: 104px 0 0;
   content: "";
   border-top: 1px solid rgba(255, 255, 255, 0.22);
   background:
@@ -1078,16 +1078,16 @@ button {
 .weather-card .weather-icon {
   position: relative;
   z-index: 2;
-  width: 112px;
-  height: 82px;
-  margin: 13px auto 0;
+  width: 106px;
+  height: 76px;
+  margin: 8px auto 0;
 }
 
 .weather-card .sun-core {
   top: 7px;
-  left: 23px;
-  width: 72px;
-  height: 72px;
+  left: 24px;
+  width: 66px;
+  height: 66px;
   border: 0;
   background: radial-gradient(circle at 42% 38%, #ffd957, #ff9f2e 72%);
   box-shadow: 0 0 26px rgba(255, 179, 46, 0.72);
@@ -1147,9 +1147,9 @@ button {
   position: relative;
   z-index: 2;
   display: block;
-  margin-top: 34px;
+  margin-top: 20px;
   color: rgba(255, 255, 255, 0.95);
-  font-size: 78px;
+  font-size: 76px;
   font-weight: 220;
   line-height: 0.9;
   text-align: center;
@@ -1160,8 +1160,8 @@ button {
   z-index: 2;
   display: flex;
   justify-content: center;
-  gap: 13px;
-  margin: 21px 0 0;
+  gap: 12px;
+  margin: 9px 0 0;
   color: rgba(255, 255, 255, 0.86);
   font-size: 13px;
   font-weight: 800;
@@ -1182,17 +1182,24 @@ button {
 
 .weather-caption {
   position: absolute;
-  right: 54px;
-  bottom: 28px;
-  left: 54px;
+  right: 0;
+  bottom: 48px;
+  left: 0;
   z-index: 2;
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: 18px;
   margin: 0;
-  color: rgba(59, 64, 68, 0.82);
-  font-size: 11px;
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  font-weight: 850;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.42);
+}
+
+.weather-caption span {
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .weather-card.is-raining h2,
