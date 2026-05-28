@@ -15,6 +15,7 @@ const FALLBACK_SPOTIFY_TRACK_URL =
 const els = {
   clock: document.querySelector("#clock"),
   dateText: document.querySelector("#dateText"),
+  homeBackdrop: document.querySelector("#homeBackdrop"),
   albumBackdrop: document.querySelector("#albumBackdrop"),
   trackTitle: document.querySelector("#trackTitle"),
   trackArtist: document.querySelector("#trackArtist"),
@@ -54,6 +55,26 @@ let currentDurationMs = 0;
 let currentProgressMs = 0;
 let currentProgressUpdatedAt = 0;
 let isSpotifyPlaying = false;
+
+function isLocalStatic() {
+  return location.protocol === "file:" || location.hostname === "127.0.0.1" || location.hostname === "localhost";
+}
+
+async function requireAppLogin() {
+  if (!stage || isLocalStatic()) return true;
+
+  try {
+    const response = await fetch("/api/me", { credentials: "include" });
+    const data = response.ok ? await response.json() : null;
+    if (data?.user) return true;
+  } catch {
+    // If auth check fails on production, prefer the login screen over showing private content.
+  }
+
+  const next = `${location.pathname}${location.search}${location.hash}`;
+  location.replace(`/login?next=${encodeURIComponent(next)}`);
+  return false;
+}
 
 function updateClock() {
   const now = new Date();
@@ -109,6 +130,24 @@ async function loadFallbackSpotifyAlbum() {
     }
   } catch {
     els.albumBackdrop.src = nowPlaying.albumImage;
+  }
+}
+
+async function loadSpotlightHomeImage() {
+  if (!els.homeBackdrop) return;
+
+  try {
+    if (isLocalStatic()) throw new Error("Spotlight proxy is unavailable locally");
+    const response = await fetch("/api/spotlight");
+    if (!response.ok) throw new Error("Spotlight image failed");
+
+    const data = await response.json();
+    if (data.url) {
+      els.homeBackdrop.src = data.url;
+      els.homeBackdrop.alt = data.title || "";
+    }
+  } catch {
+    els.homeBackdrop.src = "./assets/space-launch.svg";
   }
 }
 
@@ -558,7 +597,7 @@ function scrollToHash() {
 function initLoginPage() {
   if (!els.loginForm) return;
 
-  fetch("./api/me")
+  fetch("/api/me", { credentials: "include" })
     .then((response) => (response.ok ? response.json() : null))
     .then((data) => {
       if (data?.user) {
@@ -567,7 +606,7 @@ function initLoginPage() {
     })
     .catch(() => {
       els.loginMessage.textContent =
-        "本機或 GitHub Pages 不會連接 D1，部署到 Cloudflare Pages 後可登入。";
+        "本機或 GitHub Pages 不會連接 D1，部署到 Cloudflare 後可登入。";
     });
 
   els.loginForm.addEventListener("submit", async (event) => {
@@ -576,8 +615,9 @@ function initLoginPage() {
     els.loginMessage.textContent = "登入中...";
 
     try {
-      const response = await fetch("./api/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: els.loginEmail.value,
@@ -592,7 +632,8 @@ function initLoginPage() {
 
       els.loginMessage.textContent = `登入成功：${data.user.email}`;
       setTimeout(() => {
-        window.location.href = "./index.html";
+        const next = new URLSearchParams(location.search).get("next");
+        window.location.href = next || "/index.html";
       }, 650);
     } catch (error) {
       els.loginMessage.textContent = error.message || "登入失敗。";
@@ -602,8 +643,9 @@ function initLoginPage() {
   });
 }
 
-function initDisplayPage() {
+async function initDisplayPage() {
   if (!stage || !els.clock) return;
+  if (!(await requireAppLogin())) return;
 
   dots.forEach((dot) => {
     dot.addEventListener("click", () => {
@@ -671,6 +713,7 @@ function initDisplayPage() {
 
   resizeStage();
   renderNowPlaying();
+  loadSpotlightHomeImage();
   loadFallbackSpotifyAlbum();
   updateClock();
   setupSpotifyWebPlayback();
