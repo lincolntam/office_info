@@ -608,19 +608,31 @@ function setWeatherVisual(condition) {
   }
 }
 
+async function fetchHkoWeather() {
+  if (!isLocalStatic()) {
+    const response = await fetch("/api/weather", { credentials: "include" });
+    if (!response.ok) throw new Error("Weather API failed");
+    return response.json();
+  }
+
+  const [reportResponse, forecastResponse] = await Promise.all([
+    fetch("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc"),
+    fetch("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=tc"),
+  ]);
+
+  if (!reportResponse.ok || !forecastResponse.ok) {
+    throw new Error("HKO request failed");
+  }
+
+  return {
+    report: await reportResponse.json(),
+    forecast: await forecastResponse.json(),
+  };
+}
+
 async function loadHkoWeather() {
   try {
-    const [reportResponse, forecastResponse] = await Promise.all([
-      fetch("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc"),
-      fetch("https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=tc"),
-    ]);
-
-    if (!reportResponse.ok || !forecastResponse.ok) {
-      throw new Error("HKO request failed");
-    }
-
-    const report = await reportResponse.json();
-    const forecast = await forecastResponse.json();
+    const { report, forecast } = await fetchHkoWeather();
     const temp = pickHkoTemperature(report);
     const humidity = report.humidity?.data?.[0];
     const rainfall = report.rainfall?.data?.find((item) => item.place === "中西區") ||
