@@ -668,8 +668,8 @@ button {
 
 .login-stage {
   position: relative;
-  width: var(--display-w);
-  height: var(--display-h);
+  width: calc(var(--display-w) - 36px);
+  height: calc(var(--display-h) - 36px);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 40px;
@@ -717,7 +717,7 @@ button {
   align-items: start;
   width: 430px;
   margin: 0 auto;
-  padding-top: 70px;
+  padding-top: 78px;
   color: #fff;
   text-align: center;
 }
@@ -745,7 +745,7 @@ button {
   grid-column: 1 / -1;
   width: 88px;
   height: 1px;
-  margin: 12px auto 44px;
+  margin: 12px auto 48px;
   background: rgba(255, 255, 255, 0.58);
 }
 
@@ -923,7 +923,7 @@ button {
 }
 
 .login-form.is-signup {
-  padding-top: 50px;
+  padding-top: 58px;
 }
 
 .login-form.is-signup .login-kicker {
@@ -931,7 +931,7 @@ button {
 }
 
 .login-form.is-signup .login-rule {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .login-form.is-signup .forgot-link,
