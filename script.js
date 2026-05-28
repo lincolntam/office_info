@@ -580,13 +580,15 @@ function describeHkoWeather(forecastText, iconList, report) {
   const rainfall = report?.rainfall?.data || [];
   const hasRainNow = rainfall.some((item) => Number(item.max || 0) > 0);
 
-  if (icons.includes(65) && hasRainNow) return "STORM";
-  if (icons.some((icon) => [53, 54, 62, 63, 64].includes(icon)) || hasRainNow) return "RAINING";
-  if (icons.some((icon) => [50, 51].includes(icon))) return "SUNNY";
-  if (icons.some((icon) => [52, 60, 61].includes(icon))) return "CLOUDY";
+  if (icons.length > 0) {
+    if (icons.includes(65)) return "STORM";
+    if (icons.some((icon) => [53, 54, 62, 63, 64].includes(icon)) || hasRainNow) return "RAINING";
+    if (icons.some((icon) => [50, 51].includes(icon))) return "SUNNY";
+    if (icons.some((icon) => [52, 60, 61].includes(icon))) return "CLOUDY";
+  }
 
-  if (hasRainNow && /雷暴|狂風雷暴|暴雨/.test(text)) return "STORM";
-  if (/雨|驟雨|毛毛雨/.test(text)) return "RAINING";
+  if (hasRainNow) return /雷暴|狂風雷暴|暴雨/.test(text) ? "STORM" : "RAINING";
+
   if (/霧|薄霧|煙霞/.test(text)) return "FOG";
   if (/天晴|陽光/.test(text) || icons.includes(50) || icons.includes(51)) return "SUNNY";
   if (/多雲|天陰|密雲/.test(text) || icons.some((icon) => icon >= 52 && icon <= 54)) return "CLOUDY";
