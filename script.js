@@ -83,6 +83,39 @@ const WEATHER_TIME_BACKGROUNDS = {
   night: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1280&q=80",
 };
 
+const WEATHER_BACKGROUND_BY_TIME = {
+  SUNNY: {
+    morning: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1280&q=80",
+    afternoon: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1280&q=80",
+    evening: "https://images.unsplash.com/photo-1494548162494-384bba4ab999?auto=format&fit=crop&w=1280&q=80",
+    night: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1280&q=80",
+  },
+  CLOUDY: {
+    morning: "https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?auto=format&fit=crop&w=1280&q=80",
+    afternoon: "https://images.unsplash.com/photo-1499346030926-9a72daac6c63?auto=format&fit=crop&w=1280&q=80",
+    evening: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1280&q=80",
+    night: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
+  },
+  RAINING: {
+    morning: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1280&q=80",
+    afternoon: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1280&q=80",
+    evening: "https://images.unsplash.com/photo-1501999635878-71cb5379c2d8?auto=format&fit=crop&w=1280&q=80",
+    night: "https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1280&q=80",
+  },
+  STORM: {
+    morning: "https://images.unsplash.com/photo-1500674425229-f692875b0ab7?auto=format&fit=crop&w=1280&q=80",
+    afternoon: "https://images.unsplash.com/photo-1500674425229-f692875b0ab7?auto=format&fit=crop&w=1280&q=80",
+    evening: "https://images.unsplash.com/photo-1500674425229-f692875b0ab7?auto=format&fit=crop&w=1280&q=80",
+    night: "https://images.unsplash.com/photo-1500674425229-f692875b0ab7?auto=format&fit=crop&w=1280&q=80",
+  },
+  FOG: {
+    morning: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
+    afternoon: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
+    evening: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
+    night: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
+  },
+};
+
 const WEATHER_TIME_CLASSES = [
   "time-morning",
   "time-afternoon",
@@ -109,6 +142,7 @@ let isSpotifyPlaying = false;
 let isSignupMode = false;
 let activePanelIndex = 0;
 let lastPanelMoveAt = Date.now();
+let currentWeatherCondition = "CLOUDY";
 
 function isLocalStatic() {
   return location.protocol === "file:" || location.hostname === "127.0.0.1" || location.hostname === "localhost";
@@ -650,7 +684,11 @@ function describeHkoWeather(forecastText, iconList, report) {
 function setWeatherVisual(condition) {
   const normalized = WEATHER_BACKGROUNDS[condition] ? condition : "CLOUDY";
   const period = getWeatherTimePeriod();
-  const background = WEATHER_TIME_BACKGROUNDS[period] || WEATHER_BACKGROUNDS[normalized];
+  const background =
+    WEATHER_BACKGROUND_BY_TIME[normalized]?.[period] ||
+    WEATHER_BACKGROUNDS[normalized] ||
+    WEATHER_TIME_BACKGROUNDS[period];
+  currentWeatherCondition = normalized;
   els.weatherCard?.classList.remove(
     "is-sunny",
     "is-cloudy",
@@ -967,6 +1005,7 @@ async function initDisplayPage() {
   setInterval(updateClock, 1000);
   setInterval(refreshSpotifyDisplay, 30000);
   setInterval(loadHkoWeather, 10 * 60 * 1000);
+  setInterval(() => setWeatherVisual(currentWeatherCondition), 60 * 1000);
   setInterval(loadMarketData, 60 * 1000);
   setInterval(rotatePanelIfIdle, 15000);
 }
