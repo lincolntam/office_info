@@ -779,7 +779,8 @@ function formatMarketPercent(value) {
 function getMarketRelativeValues(quote) {
   const rawValues = quote?.series?.map((point) => point.value).filter((value) => typeof value === "number") || [];
   const base = Number(quote?.previousClose || rawValues[0] || 1);
-  return rawValues.map((value) => ((value - base) / base) * 100);
+  if (!rawValues.length) return [];
+  return [0, ...rawValues.map((value) => ((value - base) / base) * 100)];
 }
 
 function buildMarketPath(quote, allValues) {
