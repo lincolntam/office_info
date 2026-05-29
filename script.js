@@ -776,11 +776,15 @@ function formatMarketPercent(value) {
   return `${sign}${value.toFixed(2)}%`;
 }
 
-function buildMarketPath(series, allValues) {
-  const rawValues = series?.map((point) => point.value).filter((value) => typeof value === "number") || [];
-  if (rawValues.length < 2 || allValues.length < 2) return "";
-  const base = rawValues[0] || 1;
-  const values = rawValues.map((value) => ((value - base) / base) * 100);
+function getMarketRelativeValues(quote) {
+  const rawValues = quote?.series?.map((point) => point.value).filter((value) => typeof value === "number") || [];
+  const base = Number(quote?.previousClose || rawValues[0] || 1);
+  return rawValues.map((value) => ((value - base) / base) * 100);
+}
+
+function buildMarketPath(quote, allValues) {
+  const values = getMarketRelativeValues(quote);
+  if (values.length < 2 || allValues.length < 2) return "";
 
   const min = Math.min(...allValues);
   const max = Math.max(...allValues);
@@ -820,13 +824,8 @@ async function loadMarketData(symbol = localStorage.getItem("marketSymbol") || "
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Market request failed");
 
-    const toRelativeValues = (series = []) => {
-      const values = series.map((point) => point.value).filter((value) => typeof value === "number");
-      const base = values[0] || 1;
-      return values.map((value) => ((value - base) / base) * 100);
-    };
-    const hsiValues = toRelativeValues(data.hsi?.series);
-    const customValues = toRelativeValues(data.custom?.series);
+    const hsiValues = getMarketRelativeValues(data.hsi);
+    const customValues = getMarketRelativeValues(data.custom);
     const allValues = [...hsiValues, ...customValues].filter((value) => typeof value === "number");
     const hsiChange = Number(data.hsi?.changePercent || 0);
     const marketCard = document.querySelector(".market-card");
@@ -835,8 +834,8 @@ async function loadMarketData(symbol = localStorage.getItem("marketSymbol") || "
     renderMarketMetric("custom", data.custom, document.querySelector(".market-metric.is-custom"));
     marketCard?.classList.toggle("is-up", hsiChange >= 0);
     marketCard?.classList.toggle("is-down", hsiChange < 0);
-    els.hsiLine.setAttribute("d", buildMarketPath(data.hsi?.series, allValues));
-    els.customLine.setAttribute("d", buildMarketPath(data.custom?.series, allValues));
+    els.hsiLine.setAttribute("d", buildMarketPath(data.hsi, allValues));
+    els.customLine.setAttribute("d", buildMarketPath(data.custom, allValues));
     els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢`;
     localStorage.setItem("marketSymbol", data.custom?.symbol || cleanSymbol);
     els.marketSymbolInput.value = data.custom?.symbol || cleanSymbol;

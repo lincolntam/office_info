@@ -67,6 +67,7 @@ async function fetchQuote(symbol) {
     name: meta.shortName || meta.longName || symbol,
     currency: meta.currency || "",
     price,
+    previousClose,
     change,
     changePercent,
     regularMarketTime: meta.regularMarketTime || null,
