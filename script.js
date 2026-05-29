@@ -83,6 +83,13 @@ const WEATHER_TIME_BACKGROUNDS = {
   night: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1280&q=80",
 };
 
+const WEATHER_TIME_CLASSES = [
+  "time-morning",
+  "time-afternoon",
+  "time-evening",
+  "time-night",
+];
+
 const WEATHER_LABELS = {
   SUNNY: "SUNNY",
   CLOUDY: "CLOUDY",
@@ -650,10 +657,7 @@ function setWeatherVisual(condition) {
     "is-raining",
     "is-storm",
     "is-fog",
-    "time-morning",
-    "time-afternoon",
-    "time-evening",
-    "time-night",
+    ...WEATHER_TIME_CLASSES,
   );
   Object.keys(WEATHER_BACKGROUNDS).forEach((key) => {
     els.weatherCard?.classList.toggle(`is-${key.toLowerCase()}`, key === normalized);
@@ -963,7 +967,7 @@ async function initDisplayPage() {
   setInterval(updateClock, 1000);
   setInterval(refreshSpotifyDisplay, 30000);
   setInterval(loadHkoWeather, 10 * 60 * 1000);
-  setInterval(loadMarketData, 5 * 60 * 1000);
+  setInterval(loadMarketData, 60 * 1000);
   setInterval(rotatePanelIfIdle, 15000);
 }
 

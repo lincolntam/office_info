@@ -24,10 +24,26 @@ function compactSeries(timestamps = [], quote = {}) {
     .slice(-30);
 }
 
+function appendLatestPoint(series, price, time) {
+  if (typeof price !== "number" || Number.isNaN(price)) return series;
+  const latestTime = time || Math.floor(Date.now() / 1000);
+  const nextSeries = [...series];
+  const last = nextSeries[nextSeries.length - 1];
+
+  if (!last) return [{ time: latestTime, value: price }];
+  if (last.time === latestTime) {
+    nextSeries[nextSeries.length - 1] = { time: latestTime, value: price };
+  } else if (last.value !== price) {
+    nextSeries.push({ time: latestTime, value: price });
+  }
+
+  return nextSeries.slice(-30);
+}
+
 async function fetchQuote(symbol) {
   const endpoint = `${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=1d&interval=5m`;
   const response = await fetch(endpoint, {
-    cf: { cacheTtl: 300, cacheEverything: true },
+    cf: { cacheTtl: 60, cacheEverything: true },
     headers: { "User-Agent": "office-info-dashboard/1.0" },
   });
   const data = await response.json();
@@ -40,6 +56,11 @@ async function fetchQuote(symbol) {
   const previousClose = Number(meta.chartPreviousClose ?? meta.previousClose ?? price);
   const change = price - previousClose;
   const changePercent = previousClose ? (change / previousClose) * 100 : 0;
+  const series = appendLatestPoint(
+    compactSeries(result.timestamp || [], quote),
+    price,
+    meta.regularMarketTime,
+  );
 
   return {
     symbol,
@@ -49,7 +70,7 @@ async function fetchQuote(symbol) {
     change,
     changePercent,
     regularMarketTime: meta.regularMarketTime || null,
-    series: compactSeries(result.timestamp || [], quote),
+    series,
   };
 }
 

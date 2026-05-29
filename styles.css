@@ -69,7 +69,7 @@ button {
   place-items: center;
   width: var(--display-w);
   height: var(--display-h);
-  padding: 18px;
+  padding: 0;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
@@ -1171,6 +1171,30 @@ button {
     linear-gradient(180deg, #8e9ca2 0%, #46565d 100%);
 }
 
+.weather-card.time-morning {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.32), transparent 34%),
+    linear-gradient(180deg, #76a9c8 0%, #dceff5 100%);
+}
+
+.weather-card.time-afternoon {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.38), transparent 35%),
+    linear-gradient(180deg, #247fbd 0%, #b8e0ef 62%, #eff8fb 100%);
+}
+
+.weather-card.time-evening {
+  background:
+    radial-gradient(circle at 52% 50%, rgba(255, 214, 160, 0.3), transparent 35%),
+    linear-gradient(180deg, #4c5c7d 0%, #d29a73 58%, #273045 100%);
+}
+
+.weather-card.time-night {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(143, 174, 218, 0.24), transparent 34%),
+    linear-gradient(180deg, #101a2e 0%, #07101e 100%);
+}
+
 .weather-card .weather-photo {
   opacity: 0.78;
   mix-blend-mode: normal;
@@ -1197,6 +1221,22 @@ button {
 .weather-card.is-storm .weather-photo {
   opacity: 0.86;
   filter: blur(0.2px) saturate(0.55) contrast(1.16) brightness(0.55);
+}
+
+.weather-card.time-morning .weather-photo {
+  filter: blur(0.2px) saturate(1.04) contrast(1.02) brightness(1);
+}
+
+.weather-card.time-afternoon .weather-photo {
+  filter: blur(0.2px) saturate(1.08) contrast(1.03) brightness(1.04);
+}
+
+.weather-card.time-evening .weather-photo {
+  filter: blur(0.2px) saturate(0.98) contrast(1.05) brightness(0.78) sepia(0.16);
+}
+
+.weather-card.time-night .weather-photo {
+  filter: blur(0.2px) saturate(0.72) contrast(1.12) brightness(0.5);
 }
 
 .weather-page-scrim {
