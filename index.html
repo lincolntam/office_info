@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="display-shell" aria-label="640 乘 480 資訊顯示">
+    <main class="display-shell" aria-label="640 x 480 資訊顯示">
       <div id="stage" class="stage" aria-label="Smart Stack 資訊頁">
         <section id="home" class="stack-panel" aria-label="首頁">
           <article class="smart-card home-card">
@@ -15,7 +15,7 @@
             <div class="hero-scrim"></div>
             <div class="home-clock">
               <time id="clock" datetime="">00:00</time>
-              <p id="dateText">5月27日 週三</p>
+              <p id="dateText">6月1日週一</p>
             </div>
           </article>
         </section>
@@ -35,12 +35,12 @@
               <span class="pause-icon" aria-hidden="true"></span>
             </button>
             <div class="spotify-widget-controls" aria-label="Spotify 控制">
-              <button id="saveTrack" type="button" aria-label="加入歌曲">＋</button>
+              <button id="saveTrack" type="button" aria-label="加入歌曲">+</button>
               <div class="progress-shell" aria-hidden="true">
                 <span id="progressBar" class="widget-progress"></span>
               </div>
               <button id="nextTrack" type="button" aria-label="下一首">⏭</button>
-              <button id="connectDevice" type="button" aria-label="連線裝置">◉</button>
+              <button id="connectDevice" type="button" aria-label="連線裝置">◎</button>
               <button id="showQueue" type="button" aria-label="播放佇列">▱</button>
             </div>
             <p id="playState" class="play-state">正在播放</p>
@@ -74,44 +74,74 @@
         </section>
 
         <section id="market" class="stack-panel" aria-label="市場資訊">
-          <article class="smart-card market-card">
-            <div class="market-topline">
-              <span>市場</span>
-              <form id="marketForm" class="market-form">
+          <article id="marketCard" class="smart-card market-card">
+            <div class="market-face market-front">
+              <div class="market-topline">
+                <span>市場</span>
+                <button id="marketFlipButton" class="market-more-button" type="button" aria-label="設定股票">...</button>
+              </div>
+              <div id="marketMetrics" class="market-metrics">
+                <div class="market-metric market-tone-0">
+                  <p><span></span><b data-market-name>恒生指數</b></p>
+                  <strong data-market-change>--%</strong>
+                  <em data-market-value>--</em>
+                </div>
+                <div class="market-metric market-tone-1">
+                  <p><span></span><b data-market-name>騰訊控股</b></p>
+                  <strong data-market-change>--%</strong>
+                  <em data-market-value>--</em>
+                </div>
+                <div class="market-metric market-tone-2">
+                  <p><span></span><b data-market-name>小米集團</b></p>
+                  <strong data-market-change>--%</strong>
+                  <em data-market-value>--</em>
+                </div>
+                <div class="market-metric market-tone-3">
+                  <p><span></span><b data-market-name>阿里巴巴</b></p>
+                  <strong data-market-change>--%</strong>
+                  <em data-market-value>--</em>
+                </div>
+              </div>
+              <svg id="marketChart" class="market-chart" viewBox="0 0 560 142" role="img" aria-label="今日市場走勢">
+                <path class="market-grid" d="M24 24 H536 M24 71 H536 M24 118 H536" />
+                <path class="market-line market-line-0" data-market-line d="" />
+                <path class="market-line market-line-1" data-market-line d="" />
+                <path class="market-line market-line-2" data-market-line d="" />
+                <path class="market-line market-line-3" data-market-line d="" />
+              </svg>
+              <p id="marketStatus" class="market-status">HKD · 今日走勢</p>
+            </div>
+            <div class="market-face market-back" aria-label="設定股票">
+              <div class="market-topline">
+                <span>設定股票</span>
+                <button id="marketBackButton" class="market-more-button" type="button" aria-label="返回市場">...</button>
+              </div>
+              <form id="marketForm" class="market-settings-form">
+                <p>恒生指數固定顯示。輸入另外三個股票代號。</p>
                 <label>
-                  <span class="sr-only">自訂股票代號</span>
-                  <input id="marketSymbolInput" type="text" value="0700.HK" spellcheck="false" />
+                  <span>股票 1</span>
+                  <input data-market-symbol-input type="text" value="0700.HK" spellcheck="false" />
                 </label>
-                <button type="submit">更新</button>
+                <label>
+                  <span>股票 2</span>
+                  <input data-market-symbol-input type="text" value="1810.HK" spellcheck="false" />
+                </label>
+                <label>
+                  <span>股票 3</span>
+                  <input data-market-symbol-input type="text" value="9988.HK" spellcheck="false" />
+                </label>
+                <button type="submit">套用</button>
               </form>
             </div>
-            <div class="market-metrics">
-              <div class="market-metric is-hsi">
-                <p><span></span><b id="hsiName">HSI</b></p>
-                <strong id="hsiChange">--%</strong>
-                <em id="hsiValue">--</em>
-              </div>
-              <div class="market-metric is-custom">
-                <p><span></span><b id="customName">0700.HK</b></p>
-                <strong id="customChange">--%</strong>
-                <em id="customValue">--</em>
-              </div>
-            </div>
-            <svg id="marketChart" class="market-chart" viewBox="0 0 520 190" role="img" aria-label="市場走勢圖">
-              <path class="market-grid" d="M20 50 H500 M20 105 H500 M20 160 H500" />
-              <path id="hsiLine" class="market-line hsi-line" d="" />
-              <path id="customLine" class="market-line custom-line" d="" />
-            </svg>
-            <p id="marketStatus" class="market-status">HSI 與自訂 symbol 走勢</p>
           </article>
         </section>
       </div>
 
       <nav class="stack-dots" aria-label="頁面切換">
         <button class="dot is-active" type="button" aria-label="前往首頁" data-panel="0"></button>
-        <button class="dot" type="button" aria-label="前往 Spotify 正在播放" data-panel="1"></button>
+        <button class="dot" type="button" aria-label="前往 Spotify" data-panel="1"></button>
         <button class="dot" type="button" aria-label="前往天氣" data-panel="2"></button>
-        <button class="dot" type="button" aria-label="前往市場資訊" data-panel="3"></button>
+        <button class="dot" type="button" aria-label="前往市場" data-panel="3"></button>
       </nav>
     </main>
 

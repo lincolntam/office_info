@@ -1,4 +1,4 @@
-const stage = document.querySelector("#stage");
+﻿const stage = document.querySelector("#stage");
 const panels = [...document.querySelectorAll(".stack-panel")];
 const dots = [...document.querySelectorAll(".dot")];
 
@@ -12,6 +12,32 @@ const SPOTIFY_REDIRECT_URI =
 const FALLBACK_SPOTIFY_TRACK_URL =
   "https://open.spotify.com/track/3R8iyJpmhI9ABDmTpetV2D?si=45c7c6dc3ad540bb";
 const AUTO_ROTATE_MS = 5 * 60 * 1000;
+const DEFAULT_MARKET_SYMBOLS = ["0700.HK", "1810.HK", "9988.HK"];
+
+const STOCK_CHINESE_NAMES = {
+  "^HSI": "\u6052\u751f\u6307\u6578",
+  HSI: "\u6052\u751f\u6307\u6578",
+  "0001.HK": "\u9577\u548c",
+  "0002.HK": "\u4e2d\u96fb\u63a7\u80a1",
+  "0003.HK": "\u9999\u6e2f\u4e2d\u83ef\u7164\u6c23",
+  "0005.HK": "\u532f\u8c50\u63a7\u80a1",
+  "0011.HK": "\u6052\u751f\u9280\u884c",
+  "0016.HK": "\u65b0\u9d3b\u57fa\u5730\u7522",
+  "0388.HK": "\u9999\u6e2f\u4ea4\u6613\u6240",
+  "0700.HK": "\u9a30\u8a0a\u63a7\u80a1",
+  "0823.HK": "\u9818\u5c55\u623f\u7522\u57fa\u91d1",
+  "0939.HK": "\u5efa\u8a2d\u9280\u884c",
+  "0941.HK": "\u4e2d\u570b\u79fb\u52d5",
+  "1299.HK": "\u53cb\u90a6\u4fdd\u96aa",
+  "1810.HK": "\u5c0f\u7c73\u96c6\u5718",
+  "2318.HK": "\u4e2d\u570b\u5e73\u5b89",
+  "2388.HK": "\u4e2d\u9280\u9999\u6e2f",
+  "3690.HK": "\u7f8e\u5718",
+  "3988.HK": "\u4e2d\u570b\u9280\u884c",
+  "9618.HK": "\u4eac\u6771\u96c6\u5718",
+  "9888.HK": "\u767e\u5ea6\u96c6\u5718",
+  "9988.HK": "\u963f\u91cc\u5df4\u5df4",
+};
 
 const els = {
   clock: document.querySelector("#clock"),
@@ -38,16 +64,13 @@ const els = {
   weatherRain: document.querySelector("#weatherRain"),
   weatherLow: document.querySelector("#weatherLow"),
   weatherHigh: document.querySelector("#weatherHigh"),
+  marketCard: document.querySelector("#marketCard"),
+  marketFlipButton: document.querySelector("#marketFlipButton"),
+  marketBackButton: document.querySelector("#marketBackButton"),
   marketForm: document.querySelector("#marketForm"),
-  marketSymbolInput: document.querySelector("#marketSymbolInput"),
-  hsiName: document.querySelector("#hsiName"),
-  hsiChange: document.querySelector("#hsiChange"),
-  hsiValue: document.querySelector("#hsiValue"),
-  customName: document.querySelector("#customName"),
-  customChange: document.querySelector("#customChange"),
-  customValue: document.querySelector("#customValue"),
-  hsiLine: document.querySelector("#hsiLine"),
-  customLine: document.querySelector("#customLine"),
+  marketSymbolInputs: [...document.querySelectorAll("[data-market-symbol-input]")],
+  marketMetrics: [...document.querySelectorAll(".market-metric")],
+  marketLines: [...document.querySelectorAll("[data-market-line]")],
   marketStatus: document.querySelector("#marketStatus"),
   loginForm: document.querySelector("#loginForm"),
   loginKicker: document.querySelector("#loginKicker"),
@@ -271,11 +294,11 @@ async function loadSpotlightHomeImage() {
 
 function setSpotifyConnectedUi(isConnected) {
   if (!isConnected) {
-    els.spotifyLogin.textContent = "連接 Spotify";
+    els.spotifyLogin.textContent = "?? Spotify";
   } else if (spotifyDeviceId) {
-    els.spotifyLogin.textContent = "網頁播放";
+    els.spotifyLogin.textContent = "蝬脤??剜";
   } else {
-    els.spotifyLogin.textContent = "已連接";
+    els.spotifyLogin.textContent = "撌脤?";
   }
   els.spotifyLogin.classList.toggle("is-connected", isConnected);
 }
@@ -283,7 +306,7 @@ function setSpotifyConnectedUi(isConnected) {
 function renderSpotifyTrack(track) {
   if (!track?.item) {
     setSpotifyConnectedUi(true);
-    els.playState.textContent = "未在播放";
+    els.playState.textContent = "?芸?剜";
     return;
   }
 
@@ -339,12 +362,12 @@ function randomString(length) {
 
 async function loginSpotify() {
   if (SPOTIFY_CLIENT_ID === "PASTE_YOUR_SPOTIFY_CLIENT_ID") {
-    els.playState.textContent = "請先填入 Spotify Client ID";
+    els.playState.textContent = "隢?憛怠 Spotify Client ID";
     return;
   }
 
   if (window.location.origin === "null") {
-    els.playState.textContent = "請用 localhost 開啟以登入 Spotify";
+    els.playState.textContent = "隢 localhost ??隞亦??Spotify";
     return;
   }
 
@@ -461,7 +484,7 @@ async function spotifyApi(path, options = {}) {
 
 async function saveCurrentTrack() {
   if (!currentTrackId) {
-    els.playState.textContent = "沒有可加入歌曲";
+    els.playState.textContent = "沒有可加入的歌曲";
     return;
   }
 
@@ -469,7 +492,7 @@ async function saveCurrentTrack() {
     const response = await spotifyApi(`/me/tracks?ids=${encodeURIComponent(currentTrackId)}`, {
       method: "PUT",
     });
-    els.playState.textContent = response.ok ? "已加入音樂庫" : "加入失敗";
+    els.playState.textContent = response.ok ? "已加入你的音樂庫" : "加入失敗";
   } catch {
     els.playState.textContent = "加入失敗";
   }
@@ -485,7 +508,7 @@ async function nextSpotifyTrack() {
     els.playState.textContent = "下一首";
     setTimeout(refreshSpotifyDisplay, 700);
   } catch {
-    els.playState.textContent = "未能跳到下一首";
+    els.playState.textContent = "未能切換下一首";
   }
 }
 
@@ -495,9 +518,9 @@ async function showSpotifyQueue() {
     if (!response.ok) throw new Error("Queue failed");
     const data = await response.json();
     const next = data.queue?.[0];
-    els.playState.textContent = next ? `下一首：${next.name}` : "佇列是空的";
+    els.playState.textContent = next ? `下一首：${next.name}` : "播放佇列沒有歌曲";
   } catch {
-    els.playState.textContent = "無法讀取佇列";
+    els.playState.textContent = "無法讀取播放佇列";
   }
 }
 
@@ -517,13 +540,13 @@ function setupSpotifyWebPlayback() {
     spotifyPlayer.addListener("ready", ({ device_id }) => {
       spotifyDeviceId = device_id;
       setSpotifyConnectedUi(true);
-      els.playState.textContent = "網頁播放器已就緒";
+      els.playState.textContent = "網頁播放已準備";
     });
 
     spotifyPlayer.addListener("not_ready", () => {
       spotifyDeviceId = null;
       setSpotifyConnectedUi(true);
-      els.playState.textContent = "網頁播放器離線";
+      els.playState.textContent = "網頁播放已離線";
     });
 
     spotifyPlayer.addListener("player_state_changed", (state) => {
@@ -536,12 +559,12 @@ function setupSpotifyWebPlayback() {
     });
 
     spotifyPlayer.addListener("initialization_error", ({ message }) => {
-      els.playState.textContent = `播放器初始化失敗`;
+      els.playState.textContent = "播放器初始化失敗";
       console.error(message);
     });
 
     spotifyPlayer.addListener("authentication_error", ({ message }) => {
-      els.playState.textContent = `Spotify 認證失敗`;
+      els.playState.textContent = "Spotify 認證失敗";
       console.error(message);
     });
 
@@ -577,14 +600,14 @@ async function loadSpotifyNowPlaying() {
     if (response.status === 401) {
       localStorage.removeItem("spotify_access_token");
       setSpotifyConnectedUi(false);
-      els.playState.textContent = "請重新連接";
+      els.playState.textContent = "隢??圈?";
       return;
     }
 
     if (!response.ok) throw new Error("Spotify currently playing failed");
     renderSpotifyTrack(await response.json());
   } catch {
-    els.playState.textContent = "Spotify 連線失敗";
+    els.playState.textContent = "Spotify ???憭望?";
   }
 }
 
@@ -595,8 +618,8 @@ async function loadSpotifyPlaybackState(token) {
 
   if (response.status === 204) {
     setSpotifyConnectedUi(true);
-    els.trackTitle.textContent = "沒有播放內容";
-    els.trackArtist.textContent = "開啟 Spotify 播放歌曲";
+    els.trackTitle.textContent = "瘝??剜?批捆";
+    els.trackArtist.textContent = "?? Spotify ?剜甇";
     els.albumBackdrop.src = nowPlaying.albumImage;
     els.progressBar.style.width = "0%";
     currentTrackId = null;
@@ -604,14 +627,14 @@ async function loadSpotifyPlaybackState(token) {
     currentProgressMs = 0;
     isSpotifyPlaying = false;
     els.playPause.classList.add("is-paused");
-    els.playState.textContent = "未在播放";
+    els.playState.textContent = "?芸?剜";
     return;
   }
 
   if (response.status === 401) {
     localStorage.removeItem("spotify_access_token");
     setSpotifyConnectedUi(false);
-    els.playState.textContent = "請重新連接";
+    els.playState.textContent = "隢??圈?";
     return;
   }
 
@@ -629,7 +652,7 @@ async function refreshSpotifyDisplay() {
     setSpotifyConnectedUi(true);
     await loadSpotifyNowPlaying();
   } catch {
-    els.playState.textContent = "Spotify 連線失敗";
+    els.playState.textContent = "Spotify ???憭望?";
   }
 }
 
@@ -646,15 +669,15 @@ async function handleSpotifyCallback() {
     setTimeout(scrollToHash, 150);
     if (token) await loadSpotifyNowPlaying();
   } catch {
-    els.playState.textContent = "Spotify 登入失敗";
+    els.playState.textContent = "Spotify ?餃憭望?";
   }
 }
 
 function pickHkoTemperature(report) {
   const readings = report.temperature?.data || [];
   return (
-    readings.find((item) => item.place === "香港天文台") ||
-    readings.find((item) => item.place === "香港公園") ||
+    readings.find((item) => item.place === "\u9999\u6e2f\u5929\u6587\u53f0") ||
+    readings.find((item) => item.place === "\u9999\u6e2f\u516c\u5712") ||
     readings[0]
   );
 }
@@ -672,11 +695,10 @@ function describeHkoWeather(forecastText, iconList, report) {
     if (icons.some((icon) => [52, 60, 61].includes(icon))) return "CLOUDY";
   }
 
-  if (hasRainNow) return /雷暴|狂風雷暴|暴雨/.test(text) ? "STORM" : "RAINING";
-
-  if (/霧|薄霧|煙霞/.test(text)) return "FOG";
-  if (/天晴|陽光/.test(text) || icons.includes(50) || icons.includes(51)) return "SUNNY";
-  if (/多雲|天陰|密雲/.test(text) || icons.some((icon) => icon >= 52 && icon <= 54)) return "CLOUDY";
+  if (hasRainNow) return text.includes("\u96f7") ? "STORM" : "RAINING";
+  if (text.includes("\u9727") || text.includes("\u973e")) return "FOG";
+  if (text.includes("\u6674")) return "SUNNY";
+  if (text.includes("\u96f2") || text.includes("\u9670")) return "CLOUDY";
 
   return "CLOUDY";
 }
@@ -742,20 +764,20 @@ async function loadHkoWeather() {
     const { report, forecast } = await fetchHkoWeather();
     const temp = pickHkoTemperature(report);
     const humidity = report.humidity?.data?.[0];
-    const rainfall = report.rainfall?.data?.find((item) => item.place === "中西區") ||
+    const rainfall = report.rainfall?.data?.find((item) => item.place === "銝剛正?") ||
       report.rainfall?.data?.[0];
     const updateTime = new Date(report.updateTime || forecast.updateTime || Date.now());
 
     const condition = describeHkoWeather(forecast.forecastDesc, report.icon, report);
     const value = temp ? Math.round(temp.value) : null;
     setWeatherVisual(condition);
-    els.weatherLocation.textContent = temp?.place || "香港";
-    els.weatherTemp.textContent = value !== null ? `${value}°` : "--°";
-    els.weatherHumidity.textContent = humidity ? `濕度 ${humidity.value}%` : "濕度 --%";
+    els.weatherLocation.textContent = temp?.place || "擐葛";
+    els.weatherTemp.textContent = value !== null ? `${value}簞` : "--簞";
+    els.weatherHumidity.textContent = humidity ? `瞈漲 ${humidity.value}%` : "瞈漲 --%";
     els.weatherRain.textContent =
-      rainfall?.max !== undefined ? `雨量 ${rainfall.max} ${rainfall.unit}` : "雨量 -- mm";
-    els.weatherLow.textContent = value !== null ? `最低 ${Math.max(value - 3, 0)}°` : "最低 --°";
-    els.weatherHigh.textContent = value !== null ? `最高 ${value + 4}°` : "最高 --°";
+      rainfall?.max !== undefined ? `?券? ${rainfall.max} ${rainfall.unit}` : "?券? -- mm";
+    els.weatherLow.textContent = value !== null ? `?雿?${Math.max(value - 3, 0)}簞` : "?雿?--簞";
+    els.weatherHigh.textContent = value !== null ? `?擃?${value + 4}簞` : "?擃?--簞";
     els.weatherDesc.textContent = WEATHER_LABELS[condition] || "CLOUDY";
   } catch {
     setWeatherVisual("CLOUDY");
@@ -776,6 +798,37 @@ function formatMarketPercent(value) {
   return `${sign}${value.toFixed(2)}%`;
 }
 
+function normalizeMarketSymbol(value) {
+  const symbol = String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9.^=-]/g, "")
+    .slice(0, 24);
+  if (/^\d{1,4}$/.test(symbol)) return `${symbol.padStart(4, "0")}.HK`;
+  if (/^\d{5}$/.test(symbol)) return `${symbol}.HK`;
+  return symbol || "0700.HK";
+}
+
+function getSavedMarketSymbols() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("marketSymbols") || "[]");
+    if (Array.isArray(stored) && stored.length) {
+      return stored.slice(0, 3).map(normalizeMarketSymbol);
+    }
+  } catch {
+    // Ignore invalid local settings.
+  }
+
+  const legacy = localStorage.getItem("marketSymbol");
+  if (legacy) return [normalizeMarketSymbol(legacy), ...DEFAULT_MARKET_SYMBOLS].slice(0, 3);
+  return [...DEFAULT_MARKET_SYMBOLS];
+}
+
+function getMarketDisplayName(quote) {
+  const symbol = quote?.symbol || "";
+  return STOCK_CHINESE_NAMES[symbol] || quote?.name || symbol || "--";
+}
+
 function getMarketRelativeValues(quote) {
   const rawValues = quote?.series?.map((point) => point.value).filter((value) => typeof value === "number") || [];
   const base = Number(quote?.previousClose || rawValues[0] || 1);
@@ -790,10 +843,10 @@ function buildMarketPath(quote, allValues) {
   const min = Math.min(...allValues);
   const max = Math.max(...allValues);
   const range = max - min || 1;
-  const width = 480;
-  const height = 132;
-  const xStart = 20;
-  const yStart = 30;
+  const width = 512;
+  const height = 94;
+  const xStart = 24;
+  const yStart = 24;
 
   return values
     .map((value, index) => {
@@ -804,42 +857,43 @@ function buildMarketPath(quote, allValues) {
     .join(" ");
 }
 
-function renderMarketMetric(prefix, quote, metricElement) {
-  const name = quote?.symbol || "--";
-  els[`${prefix}Name`].textContent = prefix === "hsi" ? "HSI" : name;
-  els[`${prefix}Change`].textContent = formatMarketPercent(quote?.changePercent);
-  els[`${prefix}Value`].textContent = formatMarketNumber(quote?.price);
+function renderMarketMetric(quote, metricElement) {
+  const nameEl = metricElement?.querySelector("[data-market-name]");
+  const changeEl = metricElement?.querySelector("[data-market-change]");
+  const valueEl = metricElement?.querySelector("[data-market-value]");
+  if (nameEl) nameEl.textContent = getMarketDisplayName(quote);
+  if (changeEl) changeEl.textContent = formatMarketPercent(quote?.changePercent);
+  if (valueEl) valueEl.textContent = formatMarketNumber(quote?.price);
   metricElement?.classList.toggle("is-down", Number(quote?.changePercent || 0) < 0);
 }
 
-async function loadMarketData(symbol = localStorage.getItem("marketSymbol") || "0700.HK") {
+async function loadMarketData(symbols = getSavedMarketSymbols()) {
   if (!els.marketForm) return;
-  const cleanSymbol = String(symbol || "0700.HK").trim().toUpperCase() || "0700.HK";
-  els.marketSymbolInput.value = cleanSymbol;
+  const cleanSymbols = symbols.slice(0, 3).map(normalizeMarketSymbol);
+  els.marketSymbolInputs.forEach((input, index) => {
+    input.value = cleanSymbols[index] || DEFAULT_MARKET_SYMBOLS[index];
+  });
   els.marketStatus.textContent = "更新市場資料中...";
 
   try {
-    const response = await fetch(`/api/market?symbol=${encodeURIComponent(cleanSymbol)}`, {
+    const response = await fetch(`/api/market?symbols=${encodeURIComponent(cleanSymbols.join(","))}`, {
       credentials: "include",
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Market request failed");
 
-    const hsiValues = getMarketRelativeValues(data.hsi);
-    const customValues = getMarketRelativeValues(data.custom);
-    const allValues = [...hsiValues, ...customValues].filter((value) => typeof value === "number");
+    const quotes = [data.hsi, ...(data.quotes || [])].filter(Boolean).slice(0, 4);
+    const allValues = quotes.flatMap(getMarketRelativeValues).filter((value) => typeof value === "number");
     const hsiChange = Number(data.hsi?.changePercent || 0);
-    const marketCard = document.querySelector(".market-card");
 
-    renderMarketMetric("hsi", data.hsi, document.querySelector(".market-metric.is-hsi"));
-    renderMarketMetric("custom", data.custom, document.querySelector(".market-metric.is-custom"));
-    marketCard?.classList.toggle("is-up", hsiChange >= 0);
-    marketCard?.classList.toggle("is-down", hsiChange < 0);
-    els.hsiLine.setAttribute("d", buildMarketPath(data.hsi, allValues));
-    els.customLine.setAttribute("d", buildMarketPath(data.custom, allValues));
+    els.marketMetrics.forEach((metric, index) => renderMarketMetric(quotes[index], metric));
+    els.marketLines.forEach((line, index) => {
+      line.setAttribute("d", buildMarketPath(quotes[index], allValues));
+    });
+    els.marketCard?.classList.toggle("is-up", hsiChange >= 0);
+    els.marketCard?.classList.toggle("is-down", hsiChange < 0);
     els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢`;
-    localStorage.setItem("marketSymbol", data.custom?.symbol || cleanSymbol);
-    els.marketSymbolInput.value = data.custom?.symbol || cleanSymbol;
+    localStorage.setItem("marketSymbols", JSON.stringify(cleanSymbols));
   } catch {
     els.marketStatus.textContent = "暫時無法讀取市場資料";
   }
@@ -867,7 +921,7 @@ function initLoginPage() {
     els.signupUsername.required = enabled;
     els.signupCode.required = enabled;
     els.loginPassword.autocomplete = enabled ? "new-password" : "current-password";
-    els.loginMessage.textContent = enabled ? "請輸入邀請碼建立帳戶。" : "請輸入帳戶資料。";
+    els.loginMessage.textContent = enabled ? "請輸入邀請碼建立帳戶" : "請輸入帳戶資料";
   }
 
   fetch("/api/me", { credentials: "include" })
@@ -879,7 +933,7 @@ function initLoginPage() {
     })
     .catch(() => {
       els.loginMessage.textContent =
-        "本機或 GitHub Pages 不會連接 D1，部署到 Cloudflare 後可登入。";
+        "本地或 GitHub Pages 不能連接 D1，請在 Cloudflare 開啟登入。";
     });
 
   els.signupToggle.addEventListener("click", () => setSignupMode(!isSignupMode));
@@ -887,7 +941,7 @@ function initLoginPage() {
   els.loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     els.loginSubmit.disabled = true;
-    els.loginMessage.textContent = isSignupMode ? "建立中..." : "登入中...";
+    els.loginMessage.textContent = isSignupMode ? "建立帳戶中..." : "登入中...";
 
     try {
       const endpoint = isSignupMode ? "/api/signup" : "/api/login";
@@ -905,7 +959,7 @@ function initLoginPage() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data.error || "登入失敗。");
+        throw new Error(data.error || "登入失敗");
       }
 
       if (isSignupMode) {
@@ -921,7 +975,7 @@ function initLoginPage() {
         window.location.href = next || "/index.html";
       }, 650);
     } catch (error) {
-      els.loginMessage.textContent = error.message || "登入失敗。";
+      els.loginMessage.textContent = error.message || "登入失敗";
     } finally {
       els.loginSubmit.disabled = false;
     }
@@ -954,10 +1008,21 @@ async function initDisplayPage() {
   els.nextTrack.addEventListener("click", nextSpotifyTrack);
   els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
   els.showQueue.addEventListener("click", showSpotifyQueue);
+  els.marketFlipButton?.addEventListener("click", () => {
+    markPanelActivity();
+    els.marketCard?.classList.add("is-flipped");
+  });
+  els.marketBackButton?.addEventListener("click", () => {
+    markPanelActivity();
+    els.marketCard?.classList.remove("is-flipped");
+  });
   els.marketForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     markPanelActivity();
-    loadMarketData(els.marketSymbolInput.value);
+    const symbols = els.marketSymbolInputs.map((input) => normalizeMarketSymbol(input.value));
+    localStorage.setItem("marketSymbols", JSON.stringify(symbols));
+    els.marketCard?.classList.remove("is-flipped");
+    loadMarketData(symbols);
   });
 
   els.spotifyLogin.addEventListener("click", async () => {
@@ -968,7 +1033,7 @@ async function initDisplayPage() {
     }
 
     if (!spotifyDeviceId) {
-      els.playState.textContent = "播放器啟動中";
+      els.playState.textContent = "?剜?典??葉";
       setupSpotifyWebPlayback();
       if (window.Spotify?.Player && window.onSpotifyWebPlaybackSDKReady) {
         await window.onSpotifyWebPlaybackSDKReady();

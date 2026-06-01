@@ -13,6 +13,14 @@ function normalizeSymbol(value) {
   return symbol;
 }
 
+function normalizeSymbols(value) {
+  return String(value || "")
+    .split(",")
+    .map(normalizeSymbol)
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
 function compactSeries(timestamps = [], quote = {}) {
   const closes = quote.close || [];
   return timestamps
@@ -77,14 +85,16 @@ async function fetchQuote(symbol) {
 
 export async function onRequestGet({ request }) {
   const url = new URL(request.url);
-  const customSymbol = normalizeSymbol(url.searchParams.get("symbol")) || "0700.HK";
+  const symbols = normalizeSymbols(url.searchParams.get("symbols"));
+  const fallbackSymbol = normalizeSymbol(url.searchParams.get("symbol")) || "0700.HK";
+  const customSymbols = symbols.length ? symbols : [fallbackSymbol];
 
   try {
-    const [hsi, custom] = await Promise.all([
+    const [hsi, ...quotes] = await Promise.all([
       fetchQuote("^HSI"),
-      fetchQuote(customSymbol),
+      ...customSymbols.map(fetchQuote),
     ]);
-    return json({ hsi, custom });
+    return json({ hsi, quotes, custom: quotes[0] || null });
   } catch (error) {
     return json({ error: error.message || "Market data unavailable" }, 502);
   }
