@@ -9,8 +9,6 @@ const SPOTIFY_REDIRECT_URI =
   window.location.origin === "null"
     ? "http://127.0.0.1:5500/index.html"
     : `${window.location.origin}${window.location.pathname}`;
-const FALLBACK_SPOTIFY_TRACK_URL =
-  "https://open.spotify.com/album/3ublKZHu1qjU9ujf9A4zhH";
 const AUTO_ROTATE_MS = 5 * 60 * 1000;
 const DEFAULT_MARKET_SYMBOLS = ["0700.HK", "1810.HK", "9988.HK"];
 
@@ -87,9 +85,7 @@ const els = {
 };
 
 const nowPlaying = {
-  title: "Four Seasons",
-  artist: "TAEYEON",
-  albumImage: "./assets/spotify-album.svg",
+  albumImage: "./assets/taeyeon-four-seasons.jpg",
 };
 
 const WEATHER_BACKGROUNDS = {
@@ -250,29 +246,18 @@ function resizeStage() {
   stage.style.setProperty("--stage-scale", scale.toString());
 }
 
-function renderNowPlaying() {
-  els.trackTitle.textContent = nowPlaying.title;
-  els.trackArtist.textContent = nowPlaying.artist;
-  els.albumBackdrop.src = nowPlaying.albumImage;
-}
-
-async function loadFallbackSpotifyAlbum() {
+function renderEmptySpotifyState() {
   if (!els.albumBackdrop) return;
-
-  try {
-    const response = await fetch(
-      `https://open.spotify.com/oembed?url=${encodeURIComponent(FALLBACK_SPOTIFY_TRACK_URL)}`,
-    );
-    if (!response.ok) throw new Error("Spotify oEmbed failed");
-
-    const data = await response.json();
-    if (data.thumbnail_url) {
-      nowPlaying.albumImage = data.thumbnail_url;
-      els.albumBackdrop.src = data.thumbnail_url;
-    }
-  } catch {
-    els.albumBackdrop.src = nowPlaying.albumImage;
-  }
+  els.trackTitle.textContent = "沒有播放內容";
+  els.trackArtist.textContent = "請在 Spotify 播放歌曲";
+  els.albumBackdrop.src = nowPlaying.albumImage;
+  els.progressBar.style.width = "0%";
+  currentTrackId = null;
+  currentDurationMs = 0;
+  currentProgressMs = 0;
+  isSpotifyPlaying = false;
+  els.playPause.classList.add("is-paused");
+  els.playState.textContent = "未在播放";
 }
 
 async function loadSpotlightHomeImage() {
@@ -307,7 +292,7 @@ function setSpotifyConnectedUi(isConnected) {
 function renderSpotifyTrack(track) {
   if (!track?.item) {
     setSpotifyConnectedUi(true);
-    els.playState.textContent = "未在播放";
+    renderEmptySpotifyState();
     return;
   }
 
@@ -619,16 +604,7 @@ async function loadSpotifyPlaybackState(token) {
 
   if (response.status === 204) {
     setSpotifyConnectedUi(true);
-    els.trackTitle.textContent = "沒有播放內容";
-    els.trackArtist.textContent = "請在 Spotify 播放歌曲";
-    els.albumBackdrop.src = nowPlaying.albumImage;
-    els.progressBar.style.width = "0%";
-    currentTrackId = null;
-    currentDurationMs = 0;
-    currentProgressMs = 0;
-    isSpotifyPlaying = false;
-    els.playPause.classList.add("is-paused");
-    els.playState.textContent = "未在播放";
+    renderEmptySpotifyState();
     return;
   }
 
@@ -1094,9 +1070,8 @@ async function initDisplayPage() {
   setInterval(updateProgressBar, 1000);
 
   resizeStage();
-  renderNowPlaying();
+  renderEmptySpotifyState();
   loadSpotlightHomeImage();
-  loadFallbackSpotifyAlbum();
   updateClock();
   setupSpotifyWebPlayback();
   handleSpotifyCallback();
