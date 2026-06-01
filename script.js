@@ -245,7 +245,7 @@ function rotatePanelIfIdle() {
 }
 
 function resizeStage() {
-  const scale = Math.min(window.innerWidth / 640, window.innerHeight / 480);
+  const scale = Math.max(window.innerWidth / 640, window.innerHeight / 480);
   stage.style.setProperty("--stage-scale", scale.toString());
 }
 
@@ -294,11 +294,11 @@ async function loadSpotlightHomeImage() {
 
 function setSpotifyConnectedUi(isConnected) {
   if (!isConnected) {
-    els.spotifyLogin.textContent = "?? Spotify";
+    els.spotifyLogin.textContent = "連接 Spotify";
   } else if (spotifyDeviceId) {
-    els.spotifyLogin.textContent = "蝬脤??剜";
+    els.spotifyLogin.textContent = "網頁播放";
   } else {
-    els.spotifyLogin.textContent = "撌脤?";
+    els.spotifyLogin.textContent = "已連接";
   }
   els.spotifyLogin.classList.toggle("is-connected", isConnected);
 }
@@ -306,7 +306,7 @@ function setSpotifyConnectedUi(isConnected) {
 function renderSpotifyTrack(track) {
   if (!track?.item) {
     setSpotifyConnectedUi(true);
-    els.playState.textContent = "?芸?剜";
+    els.playState.textContent = "未在播放";
     return;
   }
 
@@ -362,12 +362,12 @@ function randomString(length) {
 
 async function loginSpotify() {
   if (SPOTIFY_CLIENT_ID === "PASTE_YOUR_SPOTIFY_CLIENT_ID") {
-    els.playState.textContent = "隢?憛怠 Spotify Client ID";
+    els.playState.textContent = "請先填入 Spotify Client ID";
     return;
   }
 
   if (window.location.origin === "null") {
-    els.playState.textContent = "隢 localhost ??隞亦??Spotify";
+    els.playState.textContent = "請用 localhost 開啟以登入 Spotify";
     return;
   }
 
@@ -600,14 +600,14 @@ async function loadSpotifyNowPlaying() {
     if (response.status === 401) {
       localStorage.removeItem("spotify_access_token");
       setSpotifyConnectedUi(false);
-      els.playState.textContent = "隢??圈?";
+      els.playState.textContent = "請重新連接";
       return;
     }
 
     if (!response.ok) throw new Error("Spotify currently playing failed");
     renderSpotifyTrack(await response.json());
   } catch {
-    els.playState.textContent = "Spotify ???憭望?";
+    els.playState.textContent = "Spotify 讀取失敗";
   }
 }
 
@@ -618,8 +618,8 @@ async function loadSpotifyPlaybackState(token) {
 
   if (response.status === 204) {
     setSpotifyConnectedUi(true);
-    els.trackTitle.textContent = "瘝??剜?批捆";
-    els.trackArtist.textContent = "?? Spotify ?剜甇";
+    els.trackTitle.textContent = "沒有播放內容";
+    els.trackArtist.textContent = "請在 Spotify 播放歌曲";
     els.albumBackdrop.src = nowPlaying.albumImage;
     els.progressBar.style.width = "0%";
     currentTrackId = null;
@@ -627,14 +627,14 @@ async function loadSpotifyPlaybackState(token) {
     currentProgressMs = 0;
     isSpotifyPlaying = false;
     els.playPause.classList.add("is-paused");
-    els.playState.textContent = "?芸?剜";
+    els.playState.textContent = "未在播放";
     return;
   }
 
   if (response.status === 401) {
     localStorage.removeItem("spotify_access_token");
     setSpotifyConnectedUi(false);
-    els.playState.textContent = "隢??圈?";
+    els.playState.textContent = "請重新連接";
     return;
   }
 
@@ -652,7 +652,7 @@ async function refreshSpotifyDisplay() {
     setSpotifyConnectedUi(true);
     await loadSpotifyNowPlaying();
   } catch {
-    els.playState.textContent = "Spotify ???憭望?";
+    els.playState.textContent = "Spotify 讀取失敗";
   }
 }
 
@@ -669,7 +669,7 @@ async function handleSpotifyCallback() {
     setTimeout(scrollToHash, 150);
     if (token) await loadSpotifyNowPlaying();
   } catch {
-    els.playState.textContent = "Spotify ?餃憭望?";
+    els.playState.textContent = "Spotify 登入失敗";
   }
 }
 
@@ -764,20 +764,20 @@ async function loadHkoWeather() {
     const { report, forecast } = await fetchHkoWeather();
     const temp = pickHkoTemperature(report);
     const humidity = report.humidity?.data?.[0];
-    const rainfall = report.rainfall?.data?.find((item) => item.place === "銝剛正?") ||
+    const rainfall = report.rainfall?.data?.find((item) => item.place === "中西區") ||
       report.rainfall?.data?.[0];
     const updateTime = new Date(report.updateTime || forecast.updateTime || Date.now());
 
     const condition = describeHkoWeather(forecast.forecastDesc, report.icon, report);
     const value = temp ? Math.round(temp.value) : null;
     setWeatherVisual(condition);
-    els.weatherLocation.textContent = temp?.place || "擐葛";
-    els.weatherTemp.textContent = value !== null ? `${value}簞` : "--簞";
-    els.weatherHumidity.textContent = humidity ? `瞈漲 ${humidity.value}%` : "瞈漲 --%";
+    els.weatherLocation.textContent = temp?.place || "香港";
+    els.weatherTemp.textContent = value !== null ? `${value}°` : "--°";
+    els.weatherHumidity.textContent = humidity ? `濕度 ${humidity.value}%` : "濕度 --%";
     els.weatherRain.textContent =
-      rainfall?.max !== undefined ? `?券? ${rainfall.max} ${rainfall.unit}` : "?券? -- mm";
-    els.weatherLow.textContent = value !== null ? `?雿?${Math.max(value - 3, 0)}簞` : "?雿?--簞";
-    els.weatherHigh.textContent = value !== null ? `?擃?${value + 4}簞` : "?擃?--簞";
+      rainfall?.max !== undefined ? `雨量 ${rainfall.max} ${rainfall.unit}` : "雨量 -- mm";
+    els.weatherLow.textContent = value !== null ? `最低 ${Math.max(value - 3, 0)}°` : "最低 --°";
+    els.weatherHigh.textContent = value !== null ? `最高 ${value + 4}°` : "最高 --°";
     els.weatherDesc.textContent = WEATHER_LABELS[condition] || "CLOUDY";
   } catch {
     setWeatherVisual("CLOUDY");
@@ -1033,7 +1033,7 @@ async function initDisplayPage() {
     }
 
     if (!spotifyDeviceId) {
-      els.playState.textContent = "?剜?典??葉";
+      els.playState.textContent = "準備播放器";
       setupSpotifyWebPlayback();
       if (window.Spotify?.Player && window.onSpotifyWebPlaybackSDKReady) {
         await window.onSpotifyWebPlaybackSDKReady();
