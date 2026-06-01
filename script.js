@@ -58,6 +58,7 @@ const els = {
   weatherLocation: document.querySelector("#weatherLocation"),
   weatherTemp: document.querySelector("#weatherTemp"),
   weatherDesc: document.querySelector("#weatherDesc"),
+  weatherIconImage: document.querySelector("#weatherIconImage"),
   weatherHumidity: document.querySelector("#weatherHumidity"),
   weatherRain: document.querySelector("#weatherRain"),
   weatherLow: document.querySelector("#weatherLow"),
@@ -149,6 +150,14 @@ const WEATHER_LABELS = {
   RAINING: "RAINING",
   STORM: "STORM",
   FOG: "FOG",
+};
+
+const WEATHER_ICONS = {
+  SUNNY: "./assets/weather-sunny.svg",
+  CLOUDY: "./assets/weather-cloudy.svg",
+  RAINING: "./assets/weather-raining.svg",
+  STORM: "./assets/weather-storm.svg",
+  FOG: "./assets/weather-fog.svg",
 };
 
 let playing = true;
@@ -703,6 +712,9 @@ function setWeatherVisual(condition) {
 
   if (els.weatherPhoto && els.weatherPhoto.src !== background) {
     els.weatherPhoto.src = background;
+  }
+  if (els.weatherIconImage) {
+    els.weatherIconImage.src = WEATHER_ICONS[normalized] || WEATHER_ICONS.CLOUDY;
   }
 }
 

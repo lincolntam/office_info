@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Thunder">
+  <defs>
+    <filter id="soft" x="-40%" y="-50%" width="180%" height="200%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="bolt" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#d7f1ff"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" opacity="0.92">
+    <ellipse cx="78" cy="40" rx="49" ry="14" fill="#d8e0e8"/>
+    <ellipse cx="47" cy="43" rx="29" ry="10" fill="#afbac6"/>
+    <ellipse cx="101" cy="37" rx="28" ry="11" fill="#eef2f6"/>
+    <ellipse cx="72" cy="31" rx="25" ry="14" fill="#f4f6f8"/>
+  </g>
+  <path d="M75 52 59 78h16l-11 33 34-48H80l12-11z" fill="#edf8ff" filter="url(#bolt)"/>
+</svg>
