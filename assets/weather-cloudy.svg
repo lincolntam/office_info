@@ -1,19 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Cloudy">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 140" role="img" aria-label="Cloudy">
   <defs>
-    <radialGradient id="sun" cx="42%" cy="38%" r="65%">
-      <stop offset="0" stop-color="#fff176"/>
-      <stop offset="0.54" stop-color="#ffc94c"/>
-      <stop offset="1" stop-color="#ff9c2e"/>
-    </radialGradient>
-    <filter id="soft" x="-40%" y="-60%" width="180%" height="220%">
-      <feGaussianBlur stdDeviation="3.2"/>
+    <linearGradient id="cloud-main" x1="50" y1="35" x2="126" y2="104">
+      <stop offset="0" stop-color="#fbfdff"/>
+      <stop offset="0.48" stop-color="#d9e8f3"/>
+      <stop offset="1" stop-color="#a6bed0"/>
+    </linearGradient>
+    <linearGradient id="cloud-dark" x1="68" y1="76" x2="113" y2="116">
+      <stop offset="0" stop-color="#cbddeb" stop-opacity="0"/>
+      <stop offset="1" stop-color="#6f8ca2" stop-opacity="0.56"/>
+    </linearGradient>
+    <filter id="soft" x="-35%" y="-60%" width="170%" height="220%">
+      <feGaussianBlur stdDeviation="2.6"/>
+    </filter>
+    <filter id="shadow" x="-30%" y="-50%" width="160%" height="190%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#20313f" flood-opacity="0.34"/>
     </filter>
   </defs>
-  <circle cx="76" cy="50" r="29" fill="url(#sun)" opacity="0.9"/>
-  <g filter="url(#soft)" opacity="0.94">
-    <ellipse cx="83" cy="68" rx="45" ry="15" fill="#e9eef4"/>
-    <ellipse cx="52" cy="70" rx="27" ry="10" fill="#d8e0e8"/>
-    <ellipse cx="104" cy="64" rx="24" ry="11" fill="#f1f4f8"/>
-    <ellipse cx="76" cy="58" rx="25" ry="16" fill="#f7f9fb"/>
+  <g filter="url(#shadow)">
+    <g filter="url(#soft)">
+      <ellipse cx="90" cy="83" rx="61" ry="23" fill="url(#cloud-main)"/>
+      <ellipse cx="53" cy="86" rx="32" ry="17" fill="#d4e5f1"/>
+      <ellipse cx="122" cy="81" rx="35" ry="18" fill="#edf6fb"/>
+      <ellipse cx="79" cy="66" rx="35" ry="28" fill="#f7fbff"/>
+      <ellipse cx="108" cy="68" rx="31" ry="25" fill="#e7f1f8"/>
+      <ellipse cx="90" cy="93" rx="67" ry="18" fill="url(#cloud-dark)"/>
+    </g>
   </g>
 </svg>

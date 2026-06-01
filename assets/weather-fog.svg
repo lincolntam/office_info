@@ -1,13 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Fog">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 140" role="img" aria-label="Fog">
   <defs>
-    <filter id="fog" x="-30%" y="-70%" width="160%" height="240%">
-      <feGaussianBlur stdDeviation="6"/>
+    <linearGradient id="fog-main" x1="43" y1="40" x2="131" y2="105">
+      <stop offset="0" stop-color="#f5fbff" stop-opacity="0.82"/>
+      <stop offset="0.5" stop-color="#c6d8e4" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#8399aa" stop-opacity="0.36"/>
+    </linearGradient>
+    <filter id="blur" x="-40%" y="-80%" width="180%" height="260%">
+      <feGaussianBlur stdDeviation="6.5"/>
     </filter>
   </defs>
-  <g filter="url(#fog)" opacity="0.62">
-    <ellipse cx="78" cy="46" rx="55" ry="18" fill="#d8e4ed"/>
-    <ellipse cx="54" cy="56" rx="44" ry="14" fill="#b9c8d3"/>
-    <ellipse cx="101" cy="57" rx="47" ry="15" fill="#e3ebf1"/>
-    <ellipse cx="80" cy="68" rx="58" ry="12" fill="#9eb1bf"/>
+  <g filter="url(#blur)">
+    <ellipse cx="88" cy="62" rx="65" ry="21" fill="url(#fog-main)"/>
+    <ellipse cx="54" cy="72" rx="49" ry="16" fill="#d2e0e9" opacity="0.58"/>
+    <ellipse cx="111" cy="74" rx="55" ry="17" fill="#eef5f9" opacity="0.52"/>
+    <ellipse cx="89" cy="91" rx="72" ry="13" fill="#9fb3c2" opacity="0.34"/>
+    <ellipse cx="86" cy="105" rx="61" ry="10" fill="#edf5f9" opacity="0.3"/>
   </g>
 </svg>

@@ -1,18 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Sunny">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 140" role="img" aria-label="Sunny">
   <defs>
-    <radialGradient id="sun" cx="42%" cy="38%" r="62%">
-      <stop offset="0" stop-color="#fff482"/>
-      <stop offset="0.52" stop-color="#ffd44c"/>
-      <stop offset="1" stop-color="#ff9428"/>
+    <radialGradient id="sun-core" cx="36%" cy="32%" r="68%">
+      <stop offset="0" stop-color="#fff7b5"/>
+      <stop offset="0.42" stop-color="#ffd950"/>
+      <stop offset="0.72" stop-color="#ffad29"/>
+      <stop offset="1" stop-color="#ff7c1e"/>
     </radialGradient>
-    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%">
-      <feGaussianBlur stdDeviation="7" result="blur"/>
-      <feColorMatrix in="blur" values="1 0 0 0 1 0 0.78 0 0 0.55 0 0 0.25 0 0.08 0 0 0 0.8 0"/>
+    <radialGradient id="sun-shine" cx="50%" cy="50%" r="50%">
+      <stop offset="0.42" stop-color="#ffca33" stop-opacity="0"/>
+      <stop offset="0.64" stop-color="#ff9a34" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#ff5e67" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="highlight" x1="44" y1="34" x2="91" y2="89">
+      <stop offset="0" stop-color="#fff7c8" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#fff7c8" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft-glow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" values="1 0 0 0 1 0 0.62 0 0 0.24 0 0 0.18 0 0 0 0.72 0"/>
       <feMerge>
         <feMergeNode/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#8a3f17" flood-opacity="0.28"/>
+    </filter>
   </defs>
-  <circle cx="80" cy="58" r="33" fill="url(#sun)" filter="url(#glow)"/>
+  <circle cx="90" cy="70" r="54" fill="url(#sun-shine)" filter="url(#soft-glow)"/>
+  <circle cx="90" cy="70" r="42" fill="url(#sun-core)" filter="url(#shadow)"/>
+  <path d="M60 70c1-21 18-38 39-39" fill="none" stroke="url(#highlight)" stroke-width="5" stroke-linecap="round" opacity="0.82"/>
 </svg>
