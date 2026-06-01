@@ -69,6 +69,7 @@ const els = {
   marketBackButton: document.querySelector("#marketBackButton"),
   marketForm: document.querySelector("#marketForm"),
   marketSymbolInputs: [...document.querySelectorAll("[data-market-symbol-input]")],
+  marketHiddenInputs: [...document.querySelectorAll("[data-market-hidden-input]")],
   marketMetrics: [...document.querySelectorAll(".market-metric")],
   marketLines: [...document.querySelectorAll("[data-market-line]")],
   marketStatus: document.querySelector("#marketStatus"),
@@ -245,7 +246,7 @@ function rotatePanelIfIdle() {
 }
 
 function resizeStage() {
-  const scale = Math.max(window.innerWidth / 640, window.innerHeight / 480);
+  const scale = Math.min(window.innerWidth / 640, window.innerHeight / 480);
   stage.style.setProperty("--stage-scale", scale.toString());
 }
 
@@ -824,6 +825,16 @@ function getSavedMarketSymbols() {
   return [...DEFAULT_MARKET_SYMBOLS];
 }
 
+function getSavedMarketHidden() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("marketHidden") || "[]");
+    if (Array.isArray(stored)) return stored.slice(0, 3).map(Boolean);
+  } catch {
+    // Ignore invalid local settings.
+  }
+  return [false, false, false];
+}
+
 function getMarketDisplayName(quote) {
   const symbol = quote?.symbol || "";
   return STOCK_CHINESE_NAMES[symbol] || quote?.name || symbol || "--";
@@ -867,11 +878,14 @@ function renderMarketMetric(quote, metricElement) {
   metricElement?.classList.toggle("is-down", Number(quote?.changePercent || 0) < 0);
 }
 
-async function loadMarketData(symbols = getSavedMarketSymbols()) {
+async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSavedMarketHidden()) {
   if (!els.marketForm) return;
   const cleanSymbols = symbols.slice(0, 3).map(normalizeMarketSymbol);
   els.marketSymbolInputs.forEach((input, index) => {
     input.value = cleanSymbols[index] || DEFAULT_MARKET_SYMBOLS[index];
+  });
+  els.marketHiddenInputs.forEach((input, index) => {
+    input.checked = Boolean(hidden[index]);
   });
   els.marketStatus.textContent = "更新市場資料中...";
 
@@ -883,17 +897,24 @@ async function loadMarketData(symbols = getSavedMarketSymbols()) {
     if (!response.ok) throw new Error(data.error || "Market request failed");
 
     const quotes = [data.hsi, ...(data.quotes || [])].filter(Boolean).slice(0, 4);
-    const allValues = quotes.flatMap(getMarketRelativeValues).filter((value) => typeof value === "number");
+    const visibleQuotes = quotes.filter((_, index) => index === 0 || !hidden[index - 1]);
+    const allValues = visibleQuotes.flatMap(getMarketRelativeValues).filter((value) => typeof value === "number");
     const hsiChange = Number(data.hsi?.changePercent || 0);
 
-    els.marketMetrics.forEach((metric, index) => renderMarketMetric(quotes[index], metric));
+    els.marketMetrics.forEach((metric, index) => {
+      const isHidden = index > 0 && Boolean(hidden[index - 1]);
+      metric.classList.toggle("is-hidden", isHidden);
+      renderMarketMetric(quotes[index], metric);
+    });
     els.marketLines.forEach((line, index) => {
+      line.classList.toggle("is-hidden", index > 0 && Boolean(hidden[index - 1]));
       line.setAttribute("d", buildMarketPath(quotes[index], allValues));
     });
     els.marketCard?.classList.toggle("is-up", hsiChange >= 0);
     els.marketCard?.classList.toggle("is-down", hsiChange < 0);
     els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢`;
     localStorage.setItem("marketSymbols", JSON.stringify(cleanSymbols));
+    localStorage.setItem("marketHidden", JSON.stringify(hidden.slice(0, 3).map(Boolean)));
   } catch {
     els.marketStatus.textContent = "暫時無法讀取市場資料";
   }
@@ -1020,9 +1041,11 @@ async function initDisplayPage() {
     event.preventDefault();
     markPanelActivity();
     const symbols = els.marketSymbolInputs.map((input) => normalizeMarketSymbol(input.value));
+    const hidden = els.marketHiddenInputs.map((input) => input.checked);
     localStorage.setItem("marketSymbols", JSON.stringify(symbols));
+    localStorage.setItem("marketHidden", JSON.stringify(hidden));
     els.marketCard?.classList.remove("is-flipped");
-    loadMarketData(symbols);
+    loadMarketData(symbols, hidden);
   });
 
   els.spotifyLogin.addEventListener("click", async () => {

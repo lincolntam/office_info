@@ -1,108 +1,108 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-Hant-HK">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>資訊顯示</title>
+    <title>鞈?憿舐內</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="display-shell" aria-label="640 x 480 資訊顯示">
-      <div id="stage" class="stage" aria-label="Smart Stack 資訊頁">
-        <section id="home" class="stack-panel" aria-label="首頁">
+    <main class="display-shell" aria-label="640 x 480 鞈?憿舐內">
+      <div id="stage" class="stage" aria-label="Smart Stack 鞈???>
+        <section id="home" class="stack-panel" aria-label="擐?">
           <article class="smart-card home-card">
             <img id="homeBackdrop" class="card-media" src="./assets/space-launch.svg" alt="" />
             <div class="hero-scrim"></div>
             <div class="home-clock">
               <time id="clock" datetime="">00:00</time>
-              <p id="dateText">6月1日週一</p>
+              <p id="dateText">6???仿曹?</p>
             </div>
           </article>
         </section>
 
-        <section id="spotify" class="stack-panel" aria-label="Spotify 正在播放">
+        <section id="spotify" class="stack-panel" aria-label="Spotify 甇??剜">
           <article class="smart-card music-card">
             <img id="albumBackdrop" class="album-backdrop" src="./assets/spotify-album.svg" alt="" />
             <div class="hero-scrim music-scrim"></div>
             <div class="music-topline">
-              <button id="spotifyLogin" class="device-pill" type="button">連接 Spotify</button>
+              <button id="spotifyLogin" class="device-pill" type="button">?? Spotify</button>
             </div>
             <div class="music-copy">
               <p id="trackTitle">Good To Be</p>
               <span id="trackArtist">Mark Ambor</span>
             </div>
-            <button id="playPause" class="widget-play-button" type="button" aria-label="暫停">
+            <button id="playPause" class="widget-play-button" type="button" aria-label="?怠?">
               <span class="pause-icon" aria-hidden="true"></span>
             </button>
-            <div class="spotify-widget-controls" aria-label="Spotify 控制">
-              <button id="saveTrack" type="button" aria-label="加入歌曲">+</button>
+            <div class="spotify-widget-controls" aria-label="Spotify ?批">
+              <button id="saveTrack" type="button" aria-label="?甇">+</button>
               <div class="progress-shell" aria-hidden="true">
                 <span id="progressBar" class="widget-progress"></span>
               </div>
-              <button id="nextTrack" type="button" aria-label="下一首">⏭</button>
-              <button id="connectDevice" type="button" aria-label="連線裝置">◎</button>
-              <button id="showQueue" type="button" aria-label="播放佇列">▱</button>
+              <button id="nextTrack" type="button" aria-label="銝?擐?>??/button>
+              <button id="connectDevice" type="button" aria-label="???鋆蔭">??/button>
+              <button id="showQueue" type="button" aria-label="?剜雿?">??/button>
             </div>
-            <p id="playState" class="play-state">正在播放</p>
+            <p id="playState" class="play-state">甇??剜</p>
           </article>
         </section>
 
-        <section id="weather" class="stack-panel" aria-label="天氣">
+        <section id="weather" class="stack-panel" aria-label="憭拇除">
           <article id="weatherCard" class="smart-card weather-card is-cloudy">
             <img id="weatherPhoto" class="weather-photo" src="./assets/weather-forest.svg" alt="" />
             <div class="weather-page-scrim"></div>
             <p id="weatherDesc" class="weather-condition">CLOUDY</p>
-            <div class="weather-glass" aria-label="香港天氣">
-              <div class="weather-mini-label">室外天氣</div>
+            <div class="weather-glass" aria-label="擐葛憭拇除">
+              <div class="weather-mini-label">摰文?憭拇除</div>
               <div class="weather-icon" aria-hidden="true">
                 <span class="sun-core"></span>
                 <span class="cloud cloud-a"></span>
                 <span class="cloud cloud-b"></span>
               </div>
-              <strong id="weatherTemp">--°</strong>
+              <strong id="weatherTemp">--簞</strong>
               <p class="weather-range">
-                <span id="weatherLow">最低 --°</span>
-                <span id="weatherHigh">最高 --°</span>
+                <span id="weatherLow">?雿?--簞</span>
+                <span id="weatherHigh">?擃?--簞</span>
               </p>
             </div>
             <p class="weather-caption">
-              <span id="weatherLocation">香港</span>
-              <span id="weatherHumidity">濕度 --%</span>
-              <span id="weatherRain">雨量 -- mm</span>
+              <span id="weatherLocation">擐葛</span>
+              <span id="weatherHumidity">瞈漲 --%</span>
+              <span id="weatherRain">?券? -- mm</span>
             </p>
           </article>
         </section>
 
-        <section id="market" class="stack-panel" aria-label="市場資訊">
+        <section id="market" class="stack-panel" aria-label="撣鞈?">
           <article id="marketCard" class="smart-card market-card">
             <div class="market-face market-front">
               <div class="market-topline">
-                <span>市場</span>
-                <button id="marketFlipButton" class="market-more-button" type="button" aria-label="設定股票">...</button>
+                <span>撣</span>
+                <button id="marketFlipButton" class="market-more-button" type="button" aria-label="閮剖??∠巨">...</button>
               </div>
               <div id="marketMetrics" class="market-metrics">
                 <div class="market-metric market-tone-0">
-                  <p><span></span><b data-market-name>恒生指數</b></p>
+                  <p><span></span><b data-market-name>???</b></p>
                   <strong data-market-change>--%</strong>
                   <em data-market-value>--</em>
                 </div>
                 <div class="market-metric market-tone-1">
-                  <p><span></span><b data-market-name>騰訊控股</b></p>
+                  <p><span></span><b data-market-name>擉啗??扯</b></p>
                   <strong data-market-change>--%</strong>
                   <em data-market-value>--</em>
                 </div>
                 <div class="market-metric market-tone-2">
-                  <p><span></span><b data-market-name>小米集團</b></p>
+                  <p><span></span><b data-market-name>撠掖??</b></p>
                   <strong data-market-change>--%</strong>
                   <em data-market-value>--</em>
                 </div>
                 <div class="market-metric market-tone-3">
-                  <p><span></span><b data-market-name>阿里巴巴</b></p>
+                  <p><span></span><b data-market-name>?輸?撌游毀</b></p>
                   <strong data-market-change>--%</strong>
                   <em data-market-value>--</em>
                 </div>
               </div>
-              <svg id="marketChart" class="market-chart" viewBox="0 0 560 142" role="img" aria-label="今日市場走勢">
+              <svg id="marketChart" class="market-chart" viewBox="0 0 560 142" role="img" aria-label="隞撣韏啣">
                 <path class="market-grid" d="M24 24 H536 M24 71 H536 M24 118 H536" />
                 <path class="market-line market-line-0" data-market-line d="" />
                 <path class="market-line market-line-1" data-market-line d="" />
@@ -122,13 +122,25 @@
                   <span>股票 1</span>
                   <input data-market-symbol-input type="text" value="0700.HK" spellcheck="false" />
                 </label>
+                <label class="market-hide-row">
+                  <input data-market-hidden-input type="checkbox" />
+                  <span>隱藏</span>
+                </label>
                 <label>
                   <span>股票 2</span>
                   <input data-market-symbol-input type="text" value="1810.HK" spellcheck="false" />
                 </label>
+                <label class="market-hide-row">
+                  <input data-market-hidden-input type="checkbox" />
+                  <span>隱藏</span>
+                </label>
                 <label>
                   <span>股票 3</span>
                   <input data-market-symbol-input type="text" value="9988.HK" spellcheck="false" />
+                </label>
+                <label class="market-hide-row">
+                  <input data-market-hidden-input type="checkbox" />
+                  <span>隱藏</span>
                 </label>
                 <button type="submit">套用</button>
               </form>
@@ -137,11 +149,11 @@
         </section>
       </div>
 
-      <nav class="stack-dots" aria-label="頁面切換">
-        <button class="dot is-active" type="button" aria-label="前往首頁" data-panel="0"></button>
-        <button class="dot" type="button" aria-label="前往 Spotify" data-panel="1"></button>
-        <button class="dot" type="button" aria-label="前往天氣" data-panel="2"></button>
-        <button class="dot" type="button" aria-label="前往市場" data-panel="3"></button>
+      <nav class="stack-dots" aria-label="???">
+        <button class="dot is-active" type="button" aria-label="??擐?" data-panel="0"></button>
+        <button class="dot" type="button" aria-label="?? Spotify" data-panel="1"></button>
+        <button class="dot" type="button" aria-label="??憭拇除" data-panel="2"></button>
+        <button class="dot" type="button" aria-label="??撣" data-panel="3"></button>
       </nav>
     </main>
 
