@@ -10,7 +10,7 @@ const SPOTIFY_REDIRECT_URI =
     ? "http://127.0.0.1:5500/index.html"
     : `${window.location.origin}${window.location.pathname}`;
 const FALLBACK_SPOTIFY_TRACK_URL =
-  "https://open.spotify.com/track/3R8iyJpmhI9ABDmTpetV2D?si=45c7c6dc3ad540bb";
+  "https://open.spotify.com/album/3ublKZHu1qjU9ujf9A4zhH";
 const AUTO_ROTATE_MS = 5 * 60 * 1000;
 const DEFAULT_MARKET_SYMBOLS = ["0700.HK", "1810.HK", "9988.HK"];
 
@@ -87,8 +87,8 @@ const els = {
 };
 
 const nowPlaying = {
-  title: "Good To Be",
-  artist: "Mark Ambor",
+  title: "Four Seasons",
+  artist: "TAEYEON",
   albumImage: "./assets/spotify-album.svg",
 };
 
@@ -878,6 +878,23 @@ function renderMarketMetric(quote, metricElement) {
   metricElement?.classList.toggle("is-down", Number(quote?.changePercent || 0) < 0);
 }
 
+function getMarketUpdateTimeLabel(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Hong_Kong",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value || 0);
+  const marketOpen = 9 * 60;
+  const marketClose = 16 * 60 + 15;
+  const clampedMinutes = Math.min(Math.max(hour * 60 + minute, marketOpen), marketClose);
+  const displayHour = Math.floor(clampedMinutes / 60);
+  const displayMinute = clampedMinutes % 60;
+  return `${String(displayHour).padStart(2, "0")}:${String(displayMinute).padStart(2, "0")}`;
+}
+
 async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSavedMarketHidden()) {
   if (!els.marketForm) return;
   const cleanSymbols = symbols.slice(0, 3).map(normalizeMarketSymbol);
@@ -912,7 +929,7 @@ async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSav
     });
     els.marketCard?.classList.toggle("is-up", hsiChange >= 0);
     els.marketCard?.classList.toggle("is-down", hsiChange < 0);
-    els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢`;
+    els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢 · 更新 ${getMarketUpdateTimeLabel()}`;
     localStorage.setItem("marketSymbols", JSON.stringify(cleanSymbols));
     localStorage.setItem("marketHidden", JSON.stringify(hidden.slice(0, 3).map(Boolean)));
   } catch {
