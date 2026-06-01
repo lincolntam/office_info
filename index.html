@@ -118,54 +118,36 @@
               </div>
               <form id="marketForm" class="market-settings-form">
                 <p>恒生指數固定顯示。輸入另外三個股票代號。</p>
-                <label>
-                  <span>股票 1</span>
-                  <input data-market-symbol-input type="text" value="0700.HK" spellcheck="false" />
-                </label>
-                <label class="market-hide-row">
-                  <input data-market-hidden-input type="checkbox" />
-                  <span class="hide-toggle" aria-hidden="true">
-                    <span class="hide-lock"></span>
-                    <span class="hide-dots">
-                      <span></span><span></span><span></span><span></span>
-                      <span></span><span></span><span></span><span></span>
-                    </span>
-                    <span class="hide-eye"></span>
-                  </span>
-                  <span class="sr-only">隱藏</span>
-                </label>
-                <label>
-                  <span>股票 2</span>
-                  <input data-market-symbol-input type="text" value="1810.HK" spellcheck="false" />
-                </label>
-                <label class="market-hide-row">
-                  <input data-market-hidden-input type="checkbox" />
-                  <span class="hide-toggle" aria-hidden="true">
-                    <span class="hide-lock"></span>
-                    <span class="hide-dots">
-                      <span></span><span></span><span></span><span></span>
-                      <span></span><span></span><span></span><span></span>
-                    </span>
-                    <span class="hide-eye"></span>
-                  </span>
-                  <span class="sr-only">隱藏</span>
-                </label>
-                <label>
-                  <span>股票 3</span>
-                  <input data-market-symbol-input type="text" value="9988.HK" spellcheck="false" />
-                </label>
-                <label class="market-hide-row">
-                  <input data-market-hidden-input type="checkbox" />
-                  <span class="hide-toggle" aria-hidden="true">
-                    <span class="hide-lock"></span>
-                    <span class="hide-dots">
-                      <span></span><span></span><span></span><span></span>
-                      <span></span><span></span><span></span><span></span>
-                    </span>
-                    <span class="hide-eye"></span>
-                  </span>
-                  <span class="sr-only">隱藏</span>
-                </label>
+                <div class="market-symbol-row">
+                  <label for="marketSymbol1">股票 1</label>
+                  <div class="market-symbol-field">
+                    <input id="marketSymbol1" data-market-symbol-input type="text" value="0700.HK" spellcheck="false" />
+                    <input id="marketHidden1" class="market-hidden-input" data-market-hidden-input type="checkbox" />
+                    <label class="market-eye-toggle" for="marketHidden1" aria-label="隱藏股票 1">
+                      <span class="market-eye-icon" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="market-symbol-row">
+                  <label for="marketSymbol2">股票 2</label>
+                  <div class="market-symbol-field">
+                    <input id="marketSymbol2" data-market-symbol-input type="text" value="1810.HK" spellcheck="false" />
+                    <input id="marketHidden2" class="market-hidden-input" data-market-hidden-input type="checkbox" />
+                    <label class="market-eye-toggle" for="marketHidden2" aria-label="隱藏股票 2">
+                      <span class="market-eye-icon" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="market-symbol-row">
+                  <label for="marketSymbol3">股票 3</label>
+                  <div class="market-symbol-field">
+                    <input id="marketSymbol3" data-market-symbol-input type="text" value="9988.HK" spellcheck="false" />
+                    <input id="marketHidden3" class="market-hidden-input" data-market-hidden-input type="checkbox" />
+                    <label class="market-eye-toggle" for="marketHidden3" aria-label="隱藏股票 3">
+                      <span class="market-eye-icon" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
                 <button type="submit">套用</button>
               </form>
             </div>
