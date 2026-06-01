@@ -114,7 +114,7 @@
             <div class="market-face market-back" aria-label="設定股票">
               <div class="market-topline">
                 <span>設定股票</span>
-                <button id="marketBackButton" class="market-more-button" type="button" aria-label="返回市場">...</button>
+                <button id="marketBackButton" class="market-more-button market-close-button" type="button" aria-label="返回市場">×</button>
               </div>
               <form id="marketForm" class="market-settings-form">
                 <p>恒生指數固定顯示。輸入另外三個股票代號。</p>
@@ -124,7 +124,15 @@
                 </label>
                 <label class="market-hide-row">
                   <input data-market-hidden-input type="checkbox" />
-                  <span>隱藏</span>
+                  <span class="hide-toggle" aria-hidden="true">
+                    <span class="hide-lock"></span>
+                    <span class="hide-dots">
+                      <span></span><span></span><span></span><span></span>
+                      <span></span><span></span><span></span><span></span>
+                    </span>
+                    <span class="hide-eye"></span>
+                  </span>
+                  <span class="sr-only">隱藏</span>
                 </label>
                 <label>
                   <span>股票 2</span>
@@ -132,7 +140,15 @@
                 </label>
                 <label class="market-hide-row">
                   <input data-market-hidden-input type="checkbox" />
-                  <span>隱藏</span>
+                  <span class="hide-toggle" aria-hidden="true">
+                    <span class="hide-lock"></span>
+                    <span class="hide-dots">
+                      <span></span><span></span><span></span><span></span>
+                      <span></span><span></span><span></span><span></span>
+                    </span>
+                    <span class="hide-eye"></span>
+                  </span>
+                  <span class="sr-only">隱藏</span>
                 </label>
                 <label>
                   <span>股票 3</span>
@@ -140,7 +156,15 @@
                 </label>
                 <label class="market-hide-row">
                   <input data-market-hidden-input type="checkbox" />
-                  <span>隱藏</span>
+                  <span class="hide-toggle" aria-hidden="true">
+                    <span class="hide-lock"></span>
+                    <span class="hide-dots">
+                      <span></span><span></span><span></span><span></span>
+                      <span></span><span></span><span></span><span></span>
+                    </span>
+                    <span class="hide-eye"></span>
+                  </span>
+                  <span class="sr-only">隱藏</span>
                 </label>
                 <button type="submit">套用</button>
               </form>

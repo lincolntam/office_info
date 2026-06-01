@@ -437,6 +437,11 @@ button {
   outline-offset: 3px;
 }
 
+.market-close-button {
+  font-size: 31px;
+  font-weight: 560;
+}
+
 .market-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -597,20 +602,123 @@ button {
 .market-settings-form .market-hide-row {
   grid-template-columns: 80px 1fr;
   gap: 12px;
-  margin-top: -4px;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
+  margin-top: -2px;
 }
 
 .market-settings-form .market-hide-row input {
-  justify-self: end;
-  width: 16px;
-  height: 16px;
-  accent-color: #d4ff3f;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
-.market-settings-form .market-hide-row span {
-  justify-self: start;
+.hide-toggle {
+  position: relative;
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 40px 1fr 46px;
+  align-items: center;
+  width: min(100%, 270px);
+  height: 48px;
+  padding: 0 11px 0 16px;
+  border-radius: 18px;
+  background: rgba(10, 15, 28, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 24px rgba(0, 0, 0, 0.16);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.hide-lock {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 15px;
+  margin-left: 2px;
+  border-radius: 3px 3px 2px 2px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.hide-lock::before {
+  position: absolute;
+  right: 2px;
+  bottom: 13px;
+  left: 2px;
+  height: 15px;
+  content: "";
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+}
+
+.hide-dots {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+.hide-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(107, 113, 215, 0.74);
+}
+
+.hide-eye {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.hide-eye::before,
+.hide-eye::after {
+  position: absolute;
+  content: "";
+}
+
+.hide-eye::before {
+  width: 22px;
+  height: 12px;
+  border-bottom: 4px solid #6269c7;
+  border-radius: 0 0 18px 18px;
+}
+
+.hide-eye::after {
+  width: 4px;
+  height: 8px;
+  border-radius: 999px;
+  background: #6269c7;
+  box-shadow:
+    -12px -4px 0 #6269c7,
+    12px -4px 0 #6269c7;
+  transform: translateY(9px);
+}
+
+.market-hide-row input:focus-visible + .hide-toggle {
+  outline: 2px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 3px;
+}
+
+.market-hide-row input:checked + .hide-toggle {
+  background: rgba(12, 18, 35, 0.96);
+  box-shadow:
+    inset 0 0 0 2px rgba(111, 122, 230, 0.38),
+    0 14px 26px rgba(0, 0, 0, 0.2);
+}
+
+.market-hide-row input:checked + .hide-toggle .hide-dots span {
+  background: rgba(124, 134, 244, 0.96);
 }
 
 .market-settings-form button {
