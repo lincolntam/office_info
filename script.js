@@ -673,12 +673,14 @@ function describeHkoWeather(forecastText, iconList, report) {
   const icons = Array.isArray(iconList) ? iconList : [];
   const rainfall = report?.rainfall?.data || [];
   const hasRainNow = rainfall.some((item) => Number(item.max || 0) > 0);
+  const hasIcon = (codes) => icons.some((icon) => codes.includes(icon));
 
   if (icons.length > 0) {
     if (icons.includes(65)) return "STORM";
-    if (icons.some((icon) => [53, 54, 62, 63, 64].includes(icon)) || hasRainNow) return "RAINING";
-    if (icons.some((icon) => [50, 51].includes(icon))) return "SUNNY";
-    if (icons.some((icon) => [52, 60, 61].includes(icon))) return "CLOUDY";
+    if (hasIcon([53, 54, 62, 63, 64]) || hasRainNow) return "RAINING";
+    if (hasIcon([83, 84, 85])) return "FOG";
+    if (hasIcon([52, 60, 61, 76, 80, 82, 92, 93])) return "CLOUDY";
+    if (hasIcon([50, 51, 70, 71, 72, 73, 74, 75, 77, 81, 90, 91])) return "SUNNY";
   }
 
   if (hasRainNow) return text.includes("\u96f7") ? "STORM" : "RAINING";
