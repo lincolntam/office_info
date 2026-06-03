@@ -1,29 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 140" role="img" aria-label="Cloudy">
   <defs>
-    <linearGradient id="cloud-main" x1="50" y1="35" x2="126" y2="104">
-      <stop offset="0" stop-color="#fbfdff"/>
-      <stop offset="0.48" stop-color="#d9e8f3"/>
-      <stop offset="1" stop-color="#a6bed0"/>
+    <linearGradient id="cloud" x1="56" y1="39" x2="122" y2="105">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#edf6ff"/>
+      <stop offset="0.78" stop-color="#c9ddeb"/>
+      <stop offset="1" stop-color="#a9c0d2"/>
     </linearGradient>
-    <linearGradient id="cloud-dark" x1="68" y1="76" x2="113" y2="116">
-      <stop offset="0" stop-color="#cbddeb" stop-opacity="0"/>
-      <stop offset="1" stop-color="#6f8ca2" stop-opacity="0.56"/>
+    <linearGradient id="shade" x1="81" y1="76" x2="102" y2="112">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#7c9ab0" stop-opacity="0.45"/>
     </linearGradient>
-    <filter id="soft" x="-35%" y="-60%" width="170%" height="220%">
-      <feGaussianBlur stdDeviation="2.6"/>
+    <filter id="blur" x="-35%" y="-55%" width="170%" height="210%">
+      <feGaussianBlur stdDeviation="0.7"/>
     </filter>
-    <filter id="shadow" x="-30%" y="-50%" width="160%" height="190%">
-      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#20313f" flood-opacity="0.34"/>
+    <filter id="shadow" x="-40%" y="-60%" width="180%" height="220%">
+      <feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#22394a" flood-opacity="0.28"/>
     </filter>
   </defs>
   <g filter="url(#shadow)">
-    <g filter="url(#soft)">
-      <ellipse cx="90" cy="83" rx="61" ry="23" fill="url(#cloud-main)"/>
-      <ellipse cx="53" cy="86" rx="32" ry="17" fill="#d4e5f1"/>
-      <ellipse cx="122" cy="81" rx="35" ry="18" fill="#edf6fb"/>
-      <ellipse cx="79" cy="66" rx="35" ry="28" fill="#f7fbff"/>
-      <ellipse cx="108" cy="68" rx="31" ry="25" fill="#e7f1f8"/>
-      <ellipse cx="90" cy="93" rx="67" ry="18" fill="url(#cloud-dark)"/>
+    <g filter="url(#blur)">
+      <ellipse cx="90" cy="87" rx="62" ry="22" fill="url(#cloud)"/>
+      <ellipse cx="51" cy="88" rx="32" ry="17" fill="#dcebf5"/>
+      <ellipse cx="123" cy="84" rx="34" ry="19" fill="#f8fcff"/>
+      <ellipse cx="78" cy="68" rx="34" ry="28" fill="#ffffff"/>
+      <ellipse cx="109" cy="70" rx="31" ry="25" fill="#eaf4fb"/>
+      <ellipse cx="91" cy="97" rx="66" ry="15" fill="url(#shade)"/>
     </g>
   </g>
 </svg>

@@ -1,35 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 140" role="img" aria-label="Rain">
   <defs>
-    <linearGradient id="cloud-main" x1="48" y1="31" x2="125" y2="104">
-      <stop offset="0" stop-color="#f4f8fb"/>
-      <stop offset="0.48" stop-color="#b8c8d6"/>
-      <stop offset="1" stop-color="#596f82"/>
+    <radialGradient id="sun" cx="38%" cy="34%" r="68%">
+      <stop offset="0" stop-color="#fff7ad"/>
+      <stop offset="0.56" stop-color="#ffc83f"/>
+      <stop offset="1" stop-color="#ff9228"/>
+    </radialGradient>
+    <linearGradient id="cloud" x1="48" y1="43" x2="127" y2="102">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#dceaf5"/>
+      <stop offset="1" stop-color="#91a9bd"/>
     </linearGradient>
     <linearGradient id="rain" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#68c6ff"/>
-      <stop offset="1" stop-color="#2578d7"/>
+      <stop offset="0" stop-color="#6ed6ff"/>
+      <stop offset="1" stop-color="#1479ff"/>
     </linearGradient>
-    <filter id="soft" x="-35%" y="-60%" width="170%" height="220%">
-      <feGaussianBlur stdDeviation="2.8"/>
-    </filter>
-    <filter id="shadow" x="-30%" y="-50%" width="160%" height="190%">
-      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#14202a" flood-opacity="0.42"/>
+    <filter id="shadow" x="-40%" y="-60%" width="180%" height="220%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#1c3345" flood-opacity="0.34"/>
     </filter>
   </defs>
+  <circle cx="111" cy="49" r="32" fill="url(#sun)" opacity="0.96"/>
   <g filter="url(#shadow)">
-    <g filter="url(#soft)">
-      <ellipse cx="89" cy="61" rx="62" ry="22" fill="url(#cloud-main)"/>
-      <ellipse cx="50" cy="64" rx="33" ry="17" fill="#a9bac9"/>
-      <ellipse cx="121" cy="58" rx="35" ry="18" fill="#dce8f0"/>
-      <ellipse cx="77" cy="45" rx="34" ry="27" fill="#eef4f8"/>
-      <ellipse cx="108" cy="48" rx="32" ry="25" fill="#c8d7e2"/>
-    </g>
+    <ellipse cx="88" cy="72" rx="63" ry="22" fill="url(#cloud)"/>
+    <ellipse cx="50" cy="75" rx="33" ry="17" fill="#d4e4ef"/>
+    <ellipse cx="120" cy="70" rx="35" ry="18" fill="#f5fbff"/>
+    <ellipse cx="77" cy="56" rx="34" ry="27" fill="#ffffff"/>
+    <ellipse cx="107" cy="59" rx="32" ry="25" fill="#d7e6f1"/>
   </g>
-  <g stroke="url(#rain)" stroke-width="3.4" stroke-linecap="round" opacity="0.9">
-    <path d="M46 83 34 112"/>
-    <path d="M68 80 56 118"/>
-    <path d="M91 82 78 116"/>
-    <path d="M114 80 101 118"/>
-    <path d="M137 83 126 111"/>
+  <g stroke="url(#rain)" stroke-width="3.2" stroke-linecap="round" opacity="0.92">
+    <path d="M45 93 35 119"/>
+    <path d="M67 91 56 124"/>
+    <path d="M91 92 80 123"/>
+    <path d="M114 91 103 124"/>
+    <path d="M137 94 127 119"/>
   </g>
 </svg>

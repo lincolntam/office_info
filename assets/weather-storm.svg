@@ -1,34 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 140" role="img" aria-label="Thunder">
   <defs>
-    <linearGradient id="cloud-main" x1="48" y1="30" x2="127" y2="104">
-      <stop offset="0" stop-color="#eef3f7"/>
-      <stop offset="0.45" stop-color="#7e8da1"/>
-      <stop offset="1" stop-color="#2d3443"/>
+    <linearGradient id="cloud" x1="48" y1="38" x2="126" y2="102">
+      <stop offset="0" stop-color="#f5f9ff"/>
+      <stop offset="0.42" stop-color="#b9c5d5"/>
+      <stop offset="0.75" stop-color="#78869b"/>
+      <stop offset="1" stop-color="#535f73"/>
     </linearGradient>
-    <linearGradient id="bolt" x1="78" y1="62" x2="96" y2="127">
+    <linearGradient id="bolt" x1="78" y1="63" x2="99" y2="130">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.48" stop-color="#b8b4ff"/>
-      <stop offset="1" stop-color="#6a5cff"/>
+      <stop offset="0.48" stop-color="#d5d0ff"/>
+      <stop offset="1" stop-color="#7f75ff"/>
     </linearGradient>
-    <filter id="soft" x="-35%" y="-60%" width="170%" height="220%">
-      <feGaussianBlur stdDeviation="2.8"/>
+    <filter id="shadow" x="-40%" y="-60%" width="180%" height="220%">
+      <feDropShadow dx="0" dy="13" stdDeviation="11" flood-color="#101726" flood-opacity="0.46"/>
     </filter>
-    <filter id="lightning" x="-60%" y="-60%" width="220%" height="240%">
-      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ecebff" flood-opacity="0.9"/>
-      <feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#7b6dff" flood-opacity="0.55"/>
-    </filter>
-    <filter id="shadow" x="-30%" y="-50%" width="160%" height="190%">
-      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#111824" flood-opacity="0.5"/>
+    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ffffff" flood-opacity="0.9"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#746cff" flood-opacity="0.55"/>
     </filter>
   </defs>
   <g filter="url(#shadow)">
-    <g filter="url(#soft)">
-      <ellipse cx="89" cy="59" rx="63" ry="22" fill="url(#cloud-main)"/>
-      <ellipse cx="49" cy="63" rx="34" ry="17" fill="#788596"/>
-      <ellipse cx="123" cy="57" rx="36" ry="18" fill="#b8c3cf"/>
-      <ellipse cx="77" cy="43" rx="35" ry="27" fill="#d8e0e8"/>
-      <ellipse cx="108" cy="46" rx="33" ry="25" fill="#748195"/>
-    </g>
+    <ellipse cx="89" cy="67" rx="63" ry="22" fill="url(#cloud)"/>
+    <ellipse cx="49" cy="70" rx="34" ry="17" fill="#9daabd"/>
+    <ellipse cx="123" cy="65" rx="35" ry="18" fill="#dce3ec"/>
+    <ellipse cx="77" cy="51" rx="35" ry="27" fill="#eef3f8"/>
+    <ellipse cx="108" cy="54" rx="33" ry="25" fill="#95a1b3"/>
   </g>
-  <path d="M87 67 69 96h18l-9 34 35-50H94l12-13z" fill="url(#bolt)" filter="url(#lightning)"/>
+  <path d="M87 76 70 102h17l-9 30 35-47H94l12-9z" fill="url(#bolt)" filter="url(#glow)"/>
 </svg>
