@@ -11,6 +11,45 @@ const SPOTIFY_REDIRECT_URI =
     : `${window.location.origin}${window.location.pathname}`;
 const AUTO_ROTATE_MS = 5 * 60 * 1000;
 const DEFAULT_MARKET_SYMBOLS = ["0700.HK", "1810.HK", "9988.HK"];
+const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
+
+const HKO_WEATHER_LOCATIONS = [
+  { place: "\u4eac\u58eb\u67cf", lat: 22.312, lon: 114.172 },
+  { place: "\u9999\u6e2f\u5929\u6587\u53f0", lat: 22.302, lon: 114.174 },
+  { place: "\u9999\u6e2f\u516c\u5712", lat: 22.277, lon: 114.161 },
+  { place: "\u9ec3\u7af9\u5751", lat: 22.248, lon: 114.173 },
+  { place: "\u6253\u9f13\u5dba", lat: 22.528, lon: 114.156 },
+  { place: "\u6d41\u6d6e\u5c71", lat: 22.469, lon: 113.983 },
+  { place: "\u5927\u57d4", lat: 22.451, lon: 114.164 },
+  { place: "\u5927\u7f8e\u7763", lat: 22.475, lon: 114.237 },
+  { place: "\u6c99\u7530", lat: 22.383, lon: 114.189 },
+  { place: "\u5c6f\u9580", lat: 22.391, lon: 113.977 },
+  { place: "\u5c07\u8ecd\u6fb3", lat: 22.308, lon: 114.259 },
+  { place: "\u897f\u8ca2", lat: 22.383, lon: 114.273 },
+  { place: "\u9577\u6d32", lat: 22.209, lon: 114.029 },
+  { place: "\u8d64\u9c32\u89d2", lat: 22.309, lon: 113.922 },
+  { place: "\u9752\u8863", lat: 22.344, lon: 114.109 },
+  { place: "\u77f3\u5d17", lat: 22.436, lon: 114.084 },
+  { place: "\u8343\u7063\u53ef\u89c0", lat: 22.383, lon: 114.107 },
+  { place: "\u8343\u7063\u57ce\u9580\u8c37", lat: 22.375, lon: 114.125 },
+  { place: "\u7b72\u7b95\u7063", lat: 22.279, lon: 114.229 },
+  { place: "\u4e5d\u9f8d\u57ce", lat: 22.328, lon: 114.191 },
+  { place: "\u8dd1\u99ac\u5730", lat: 22.269, lon: 114.186 },
+  { place: "\u9ec3\u5927\u4ed9", lat: 22.342, lon: 114.194 },
+  { place: "\u8d64\u67f1", lat: 22.219, lon: 114.214 },
+  { place: "\u89c0\u5858", lat: 22.313, lon: 114.225 },
+  { place: "\u6df1\u6c34\u57d7", lat: 22.331, lon: 114.159 },
+  { place: "\u555f\u5fb7\u8dd1\u9053\u516c\u5712", lat: 22.306, lon: 114.214 },
+  { place: "\u5143\u6717\u516c\u5712", lat: 22.443, lon: 114.022 },
+  { place: "\u4e2d\u897f\u5340", lat: 22.286, lon: 114.154 },
+  { place: "\u6771\u5340", lat: 22.282, lon: 114.229 },
+  { place: "\u8475\u9752", lat: 22.354, lon: 114.103 },
+  { place: "\u96e2\u5cf6\u5340", lat: 22.262, lon: 113.946 },
+  { place: "\u5317\u5340", lat: 22.501, lon: 114.128 },
+  { place: "\u5357\u5340", lat: 22.247, lon: 114.158 },
+  { place: "\u7063\u4ed4", lat: 22.277, lon: 114.176 },
+  { place: "\u6cb9\u5c16\u65fa", lat: 22.305, lon: 114.17 },
+];
 
 const STOCK_CHINESE_NAMES = {
   "^HSI": "\u6052\u751f\u6307\u6578",
@@ -659,13 +698,66 @@ async function handleSpotifyCallback() {
   }
 }
 
-function pickHkoTemperature(report) {
-  const readings = report.temperature?.data || [];
+function getSavedWeatherPlace() {
+  return (localStorage.getItem("weatherPlace") || DEFAULT_WEATHER_PLACE).trim();
+}
+
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is unavailable"));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: false,
+      maximumAge: 10 * 60 * 1000,
+      timeout: 5000,
+    });
+  });
+}
+
+function getDistanceKm(latA, lonA, latB, lonB) {
+  const toRadians = (degrees) => (degrees * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(latB - latA);
+  const dLon = toRadians(lonB - lonA);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(latA)) * Math.cos(toRadians(latB)) * Math.sin(dLon / 2) ** 2;
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function getPreferredWeatherPlaces() {
+  try {
+    const position = await getCurrentPosition();
+    const { latitude, longitude } = position.coords;
+    return HKO_WEATHER_LOCATIONS
+      .map((location) => ({
+        ...location,
+        distance: getDistanceKm(latitude, longitude, location.lat, location.lon),
+      }))
+      .sort((a, b) => a.distance - b.distance)
+      .map((location) => location.place);
+  } catch {
+    return [getSavedWeatherPlace()];
+  }
+}
+
+function pickHkoReading(readings, preferredPlaces = [getSavedWeatherPlace()]) {
+  const data = readings || [];
+  const places = Array.isArray(preferredPlaces) ? preferredPlaces : [preferredPlaces];
+  const matched = places.map((place) => data.find((item) => item.place === place)).find(Boolean);
   return (
-    readings.find((item) => item.place === "\u9999\u6e2f\u5929\u6587\u53f0") ||
-    readings.find((item) => item.place === "\u9999\u6e2f\u516c\u5712") ||
-    readings[0]
+    matched ||
+    data.find((item) => item.place === "\u9999\u6e2f\u5929\u6587\u53f0") ||
+    data.find((item) => item.place === "\u9999\u6e2f\u516c\u5712") ||
+    data[0]
   );
+}
+
+function pickHkoTemperature(report, preferredPlaces = [getSavedWeatherPlace()]) {
+  return pickHkoReading(report.temperature?.data, preferredPlaces);
 }
 
 function describeHkoWeather(forecastText, iconList, report) {
@@ -753,10 +845,10 @@ async function fetchHkoWeather() {
 async function loadHkoWeather() {
   try {
     const { report, forecast } = await fetchHkoWeather();
-    const temp = pickHkoTemperature(report);
+    const preferredPlaces = await getPreferredWeatherPlaces();
+    const temp = pickHkoTemperature(report, preferredPlaces);
     const humidity = report.humidity?.data?.[0];
-    const rainfall = report.rainfall?.data?.find((item) => item.place === "中西區") ||
-      report.rainfall?.data?.[0];
+    const rainfall = pickHkoReading(report.rainfall?.data, preferredPlaces);
     const updateTime = new Date(report.updateTime || forecast.updateTime || Date.now());
 
     const condition = describeHkoWeather(forecast.forecastDesc, report.icon, report);
