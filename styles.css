@@ -1351,12 +1351,6 @@ button {
     linear-gradient(180deg, #8e9ca2 0%, #46565d 100%);
 }
 
-.weather-card.is-snowy {
-  background:
-    radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.38), transparent 36%),
-    linear-gradient(180deg, #8fb4cb 0%, #dbeaf2 100%);
-}
-
 .weather-card.time-morning {
   background:
     radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.32), transparent 34%),
@@ -1394,8 +1388,7 @@ button {
 }
 
 .weather-card.is-cloudy .weather-photo,
-.weather-card.is-fog .weather-photo,
-.weather-card.is-snowy .weather-photo {
+.weather-card.is-fog .weather-photo {
   opacity: 0.74;
   filter: blur(0.2px) saturate(0.86) contrast(1.05) brightness(0.82);
 }
@@ -1618,10 +1611,8 @@ button {
 .weather-card.is-raining h2,
 .weather-card.is-storm h2,
 .weather-card.is-fog h2,
-.weather-card.is-snowy h2,
 .weather-card.is-raining .weather-caption,
 .weather-card.is-storm .weather-caption,
-.weather-card.is-fog .weather-caption,
-.weather-card.is-snowy .weather-caption {
+.weather-card.is-fog .weather-caption {
   color: rgba(255, 255, 255, 0.86);
 }

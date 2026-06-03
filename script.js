@@ -95,7 +95,6 @@ const WEATHER_BACKGROUNDS = {
   RAINING: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1280&q=80",
   STORM: "https://images.unsplash.com/photo-1500674425229-f692875b0ab7?auto=format&fit=crop&w=1280&q=80",
   FOG: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
-  SNOWY: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
 };
 
 const WEATHER_TIME_BACKGROUNDS = {
@@ -136,12 +135,6 @@ const WEATHER_BACKGROUND_BY_TIME = {
     evening: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
     night: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
   },
-  SNOWY: {
-    morning: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
-    afternoon: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
-    evening: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
-    night: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?auto=format&fit=crop&w=1280&q=80",
-  },
 };
 
 const WEATHER_TIME_CLASSES = [
@@ -157,7 +150,6 @@ const WEATHER_LABELS = {
   RAINING: "RAINING",
   STORM: "STORM",
   FOG: "FOG",
-  SNOWY: "SNOWY",
 };
 
 const WEATHER_ICONS = {
@@ -166,7 +158,6 @@ const WEATHER_ICONS = {
   RAINING: "./assets/weather-raining.svg",
   STORM: "./assets/weather-storm.svg",
   FOG: "./assets/weather-fog.svg",
-  SNOWY: "./assets/weather-snowy.svg",
 };
 
 let playing = true;
@@ -698,21 +689,6 @@ function describeHkoWeather(forecastText, iconList, report) {
   return "CLOUDY";
 }
 
-function describeOpenMeteoWeather(code) {
-  const weatherCode = Number(code);
-  if ([95, 96, 99].includes(weatherCode)) return "STORM";
-  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) return "SNOWY";
-  if (
-    [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)
-  ) {
-    return "RAINING";
-  }
-  if ([45, 48].includes(weatherCode)) return "FOG";
-  if ([0].includes(weatherCode)) return "SUNNY";
-  if ([1, 2, 3].includes(weatherCode)) return "CLOUDY";
-  return "CLOUDY";
-}
-
 function setWeatherVisual(condition) {
   const normalized = WEATHER_BACKGROUNDS[condition] ? condition : "CLOUDY";
   const period = getWeatherTimePeriod();
@@ -727,7 +703,6 @@ function setWeatherVisual(condition) {
     "is-raining",
     "is-storm",
     "is-fog",
-    "is-snowy",
     ...WEATHER_TIME_CLASSES,
   );
   Object.keys(WEATHER_BACKGROUNDS).forEach((key) => {
@@ -773,108 +748,26 @@ async function fetchHkoWeather() {
   };
 }
 
-function getCurrentPosition() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error("Geolocation is unavailable"));
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: false,
-      maximumAge: 10 * 60 * 1000,
-      timeout: 8000,
-    });
-  });
-}
-
-async function fetchLocalWeather(position) {
-  const latitude = Number(position.coords.latitude.toFixed(4));
-  const longitude = Number(position.coords.longitude.toFixed(4));
-  const weatherUrl = new URL("https://api.open-meteo.com/v1/forecast");
-  weatherUrl.search = new URLSearchParams({
-    latitude: latitude.toString(),
-    longitude: longitude.toString(),
-    current: "temperature_2m,relative_humidity_2m,precipitation,weather_code",
-    daily: "temperature_2m_max,temperature_2m_min",
-    timezone: "auto",
-    forecast_days: "1",
-  }).toString();
-
-  const locationUrl = new URL("https://geocoding-api.open-meteo.com/v1/reverse");
-  locationUrl.search = new URLSearchParams({
-    latitude: latitude.toString(),
-    longitude: longitude.toString(),
-    language: "zh",
-    format: "json",
-    count: "1",
-  }).toString();
-
-  const [weatherResponse, locationResponse] = await Promise.all([
-    fetch(weatherUrl),
-    fetch(locationUrl),
-  ]);
-
-  if (!weatherResponse.ok) throw new Error("Local weather failed");
-
-  const weather = await weatherResponse.json();
-  const location = locationResponse.ok ? await locationResponse.json() : null;
-  return { weather, location };
-}
-
-function renderLocalWeather({ weather, location }) {
-  const current = weather.current || {};
-  const daily = weather.daily || {};
-  const value = Math.round(current.temperature_2m);
-  const low = Math.round(daily.temperature_2m_min?.[0]);
-  const high = Math.round(daily.temperature_2m_max?.[0]);
-  const place = location?.results?.[0];
-  const placeName = [place?.name, place?.admin1].filter(Boolean).join(" · ") || "目前位置";
-  const condition = describeOpenMeteoWeather(current.weather_code);
-
-  setWeatherVisual(condition);
-  els.weatherLocation.textContent = placeName;
-  els.weatherTemp.textContent = Number.isFinite(value) ? `${value}°` : "--°";
-  els.weatherHumidity.textContent =
-    current.relative_humidity_2m !== undefined ? `濕度 ${current.relative_humidity_2m}%` : "濕度 --%";
-  els.weatherRain.textContent =
-    current.precipitation !== undefined ? `雨量 ${current.precipitation} mm` : "雨量 -- mm";
-  els.weatherLow.textContent = Number.isFinite(low) ? `最低 ${low}°` : "最低 --°";
-  els.weatherHigh.textContent = Number.isFinite(high) ? `最高 ${high}°` : "最高 --°";
-  els.weatherDesc.textContent = WEATHER_LABELS[condition] || "CLOUDY";
-}
-
-function renderHkoWeather({ report, forecast }) {
-  const temp = pickHkoTemperature(report);
-  const humidity = report.humidity?.data?.[0];
-  const rainfall = report.rainfall?.data?.find((item) => item.place === "中西區") ||
-    report.rainfall?.data?.[0];
-  const condition = describeHkoWeather(forecast.forecastDesc, report.icon, report);
-  const value = temp ? Math.round(temp.value) : null;
-
-  setWeatherVisual(condition);
-  els.weatherLocation.textContent = temp?.place || "香港";
-  els.weatherTemp.textContent = value !== null ? `${value}°` : "--°";
-  els.weatherHumidity.textContent = humidity ? `濕度 ${humidity.value}%` : "濕度 --%";
-  els.weatherRain.textContent =
-    rainfall?.max !== undefined ? `雨量 ${rainfall.max} ${rainfall.unit}` : "雨量 -- mm";
-  els.weatherLow.textContent = value !== null ? `最低 ${Math.max(value - 3, 0)}°` : "最低 --°";
-  els.weatherHigh.textContent = value !== null ? `最高 ${value + 4}°` : "最高 --°";
-  els.weatherDesc.textContent = WEATHER_LABELS[condition] || "CLOUDY";
-}
-
-async function loadWeather() {
+async function loadHkoWeather() {
   try {
-    const position = await getCurrentPosition();
-    const localWeather = await fetchLocalWeather(position);
-    renderLocalWeather(localWeather);
-    return;
-  } catch {
-    // Fall back to Hong Kong Observatory when location permission or local weather fails.
-  }
+    const { report, forecast } = await fetchHkoWeather();
+    const temp = pickHkoTemperature(report);
+    const humidity = report.humidity?.data?.[0];
+    const rainfall = report.rainfall?.data?.find((item) => item.place === "中西區") ||
+      report.rainfall?.data?.[0];
+    const updateTime = new Date(report.updateTime || forecast.updateTime || Date.now());
 
-  try {
-    renderHkoWeather(await fetchHkoWeather());
+    const condition = describeHkoWeather(forecast.forecastDesc, report.icon, report);
+    const value = temp ? Math.round(temp.value) : null;
+    setWeatherVisual(condition);
+    els.weatherLocation.textContent = temp?.place || "香港";
+    els.weatherTemp.textContent = value !== null ? `${value}°` : "--°";
+    els.weatherHumidity.textContent = humidity ? `濕度 ${humidity.value}%` : "濕度 --%";
+    els.weatherRain.textContent =
+      rainfall?.max !== undefined ? `雨量 ${rainfall.max} ${rainfall.unit}` : "雨量 -- mm";
+    els.weatherLow.textContent = value !== null ? `最低 ${Math.max(value - 3, 0)}°` : "最低 --°";
+    els.weatherHigh.textContent = value !== null ? `最高 ${value + 4}°` : "最高 --°";
+    els.weatherDesc.textContent = WEATHER_LABELS[condition] || "CLOUDY";
   } catch {
     setWeatherVisual("CLOUDY");
     els.weatherDesc.textContent = "CLOUDY";
@@ -1195,7 +1088,7 @@ async function initDisplayPage() {
   setupSpotifyWebPlayback();
   handleSpotifyCallback();
   refreshSpotifyDisplay();
-  loadWeather();
+  loadHkoWeather();
   loadMarketData();
   scrollToHash();
   requestAnimationFrame(scrollToHash);
@@ -1203,7 +1096,7 @@ async function initDisplayPage() {
   updateActivePanel();
   setInterval(updateClock, 1000);
   setInterval(refreshSpotifyDisplay, 30000);
-  setInterval(loadWeather, 10 * 60 * 1000);
+  setInterval(loadHkoWeather, 10 * 60 * 1000);
   setInterval(() => setWeatherVisual(currentWeatherCondition), 60 * 1000);
   setInterval(loadMarketData, 60 * 1000);
   setInterval(rotatePanelIfIdle, 15000);
