@@ -839,13 +839,25 @@ button {
   font-size: 12px;
 }
 
+.market-holding-row select option {
+  background: #ffffff;
+  color: #111111;
+}
+
 .market-holding-row input {
   padding: 0 10px;
   text-transform: uppercase;
 }
 
 .market-holding-row input[data-holding-lots] {
+  appearance: textfield;
   text-align: right;
+}
+
+.market-holding-row input[data-holding-lots]::-webkit-outer-spin-button,
+.market-holding-row input[data-holding-lots]::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
 }
 
 .market-holding-row .holding-stock-name {
