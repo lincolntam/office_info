@@ -567,9 +567,13 @@ button {
 
 .market-settings-form,
 .market-holdings-form {
+  width: 500px;
+  max-width: 100%;
+}
+
+.market-holdings-form {
   display: grid;
   gap: 10px;
-  width: 360px;
   margin: 26px auto 0;
 }
 
@@ -793,15 +797,16 @@ button {
   display: grid;
   gap: 8px;
   max-height: 246px;
+  overflow-x: hidden;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 2px;
 }
 
 .market-holding-row {
   display: grid;
-  grid-template-columns: 70px minmax(0, 1fr) 70px 32px;
+  grid-template-columns: 62px minmax(0, 1fr) 62px 28px;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   color: rgba(255, 255, 255, 0.82);
   font-size: 13px;
   font-weight: 760;
@@ -816,18 +821,19 @@ button {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.94);
-  padding: 0 14px;
+  padding: 0 10px;
   outline: none;
   font-size: 14px;
   font-weight: 760;
 }
 
 .market-holding-row select {
-  padding: 0 8px;
+  padding: 0 6px;
+  font-size: 12px;
 }
 
 .market-holding-row input {
-  padding: 0 12px;
+  padding: 0 10px;
   text-transform: uppercase;
 }
 
@@ -838,13 +844,15 @@ button {
 .market-delete-holding {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  min-width: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.84);
-  font-size: 21px;
+  font-size: 17px;
   line-height: 1;
   cursor: pointer;
 }
@@ -866,6 +874,14 @@ button {
   font-size: 13px;
   font-weight: 850;
   cursor: pointer;
+}
+
+.market-holdings-form .market-delete-holding {
+  min-width: 0;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .market-holdings-form .market-secondary-button {

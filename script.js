@@ -228,7 +228,7 @@ const DEFAULT_PORTFOLIO_ITEMS = [
   { market: "US", symbol: "AAPL", lots: 0 },
 ];
 const MARKET_LOT_SIZE = {
-  HK: 100,
+  HK: 1,
   US: 1,
 };
 
@@ -1066,14 +1066,20 @@ function getPortfolioSeries(items = getSavedPortfolioItems()) {
       const value = Number(point.value);
       if (!Number.isFinite(value)) return;
       const time = Number(point.time || 0);
-      const key = new Date(time * 1000).toISOString().slice(0, 10);
+      const key = String(time);
       grouped[item.market].set(key, (grouped[item.market].get(key) || 0) + value * quantity);
     });
   });
 
   return {
-    HK: [...grouped.HK.entries()].map(([time, value]) => ({ time, value })).slice(-30),
-    US: [...grouped.US.entries()].map(([time, value]) => ({ time, value })).slice(-30),
+    HK: [...grouped.HK.entries()]
+      .map(([time, value]) => ({ time: Number(time), value }))
+      .sort((a, b) => a.time - b.time)
+      .slice(-30),
+    US: [...grouped.US.entries()]
+      .map(([time, value]) => ({ time: Number(time), value }))
+      .sort((a, b) => a.time - b.time)
+      .slice(-30),
   };
 }
 
@@ -1121,7 +1127,7 @@ function renderPortfolioEditor(items = getSavedPortfolioItems()) {
         <option value="US">美股</option>
       </select>
       <input data-holding-symbol type="text" aria-label="stock code" spellcheck="false" />
-      <input data-holding-lots type="number" min="0" step="0.001" inputmode="decimal" aria-label="lots" />
+      <input data-holding-lots type="number" min="0" step="1" inputmode="numeric" aria-label="shares" />
       <button class="market-delete-holding" type="button" data-delete-holding aria-label="delete">×</button>
     `;
     row.querySelector("[data-holding-market]").value = item.market;
@@ -1191,7 +1197,7 @@ async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSav
   els.marketStatus.textContent = "更新市場資料中...";
 
   try {
-    const response = await fetch(`/api/market?range=1mo&symbols=${encodeURIComponent(requestSymbols.join(","))}`, {
+    const response = await fetch(`/api/market?symbols=${encodeURIComponent(requestSymbols.join(","))}`, {
       credentials: "include",
     });
     const data = await response.json().catch(() => ({}));
