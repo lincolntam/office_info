@@ -571,6 +571,13 @@ button {
   max-width: 100%;
 }
 
+.market-settings-form {
+  display: grid;
+  gap: 10px;
+  width: 360px;
+  margin: 26px auto 0;
+}
+
 .market-holdings-form {
   display: grid;
   gap: 10px;
