@@ -105,14 +105,14 @@ const els = {
   marketCard: document.querySelector("#marketCard"),
   marketPortfolioButton: document.querySelector("#marketPortfolioButton"),
   marketFlipButton: document.querySelector("#marketFlipButton"),
+  marketManageButton: document.querySelector("#marketManageButton"),
   marketBackButton: document.querySelector("#marketBackButton"),
   marketBackTitle: document.querySelector("#marketBackTitle"),
   marketSettingsPanel: document.querySelector("#marketSettingsPanel"),
   marketPortfolioPanel: document.querySelector("#marketPortfolioPanel"),
-  marketPortfolioForm: document.querySelector("#marketPortfolioForm"),
-  marketHoldingInputs: [...document.querySelectorAll("[data-market-holding-input]")],
-  marketPortfolioNames: [...document.querySelectorAll("[data-portfolio-name]")],
-  marketPortfolioTotal: document.querySelector("#marketPortfolioTotal"),
+  marketHoldingRows: document.querySelector("#marketHoldingRows"),
+  marketHkTotal: document.querySelector("#marketHkTotal"),
+  marketUsTotal: document.querySelector("#marketUsTotal"),
   marketForm: document.querySelector("#marketForm"),
   marketSymbolInputs: [...document.querySelectorAll("[data-market-symbol-input]")],
   marketHiddenInputs: [...document.querySelectorAll("[data-market-hidden-input]")],
@@ -220,6 +220,16 @@ let activePanelIndex = 0;
 let lastPanelMoveAt = Date.now();
 let currentWeatherCondition = "CLOUDY";
 let marketQuotes = [];
+let marketQuoteMap = new Map();
+
+const DEFAULT_PORTFOLIO_ITEMS = [
+  { market: "HK", symbol: "0700.HK", lots: 0 },
+  { market: "US", symbol: "AAPL", lots: 0 },
+];
+const MARKET_LOT_SIZE = {
+  HK: 100,
+  US: 1,
+};
 
 function isLocalStatic() {
   return location.protocol === "file:" || location.hostname === "127.0.0.1" || location.hostname === "localhost";
@@ -901,6 +911,54 @@ function normalizeMarketSymbol(value) {
   return symbol || "0700.HK";
 }
 
+function normalizePortfolioSymbol(value, market = "HK") {
+  const symbol = String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9.^=-]/g, "")
+    .slice(0, 24);
+  if (market === "HK") {
+    if (/^\d{1,4}$/.test(symbol)) return `${symbol.padStart(4, "0")}.HK`;
+    if (/^\d{5}$/.test(symbol)) return `${symbol}.HK`;
+  }
+  return symbol || (market === "US" ? "AAPL" : "0700.HK");
+}
+
+function getPortfolioSymbolInput(symbol, market) {
+  if (market !== "HK") return symbol || "";
+  return String(symbol || "").replace(/\.HK$/i, "");
+}
+
+function normalizePortfolioItem(item = {}) {
+  const market = item.market === "US" ? "US" : "HK";
+  const lots = Number(item.lots);
+  return {
+    market,
+    symbol: normalizePortfolioSymbol(item.symbol, market),
+    lots: Number.isFinite(lots) && lots > 0 ? lots : 0,
+  };
+}
+
+function getSavedPortfolioItems() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("marketPortfolioItems") || "[]");
+    if (Array.isArray(stored) && stored.length) {
+      return stored.map(normalizePortfolioItem).filter((item) => item.symbol);
+    }
+  } catch {
+    // Ignore invalid local settings.
+  }
+  return DEFAULT_PORTFOLIO_ITEMS.map(normalizePortfolioItem);
+}
+
+function savePortfolioItems(items) {
+  localStorage.setItem("marketPortfolioItems", JSON.stringify(items.map(normalizePortfolioItem)));
+}
+
+function getPortfolioSymbols(items = getSavedPortfolioItems()) {
+  return [...new Set(items.map((item) => normalizePortfolioItem(item).symbol).filter(Boolean))];
+}
+
 function getSavedMarketSymbols() {
   try {
     const stored = JSON.parse(localStorage.getItem("marketSymbols") || "[]");
@@ -924,21 +982,6 @@ function getSavedMarketHidden() {
     // Ignore invalid local settings.
   }
   return [false, false, false];
-}
-
-function getSavedMarketHoldings() {
-  try {
-    const stored = JSON.parse(localStorage.getItem("marketHoldings") || "[]");
-    if (Array.isArray(stored)) {
-      return stored.slice(0, 4).map((value) => {
-        const number = Number(value);
-        return Number.isFinite(number) && number > 0 ? number : 0;
-      });
-    }
-  } catch {
-    // Ignore invalid local settings.
-  }
-  return [0, 0, 0, 0];
 }
 
 function getMarketDisplayName(quote) {
@@ -994,32 +1037,76 @@ function renderMarketMetric(quote, metricElement) {
   metricElement?.classList.toggle("is-down", Number(quote?.changePercent || 0) < 0);
 }
 
+function calculatePortfolioTotals(items = getSavedPortfolioItems()) {
+  return items.reduce(
+    (totals, item) => {
+      const normalized = normalizePortfolioItem(item);
+      const quote = marketQuoteMap.get(normalized.symbol);
+      const price = Number(quote?.price || 0);
+      const quantity = normalized.lots * (MARKET_LOT_SIZE[normalized.market] || 1);
+      if (Number.isFinite(price) && Number.isFinite(quantity)) {
+        totals[normalized.market] += price * quantity;
+      }
+      return totals;
+    },
+    { HK: 0, US: 0 },
+  );
+}
+
 function renderMarketPortfolio() {
-  if (!els.marketPortfolioForm) return;
-  const holdings = getSavedMarketHoldings();
-  const currency = marketQuotes[0]?.currency || "HKD";
+  const totals = calculatePortfolioTotals();
+  if (els.marketHkTotal) els.marketHkTotal.textContent = formatMarketCurrency(totals.HK, "HKD");
+  if (els.marketUsTotal) els.marketUsTotal.textContent = formatMarketCurrency(totals.US, "USD");
+}
 
-  els.marketHoldingInputs.forEach((input, index) => {
-    input.value = String(holdings[index] || 0);
-  });
-  els.marketPortfolioNames.forEach((label, index) => {
-    if (marketQuotes[index]) label.textContent = getMarketDisplayName(marketQuotes[index]);
-  });
+function renderPortfolioEditor(items = getSavedPortfolioItems()) {
+  if (!els.marketHoldingRows) return;
+  els.marketHoldingRows.innerHTML = "";
 
-  const total = marketQuotes.reduce((sum, quote, index) => {
-    const price = Number(quote?.price || 0);
-    const quantity = Number(holdings[index] || 0);
-    return sum + (Number.isFinite(price) && Number.isFinite(quantity) ? price * quantity : 0);
-  }, 0);
-  els.marketPortfolioTotal.textContent = formatMarketCurrency(total, currency);
+  items.map(normalizePortfolioItem).forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "market-holding-row";
+    row.innerHTML = `
+      <select data-holding-market aria-label="market">
+        <option value="HK">港股</option>
+        <option value="US">美股</option>
+      </select>
+      <input data-holding-symbol type="text" aria-label="stock code" spellcheck="false" />
+      <input data-holding-lots type="number" min="0" step="0.001" inputmode="decimal" aria-label="lots" />
+      <button class="market-delete-holding" type="button" data-delete-holding aria-label="delete">×</button>
+    `;
+    row.querySelector("[data-holding-market]").value = item.market;
+    row.querySelector("[data-holding-symbol]").value = getPortfolioSymbolInput(item.symbol, item.market);
+    row.querySelector("[data-holding-lots]").value = String(item.lots || 0);
+    row.querySelector("[data-delete-holding]").addEventListener("click", () => {
+      const nextItems = readPortfolioEditorItems();
+      nextItems.splice(index, 1);
+      renderPortfolioEditor(nextItems.length ? nextItems : [normalizePortfolioItem({ market: "HK", symbol: "0700.HK", lots: 0 })]);
+    });
+    els.marketHoldingRows.append(row);
+  });
+}
+
+function readPortfolioEditorItems() {
+  if (!els.marketHoldingRows) return [];
+  return [...els.marketHoldingRows.querySelectorAll(".market-holding-row")]
+    .map((row) => {
+      const market = row.querySelector("[data-holding-market]")?.value === "US" ? "US" : "HK";
+      const symbol = row.querySelector("[data-holding-symbol]")?.value;
+      const lots = Number(row.querySelector("[data-holding-lots]")?.value || 0);
+      return normalizePortfolioItem({ market, symbol, lots });
+    })
+    .filter((item) => item.symbol);
 }
 
 function setMarketBackMode(mode) {
-  const isPortfolio = mode === "portfolio";
-  els.marketBackTitle.textContent = isPortfolio ? "持倉總值" : "設定股票";
-  els.marketSettingsPanel?.classList.toggle("is-active", !isPortfolio);
-  els.marketPortfolioPanel?.classList.toggle("is-active", isPortfolio);
-  if (isPortfolio) renderMarketPortfolio();
+  const isEditor = mode === "settings";
+  els.marketBackTitle.textContent = isEditor ? "持倉設定" : "持倉總值";
+  if (els.marketManageButton) els.marketManageButton.hidden = isEditor;
+  els.marketSettingsPanel?.classList.toggle("is-active", isEditor);
+  els.marketPortfolioPanel?.classList.toggle("is-active", !isEditor);
+  if (isEditor) renderPortfolioEditor();
+  else renderMarketPortfolio();
   els.marketCard?.classList.add("is-flipped");
 }
 
@@ -1043,6 +1130,9 @@ function getMarketUpdateTimeLabel(date = new Date()) {
 async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSavedMarketHidden()) {
   if (!els.marketForm) return;
   const cleanSymbols = symbols.slice(0, 3).map(normalizeMarketSymbol);
+  const portfolioItems = getSavedPortfolioItems();
+  const portfolioSymbols = getPortfolioSymbols(portfolioItems);
+  const requestSymbols = [...new Set([...cleanSymbols, ...portfolioSymbols])];
   els.marketSymbolInputs.forEach((input, index) => {
     input.value = cleanSymbols[index] || DEFAULT_MARKET_SYMBOLS[index];
   });
@@ -1052,13 +1142,15 @@ async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSav
   els.marketStatus.textContent = "更新市場資料中...";
 
   try {
-    const response = await fetch(`/api/market?symbols=${encodeURIComponent(cleanSymbols.join(","))}`, {
+    const response = await fetch(`/api/market?symbols=${encodeURIComponent(requestSymbols.join(","))}`, {
       credentials: "include",
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Market request failed");
 
-    const quotes = [data.hsi, ...(data.quotes || [])].filter(Boolean).slice(0, 4);
+    const customQuotes = data.quotes || [];
+    marketQuoteMap = new Map(customQuotes.map((quote) => [quote.symbol, quote]));
+    const quotes = [data.hsi, ...cleanSymbols.map((symbol) => marketQuoteMap.get(symbol))].filter(Boolean).slice(0, 4);
     marketQuotes = quotes;
     const visibleQuotes = quotes.filter((_, index) => index === 0 || !hidden[index - 1]);
     const allValues = visibleQuotes.flatMap(getMarketRelativeValues).filter((value) => typeof value === "number");
@@ -1201,6 +1293,10 @@ async function initDisplayPage() {
     markPanelActivity();
     setMarketBackMode("settings");
   });
+  els.marketManageButton?.addEventListener("click", () => {
+    markPanelActivity();
+    setMarketBackMode("settings");
+  });
   els.marketBackButton?.addEventListener("click", () => {
     markPanelActivity();
     els.marketCard?.classList.remove("is-flipped");
@@ -1208,23 +1304,16 @@ async function initDisplayPage() {
   els.marketForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     markPanelActivity();
-    const symbols = els.marketSymbolInputs.map((input) => normalizeMarketSymbol(input.value));
-    const hidden = els.marketHiddenInputs.map((input) => input.checked);
-    localStorage.setItem("marketSymbols", JSON.stringify(symbols));
-    localStorage.setItem("marketHidden", JSON.stringify(hidden));
-    els.marketCard?.classList.remove("is-flipped");
-    loadMarketData(symbols, hidden);
+    const items = readPortfolioEditorItems();
+    savePortfolioItems(items.length ? items : DEFAULT_PORTFOLIO_ITEMS);
+    setMarketBackMode("portfolio");
+    loadMarketData();
   });
-  els.marketPortfolioForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
+  document.querySelector("#marketAddHolding")?.addEventListener("click", () => {
     markPanelActivity();
-    const holdings = els.marketHoldingInputs.map((input) => {
-      const value = Number(input.value);
-      return Number.isFinite(value) && value > 0 ? value : 0;
-    });
-    localStorage.setItem("marketHoldings", JSON.stringify(holdings));
-    renderMarketPortfolio();
-    els.marketCard?.classList.remove("is-flipped");
+    const items = readPortfolioEditorItems();
+    items.push(normalizePortfolioItem({ market: "HK", symbol: "0700.HK", lots: 0 }));
+    renderPortfolioEditor(items);
   });
 
   els.spotifyLogin.addEventListener("click", async () => {

@@ -18,7 +18,7 @@ function normalizeSymbols(value) {
     .split(",")
     .map(normalizeSymbol)
     .filter(Boolean)
-    .slice(0, 3);
+    .slice(0, 12);
 }
 
 function compactSeries(timestamps = [], quote = {}) {

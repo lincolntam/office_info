@@ -565,7 +565,8 @@ button {
   text-align: center;
 }
 
-.market-settings-form {
+.market-settings-form,
+.market-holdings-form {
   display: grid;
   gap: 10px;
   width: 360px;
@@ -582,7 +583,8 @@ button {
   display: block;
 }
 
-.market-settings-form p {
+.market-settings-form p,
+.market-holdings-form p {
   margin: 0 0 4px;
   color: rgba(255, 255, 255, 0.68);
   font-size: 13px;
@@ -715,58 +717,61 @@ button {
   cursor: pointer;
 }
 
-.market-portfolio-form {
+.portfolio-summary {
   display: grid;
-  gap: 9px;
-  width: 382px;
-  margin: 22px auto 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  width: 490px;
+  margin: 96px auto 0;
 }
 
-.market-portfolio-form p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 13px;
-  font-weight: 650;
-  text-align: center;
-}
-
-.portfolio-total {
+.portfolio-total-card {
+  min-height: 156px;
   display: grid;
+  align-content: center;
   justify-items: center;
-  gap: 4px;
-  margin: 2px 0 4px;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.045)),
+    rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
-.portfolio-total span {
+.portfolio-total-card span {
   color: rgba(255, 255, 255, 0.62);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 760;
 }
 
-.portfolio-total strong {
+.portfolio-total-card strong {
   color: rgba(255, 255, 255, 0.96);
-  font-size: 34px;
-  font-weight: 780;
+  font-size: 26px;
+  font-weight: 800;
   line-height: 1;
 }
 
-.portfolio-row {
+.market-holding-rows {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.market-holding-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 82px 30px;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   color: rgba(255, 255, 255, 0.82);
   font-size: 13px;
   font-weight: 760;
 }
 
-.portfolio-row label {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.portfolio-row input {
+.market-holding-row select,
+.market-holding-row input {
   width: 100%;
   height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.24);
@@ -777,12 +782,44 @@ button {
   outline: none;
   font-size: 14px;
   font-weight: 760;
+}
+
+.market-holding-row select {
+  padding: 0 8px;
+}
+
+.market-holding-row input {
+  padding: 0 12px;
+  text-transform: uppercase;
+}
+
+.market-holding-row input[data-holding-lots] {
   text-align: right;
 }
 
-.market-portfolio-form button {
-  justify-self: center;
-  width: 142px;
+.market-delete-holding {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.market-form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.market-holdings-form button {
+  min-width: 112px;
   height: 34px;
   border: 0;
   border-radius: 999px;
@@ -791,6 +828,11 @@ button {
   font-size: 13px;
   font-weight: 850;
   cursor: pointer;
+}
+
+.market-holdings-form .market-secondary-button {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .weather-card {
