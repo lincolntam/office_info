@@ -113,6 +113,7 @@ const els = {
   marketHoldingRows: document.querySelector("#marketHoldingRows"),
   marketHkTotal: document.querySelector("#marketHkTotal"),
   marketUsTotal: document.querySelector("#marketUsTotal"),
+  portfolioLines: [...document.querySelectorAll("[data-portfolio-line]")],
   marketForm: document.querySelector("#marketForm"),
   marketSymbolInputs: [...document.querySelectorAll("[data-market-symbol-input]")],
   marketHiddenInputs: [...document.querySelectorAll("[data-market-hidden-input]")],
@@ -1053,10 +1054,58 @@ function calculatePortfolioTotals(items = getSavedPortfolioItems()) {
   );
 }
 
+function getPortfolioSeries(items = getSavedPortfolioItems()) {
+  const grouped = { HK: new Map(), US: new Map() };
+
+  items.map(normalizePortfolioItem).forEach((item) => {
+    const quote = marketQuoteMap.get(item.symbol);
+    const quantity = item.lots * (MARKET_LOT_SIZE[item.market] || 1);
+    if (!quote?.series?.length || !quantity) return;
+
+    quote.series.forEach((point) => {
+      const value = Number(point.value);
+      if (!Number.isFinite(value)) return;
+      const time = Number(point.time || 0);
+      const key = new Date(time * 1000).toISOString().slice(0, 10);
+      grouped[item.market].set(key, (grouped[item.market].get(key) || 0) + value * quantity);
+    });
+  });
+
+  return {
+    HK: [...grouped.HK.entries()].map(([time, value]) => ({ time, value })).slice(-30),
+    US: [...grouped.US.entries()].map(([time, value]) => ({ time, value })).slice(-30),
+  };
+}
+
+function buildValuePath(values, allValues) {
+  if (values.length < 2 || allValues.length < 2) return "";
+  const min = Math.min(...allValues);
+  const max = Math.max(...allValues);
+  const range = max - min || 1;
+  const width = 512;
+  const height = 94;
+  const xStart = 24;
+  const yStart = 24;
+
+  return values
+    .map((point, index) => {
+      const x = xStart + (index / Math.max(values.length - 1, 1)) * width;
+      const y = yStart + height - ((point.value - min) / range) * height;
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
 function renderMarketPortfolio() {
   const totals = calculatePortfolioTotals();
   if (els.marketHkTotal) els.marketHkTotal.textContent = formatMarketCurrency(totals.HK, "HKD");
   if (els.marketUsTotal) els.marketUsTotal.textContent = formatMarketCurrency(totals.US, "USD");
+  const series = getPortfolioSeries();
+  const allValues = [...series.HK, ...series.US].map((point) => point.value);
+  els.portfolioLines.forEach((line) => {
+    const market = line.dataset.portfolioLine;
+    line.setAttribute("d", buildValuePath(series[market] || [], allValues));
+  });
 }
 
 function renderPortfolioEditor(items = getSavedPortfolioItems()) {
@@ -1142,7 +1191,7 @@ async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSav
   els.marketStatus.textContent = "更新市場資料中...";
 
   try {
-    const response = await fetch(`/api/market?symbols=${encodeURIComponent(requestSymbols.join(","))}`, {
+    const response = await fetch(`/api/market?range=1mo&symbols=${encodeURIComponent(requestSymbols.join(","))}`, {
       credentials: "include",
     });
     const data = await response.json().catch(() => ({}));

@@ -720,13 +720,13 @@ button {
 .portfolio-summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 22px;
+  gap: 18px;
   width: 490px;
-  margin: 96px auto 0;
+  margin: 56px auto 0;
 }
 
 .portfolio-total-card {
-  min-height: 156px;
+  min-height: 128px;
   display: grid;
   align-content: center;
   justify-items: center;
@@ -747,22 +747,59 @@ button {
 
 .portfolio-total-card strong {
   color: rgba(255, 255, 255, 0.96);
-  font-size: 26px;
+  font-size: 25px;
   font-weight: 800;
   line-height: 1;
+}
+
+.portfolio-chart {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 560px;
+  height: 142px;
+  margin: 28px auto 0;
+  overflow: visible;
+}
+
+.portfolio-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.portfolio-line-hk {
+  stroke: #d4ff3f;
+  filter: drop-shadow(0 0 8px rgba(212, 255, 63, 0.28));
+}
+
+.portfolio-line-us {
+  stroke: #2470ff;
+  filter: drop-shadow(0 0 8px rgba(36, 112, 255, 0.32));
+}
+
+.portfolio-chart-caption {
+  position: relative;
+  z-index: 1;
+  margin: 9px 0 0;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 12px;
+  font-weight: 650;
+  text-align: center;
 }
 
 .market-holding-rows {
   display: grid;
   gap: 8px;
-  max-height: 250px;
+  max-height: 246px;
   overflow-y: auto;
   padding-right: 4px;
 }
 
 .market-holding-row {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) 82px 30px;
+  grid-template-columns: 70px minmax(0, 1fr) 70px 32px;
   align-items: center;
   gap: 8px;
   color: rgba(255, 255, 255, 0.82);
@@ -772,6 +809,7 @@ button {
 
 .market-holding-row select,
 .market-holding-row input {
+  min-width: 0;
   width: 100%;
   height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.24);
@@ -800,8 +838,8 @@ button {
 .market-delete-holding {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);

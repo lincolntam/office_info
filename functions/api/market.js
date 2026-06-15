@@ -48,8 +48,14 @@ function appendLatestPoint(series, price, time) {
   return nextSeries.slice(-30);
 }
 
-async function fetchQuote(symbol) {
-  const endpoint = `${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=1d&interval=5m`;
+function getChartParams(url) {
+  const range = url.searchParams.get("range") === "1mo" ? "1mo" : "1d";
+  const interval = range === "1mo" ? "1d" : "5m";
+  return { range, interval };
+}
+
+async function fetchQuote(symbol, chartParams = { range: "1d", interval: "5m" }) {
+  const endpoint = `${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=${chartParams.range}&interval=${chartParams.interval}`;
   const response = await fetch(endpoint, {
     cf: { cacheTtl: 60, cacheEverything: true },
     headers: { "User-Agent": "office-info-dashboard/1.0" },
@@ -88,11 +94,12 @@ export async function onRequestGet({ request }) {
   const symbols = normalizeSymbols(url.searchParams.get("symbols"));
   const fallbackSymbol = normalizeSymbol(url.searchParams.get("symbol")) || "0700.HK";
   const customSymbols = symbols.length ? symbols : [fallbackSymbol];
+  const chartParams = getChartParams(url);
 
   try {
     const [hsi, ...quotes] = await Promise.all([
-      fetchQuote("^HSI"),
-      ...customSymbols.map(fetchQuote),
+      fetchQuote("^HSI", chartParams),
+      ...customSymbols.map((symbol) => fetchQuote(symbol, chartParams)),
     ]);
     return json({ hsi, quotes, custom: quotes[0] || null });
   } catch (error) {
