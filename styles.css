@@ -804,9 +804,9 @@ button {
 
 .market-holding-row {
   display: grid;
-  grid-template-columns: 58px minmax(86px, 1fr) minmax(96px, 1.05fr) 58px 28px;
+  grid-template-columns: 58px minmax(82px, 0.9fr) minmax(112px, 1.15fr) 54px 28px;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   color: rgba(255, 255, 255, 0.82);
   font-size: 13px;
   font-weight: 760;
@@ -841,14 +841,17 @@ button {
   text-align: right;
 }
 
-.holding-stock-name {
+.market-holding-row .holding-stock-name {
   min-width: 0;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.075);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 12px;
   font-weight: 720;
   text-overflow: ellipsis;
+  text-transform: none;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .market-delete-holding {

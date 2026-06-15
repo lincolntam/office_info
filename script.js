@@ -108,6 +108,8 @@ const els = {
   marketManageButton: document.querySelector("#marketManageButton"),
   marketBackButton: document.querySelector("#marketBackButton"),
   marketBackTitle: document.querySelector("#marketBackTitle"),
+  marketDisplayPanel: document.querySelector("#marketDisplayPanel"),
+  marketDisplayForm: document.querySelector("#marketDisplayForm"),
   marketSettingsPanel: document.querySelector("#marketSettingsPanel"),
   marketPortfolioPanel: document.querySelector("#marketPortfolioPanel"),
   marketHoldingRows: document.querySelector("#marketHoldingRows"),
@@ -1124,7 +1126,7 @@ function updateHoldingRowName(row) {
   const market = row.querySelector("[data-holding-market]")?.value === "US" ? "US" : "HK";
   const symbol = row.querySelector("[data-holding-symbol]")?.value;
   const nameElement = row.querySelector("[data-holding-name]");
-  if (nameElement) nameElement.textContent = getHoldingDisplayName(symbol, market);
+  if (nameElement) nameElement.value = getHoldingDisplayName(symbol, market);
 }
 
 function renderPortfolioEditor(items = getSavedPortfolioItems()) {
@@ -1140,7 +1142,7 @@ function renderPortfolioEditor(items = getSavedPortfolioItems()) {
         <option value="US">美股</option>
       </select>
       <input data-holding-symbol type="text" aria-label="stock code" spellcheck="false" />
-      <span class="holding-stock-name" data-holding-name>--</span>
+      <input class="holding-stock-name" data-holding-name type="text" aria-label="stock name" readonly value="--" />
       <input data-holding-lots type="number" min="0" step="1" inputmode="numeric" aria-label="shares" />
       <button class="market-delete-holding" type="button" data-delete-holding aria-label="delete">×</button>
     `;
@@ -1174,13 +1176,16 @@ function readPortfolioEditorItems() {
 }
 
 function setMarketBackMode(mode) {
-  const isEditor = mode === "settings";
-  els.marketBackTitle.textContent = isEditor ? "持倉設定" : "持倉總值";
-  if (els.marketManageButton) els.marketManageButton.hidden = isEditor;
-  els.marketSettingsPanel?.classList.toggle("is-active", isEditor);
-  els.marketPortfolioPanel?.classList.toggle("is-active", !isEditor);
-  if (isEditor) renderPortfolioEditor();
-  else renderMarketPortfolio();
+  const isMarketSettings = mode === "market";
+  const isHoldings = mode === "holdings";
+  const isPortfolio = mode === "portfolio";
+  els.marketBackTitle.textContent = isMarketSettings ? "市場設定" : isHoldings ? "持倉設定" : "持倉總值";
+  if (els.marketManageButton) els.marketManageButton.hidden = !isPortfolio;
+  els.marketDisplayPanel?.classList.toggle("is-active", isMarketSettings);
+  els.marketSettingsPanel?.classList.toggle("is-active", isHoldings);
+  els.marketPortfolioPanel?.classList.toggle("is-active", isPortfolio);
+  if (isHoldings) renderPortfolioEditor();
+  if (isPortfolio) renderMarketPortfolio();
   els.marketCard?.classList.add("is-flipped");
 }
 
@@ -1365,15 +1370,25 @@ async function initDisplayPage() {
   });
   els.marketFlipButton?.addEventListener("click", () => {
     markPanelActivity();
-    setMarketBackMode("settings");
+    setMarketBackMode("market");
   });
   els.marketManageButton?.addEventListener("click", () => {
     markPanelActivity();
-    setMarketBackMode("settings");
+    setMarketBackMode("holdings");
   });
   els.marketBackButton?.addEventListener("click", () => {
     markPanelActivity();
     els.marketCard?.classList.remove("is-flipped");
+  });
+  els.marketDisplayForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    markPanelActivity();
+    const symbols = els.marketSymbolInputs.map((input) => normalizeMarketSymbol(input.value));
+    const hidden = els.marketHiddenInputs.map((input) => input.checked);
+    localStorage.setItem("marketSymbols", JSON.stringify(symbols));
+    localStorage.setItem("marketHidden", JSON.stringify(hidden));
+    els.marketCard?.classList.remove("is-flipped");
+    loadMarketData(symbols, hidden);
   });
   els.marketForm?.addEventListener("submit", (event) => {
     event.preventDefault();
