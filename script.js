@@ -1114,6 +1114,19 @@ function renderMarketPortfolio() {
   });
 }
 
+function getHoldingDisplayName(symbol, market) {
+  const normalizedSymbol = normalizePortfolioSymbol(symbol, market);
+  const quote = marketQuoteMap.get(normalizedSymbol);
+  return STOCK_CHINESE_NAMES[normalizedSymbol] || quote?.name || normalizedSymbol || "--";
+}
+
+function updateHoldingRowName(row) {
+  const market = row.querySelector("[data-holding-market]")?.value === "US" ? "US" : "HK";
+  const symbol = row.querySelector("[data-holding-symbol]")?.value;
+  const nameElement = row.querySelector("[data-holding-name]");
+  if (nameElement) nameElement.textContent = getHoldingDisplayName(symbol, market);
+}
+
 function renderPortfolioEditor(items = getSavedPortfolioItems()) {
   if (!els.marketHoldingRows) return;
   els.marketHoldingRows.innerHTML = "";
@@ -1127,17 +1140,23 @@ function renderPortfolioEditor(items = getSavedPortfolioItems()) {
         <option value="US">美股</option>
       </select>
       <input data-holding-symbol type="text" aria-label="stock code" spellcheck="false" />
+      <span class="holding-stock-name" data-holding-name>--</span>
       <input data-holding-lots type="number" min="0" step="1" inputmode="numeric" aria-label="shares" />
       <button class="market-delete-holding" type="button" data-delete-holding aria-label="delete">×</button>
     `;
-    row.querySelector("[data-holding-market]").value = item.market;
-    row.querySelector("[data-holding-symbol]").value = getPortfolioSymbolInput(item.symbol, item.market);
+    const marketSelect = row.querySelector("[data-holding-market]");
+    const symbolInput = row.querySelector("[data-holding-symbol]");
+    marketSelect.value = item.market;
+    symbolInput.value = getPortfolioSymbolInput(item.symbol, item.market);
     row.querySelector("[data-holding-lots]").value = String(item.lots || 0);
+    marketSelect.addEventListener("change", () => updateHoldingRowName(row));
+    symbolInput.addEventListener("input", () => updateHoldingRowName(row));
     row.querySelector("[data-delete-holding]").addEventListener("click", () => {
       const nextItems = readPortfolioEditorItems();
       nextItems.splice(index, 1);
       renderPortfolioEditor(nextItems.length ? nextItems : [normalizePortfolioItem({ market: "HK", symbol: "0700.HK", lots: 0 })]);
     });
+    updateHoldingRowName(row);
     els.marketHoldingRows.append(row);
   });
 }
