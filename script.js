@@ -1040,6 +1040,21 @@ function renderMarketMetric(quote, metricElement) {
   metricElement?.classList.toggle("is-down", Number(quote?.changePercent || 0) < 0);
 }
 
+function buildMarketQuoteMap(quotes = []) {
+  const map = new Map();
+  quotes.forEach((quote) => {
+    [quote?.symbol, quote?.requestedSymbol].filter(Boolean).forEach((rawKey) => {
+      [
+        rawKey,
+        normalizeMarketSymbol(rawKey),
+        normalizePortfolioSymbol(rawKey, "HK"),
+        normalizePortfolioSymbol(rawKey, "US"),
+      ].forEach((key) => map.set(key, quote));
+    });
+  });
+  return map;
+}
+
 function calculatePortfolioTotals(items = getSavedPortfolioItems()) {
   return items.reduce(
     (totals, item) => {
@@ -1228,7 +1243,7 @@ async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSav
     if (!response.ok) throw new Error(data.error || "Market request failed");
 
     const customQuotes = data.quotes || [];
-    marketQuoteMap = new Map(customQuotes.map((quote) => [quote.symbol, quote]));
+    marketQuoteMap = buildMarketQuoteMap(customQuotes);
     const quotes = [data.hsi, ...cleanSymbols.map((symbol) => marketQuoteMap.get(symbol))].filter(Boolean).slice(0, 4);
     marketQuotes = quotes;
     const visibleQuotes = quotes.filter((_, index) => index === 0 || !hidden[index - 1]);

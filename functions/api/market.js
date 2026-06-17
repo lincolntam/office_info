@@ -97,11 +97,32 @@ export async function onRequestGet({ request }) {
   const chartParams = getChartParams(url);
 
   try {
-    const [hsi, ...quotes] = await Promise.all([
-      fetchQuote("^HSI", chartParams),
-      ...customSymbols.map((symbol) => fetchQuote(symbol, chartParams)),
+    const [hsiResult, quoteResults] = await Promise.all([
+      fetchQuote("^HSI", chartParams).then(
+        (quote) => ({ ok: true, quote }),
+        (error) => ({ ok: false, error }),
+      ),
+      Promise.allSettled(customSymbols.map((symbol) => fetchQuote(symbol, chartParams))),
     ]);
-    return json({ hsi, quotes, custom: quotes[0] || null });
+    const hsi = hsiResult.ok ? hsiResult.quote : null;
+    const quotes = quoteResults
+      .map((result, index) =>
+        result.status === "fulfilled"
+          ? { ...result.value, requestedSymbol: customSymbols[index] }
+          : null,
+      )
+      .filter(Boolean);
+    const failures = quoteResults
+      .map((result, index) =>
+        result.status === "rejected"
+          ? { symbol: customSymbols[index], error: result.reason?.message || "Market data unavailable" }
+          : null,
+      )
+      .filter(Boolean);
+
+    if (!hsi && !quotes.length) throw new Error("Market data unavailable");
+
+    return json({ hsi, quotes, custom: quotes[0] || null, failures });
   } catch (error) {
     return json({ error: error.message || "Market data unavailable" }, 502);
   }
