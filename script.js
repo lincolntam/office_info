@@ -1071,11 +1071,11 @@ function calculatePortfolioTotals(items = getSavedPortfolioItems()) {
   );
 }
 
-function getPortfolioSeries(items = getSavedPortfolioItems()) {
+function getPortfolioSeries(items = getSavedPortfolioItems(), quoteMap = marketQuoteMap) {
   const grouped = { HK: new Map(), US: new Map() };
 
   items.map(normalizePortfolioItem).forEach((item) => {
-    const quote = marketQuoteMap.get(item.symbol);
+    const quote = quoteMap.get(item.symbol);
     const quantity = item.lots * (MARKET_LOT_SIZE[item.market] || 1);
     if (!quote?.series?.length || !quantity) return;
 
@@ -1100,6 +1100,15 @@ function getPortfolioSeries(items = getSavedPortfolioItems()) {
   };
 }
 
+function getRelativePortfolioSeries(values = []) {
+  const base = Number(values.find((point) => Number.isFinite(point.value))?.value || 0);
+  if (!base) return [];
+  return values.map((point) => ({
+    time: point.time,
+    value: ((point.value - base) / base) * 100,
+  }));
+}
+
 function buildValuePath(values, allValues) {
   if (values.length < 2 || allValues.length < 2) return "";
   const min = Math.min(...allValues);
@@ -1119,16 +1128,39 @@ function buildValuePath(values, allValues) {
     .join(" ");
 }
 
-function renderMarketPortfolio() {
+function renderMarketPortfolio(seriesQuoteMap = marketQuoteMap) {
   const totals = calculatePortfolioTotals();
   if (els.marketHkTotal) els.marketHkTotal.textContent = formatMarketCurrency(totals.HK, "HKD");
   if (els.marketUsTotal) els.marketUsTotal.textContent = formatMarketCurrency(totals.US, "USD");
-  const series = getPortfolioSeries();
-  const allValues = [...series.HK, ...series.US].map((point) => point.value);
+  const series = getPortfolioSeries(getSavedPortfolioItems(), seriesQuoteMap);
+  const relativeSeries = {
+    HK: getRelativePortfolioSeries(series.HK),
+    US: getRelativePortfolioSeries(series.US),
+  };
+  const allValues = [...relativeSeries.HK, ...relativeSeries.US].map((point) => point.value);
   els.portfolioLines.forEach((line) => {
     const market = line.dataset.portfolioLine;
-    line.setAttribute("d", buildValuePath(series[market] || [], allValues));
+    line.setAttribute("d", buildValuePath(relativeSeries[market] || [], allValues));
   });
+}
+
+async function loadPortfolioTrendData(portfolioSymbols = getPortfolioSymbols()) {
+  if (!portfolioSymbols.length) {
+    renderMarketPortfolio();
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/market?symbols=${encodeURIComponent(portfolioSymbols.join(","))}&range=1mo`,
+      { credentials: "include" },
+    );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Portfolio trend request failed");
+    renderMarketPortfolio(buildMarketQuoteMap(data.quotes || []));
+  } catch {
+    renderMarketPortfolio();
+  }
 }
 
 function getHoldingDisplayName(symbol, market) {
@@ -1263,6 +1295,7 @@ async function loadMarketData(symbols = getSavedMarketSymbols(), hidden = getSav
     els.marketCard?.classList.toggle("is-down", hsiChange < 0);
     els.marketStatus.textContent = `${data.hsi?.currency || "HKD"} · 今日走勢 · 更新 ${getMarketUpdateTimeLabel()}`;
     renderMarketPortfolio();
+    loadPortfolioTrendData(portfolioSymbols);
     localStorage.setItem("marketSymbols", JSON.stringify(cleanSymbols));
     localStorage.setItem("marketHidden", JSON.stringify(hidden.slice(0, 3).map(Boolean)));
   } catch {
