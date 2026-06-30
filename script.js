@@ -12,6 +12,9 @@ const SPOTIFY_REDIRECT_URI =
 const AUTO_ROTATE_MS = 5 * 60 * 1000;
 const DEFAULT_MARKET_SYMBOLS = ["0700.HK", "1810.HK", "9988.HK"];
 const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
+const DEFAULT_MUSIC_SOURCE = "spotify";
+const DEFAULT_YOUTUBE_URL = "";
+const RTHK2_STREAM_URL = "https://rthkaudio2-lh.akamaihd.net/i/radio2_1@355866/master.m3u8";
 
 const HKO_WEATHER_LOCATIONS = [
   { place: "\u4eac\u58eb\u67cf", lat: 22.312, lon: 114.172 },
@@ -102,6 +105,18 @@ const els = {
   weatherRain: document.querySelector("#weatherRain"),
   weatherLow: document.querySelector("#weatherLow"),
   weatherHigh: document.querySelector("#weatherHigh"),
+  musicCard: document.querySelector("#musicCard"),
+  musicSourceButton: document.querySelector("#musicSourceButton"),
+  musicBackButton: document.querySelector("#musicBackButton"),
+  musicSourcePanel: document.querySelector("#musicSourcePanel"),
+  musicSourceOptions: [...document.querySelectorAll("[data-source-option]")],
+  youtubeLayer: document.querySelector("#youtubeLayer"),
+  youtubePlayer: document.querySelector("#youtubePlayer"),
+  youtubeEmpty: document.querySelector("#youtubeEmpty"),
+  youtubeSettingsButton: document.querySelector("#youtubeSettingsButton"),
+  youtubeForm: document.querySelector("#youtubeForm"),
+  youtubeUrlInput: document.querySelector("#youtubeUrlInput"),
+  youtubeSourceBackButton: document.querySelector("#youtubeSourceBackButton"),
   marketCard: document.querySelector("#marketCard"),
   marketPortfolioButton: document.querySelector("#marketPortfolioButton"),
   marketFlipButton: document.querySelector("#marketFlipButton"),
@@ -224,6 +239,9 @@ let lastPanelMoveAt = Date.now();
 let currentWeatherCondition = "CLOUDY";
 let marketQuotes = [];
 let marketQuoteMap = new Map();
+let musicSource = DEFAULT_MUSIC_SOURCE;
+let radioAudio = null;
+let isRadioPlaying = false;
 
 const DEFAULT_PORTFOLIO_ITEMS = [
   { market: "HK", symbol: "0700.HK", lots: 0 },
@@ -359,7 +377,149 @@ function setSpotifyConnectedUi(isConnected) {
   els.spotifyLogin.classList.toggle("is-connected", isConnected);
 }
 
+function getSavedMusicSource() {
+  const saved = localStorage.getItem("musicSource");
+  return ["spotify", "youtube", "radio"].includes(saved) ? saved : DEFAULT_MUSIC_SOURCE;
+}
+
+function getSavedYoutubeUrl() {
+  return localStorage.getItem("youtubeUrl") || DEFAULT_YOUTUBE_URL;
+}
+
+function parseYouTubeVideoId(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^[A-Za-z0-9_-]{11}$/.test(raw)) return raw;
+
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") return url.pathname.split("/").filter(Boolean)[0] || "";
+    if (!host.endsWith("youtube.com")) return "";
+    if (url.pathname === "/watch") return url.searchParams.get("v") || "";
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (["embed", "live", "shorts"].includes(parts[0])) return parts[1] || "";
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function getYoutubeEmbedUrl(url = getSavedYoutubeUrl()) {
+  const videoId = parseYouTubeVideoId(url);
+  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0` : "";
+}
+
+function ensureRadioAudio() {
+  if (radioAudio) return radioAudio;
+  radioAudio = new Audio(RTHK2_STREAM_URL);
+  radioAudio.preload = "none";
+  radioAudio.addEventListener("play", () => {
+    isRadioPlaying = true;
+    if (musicSource === "radio") {
+      els.playPause.classList.remove("is-paused");
+      els.playState.textContent = "RTHK2 正在播放";
+    }
+  });
+  radioAudio.addEventListener("pause", () => {
+    isRadioPlaying = false;
+    if (musicSource === "radio") {
+      els.playPause.classList.add("is-paused");
+      els.playState.textContent = "RTHK2 已暫停";
+    }
+  });
+  radioAudio.addEventListener("error", () => {
+    isRadioPlaying = false;
+    if (musicSource === "radio") {
+      els.playPause.classList.add("is-paused");
+      els.playState.textContent = "未能播放 RTHK2";
+    }
+  });
+  return radioAudio;
+}
+
+function stopYoutubePlayer() {
+  if (els.youtubePlayer) els.youtubePlayer.src = "";
+}
+
+async function stopSpotifyPlayback() {
+  try {
+    if (spotifyPlayer) await spotifyPlayer.pause();
+  } catch {
+    // Keep source switching responsive even if Spotify refuses a pause call.
+  }
+}
+
+function stopRadioPlayback() {
+  if (!radioAudio) return;
+  radioAudio.pause();
+}
+
+function stopNonActiveMusic(source) {
+  if (source !== "youtube") stopYoutubePlayer();
+  if (source !== "radio") stopRadioPlayback();
+  if (source !== "spotify") stopSpotifyPlayback();
+}
+
+function showMusicBackPanel(panel) {
+  els.musicSourcePanel?.classList.toggle("is-active", panel === "source");
+  els.youtubeForm?.classList.toggle("is-active", panel === "youtube");
+  els.musicCard?.classList.add("is-flipped");
+}
+
+function renderYoutubeSource() {
+  const embedUrl = getYoutubeEmbedUrl();
+  if (els.youtubeUrlInput) els.youtubeUrlInput.value = getSavedYoutubeUrl();
+  if (!els.youtubeLayer || !els.youtubePlayer || !els.youtubeEmpty) return;
+
+  els.youtubeLayer.hidden = false;
+  els.youtubePlayer.hidden = !embedUrl;
+  els.youtubeEmpty.hidden = Boolean(embedUrl);
+  els.youtubePlayer.src = embedUrl;
+}
+
+function renderRadioSource() {
+  els.albumBackdrop.src = "./assets/taeyeon-four-seasons.jpg";
+  els.trackTitle.textContent = "RTHK2";
+  els.trackArtist.textContent = "香港電台第二台";
+  els.progressBar.style.width = "0%";
+  els.playPause.classList.toggle("is-paused", !isRadioPlaying);
+  els.playPause.setAttribute("aria-label", isRadioPlaying ? "暫停 RTHK2" : "播放 RTHK2");
+  els.playState.textContent = isRadioPlaying ? "RTHK2 正在播放" : "RTHK2 已準備";
+}
+
+function renderMusicSource() {
+  els.musicCard?.setAttribute("data-music-source", musicSource);
+  els.musicSourceOptions.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.sourceOption === musicSource);
+  });
+
+  if (musicSource !== "youtube" && els.youtubeLayer) {
+    els.youtubeLayer.hidden = true;
+  }
+
+  if (musicSource === "spotify") {
+    els.playPause.setAttribute("aria-label", playing ? "暫停" : "播放");
+    refreshSpotifyDisplay();
+  } else if (musicSource === "youtube") {
+    renderYoutubeSource();
+  } else if (musicSource === "radio") {
+    renderRadioSource();
+  }
+}
+
+function setMusicSource(source) {
+  if (!["spotify", "youtube", "radio"].includes(source)) return;
+  musicSource = source;
+  localStorage.setItem("musicSource", source);
+  stopNonActiveMusic(source);
+  renderMusicSource();
+  els.musicCard?.classList.remove("is-flipped");
+}
+
 function renderSpotifyTrack(track) {
+  if (musicSource !== "spotify") return;
   if (!track?.item) {
     setSpotifyConnectedUi(true);
     renderEmptySpotifyState();
@@ -596,13 +756,17 @@ function setupSpotifyWebPlayback() {
     spotifyPlayer.addListener("ready", ({ device_id }) => {
       spotifyDeviceId = device_id;
       setSpotifyConnectedUi(true);
-      els.playState.textContent = "網頁播放已準備";
+      if (musicSource === "spotify") {
+        els.playState.textContent = "網頁播放已準備";
+      }
     });
 
     spotifyPlayer.addListener("not_ready", () => {
       spotifyDeviceId = null;
       setSpotifyConnectedUi(true);
-      els.playState.textContent = "網頁播放已離線";
+      if (musicSource === "spotify") {
+        els.playState.textContent = "網頁播放已離線";
+      }
     });
 
     spotifyPlayer.addListener("player_state_changed", (state) => {
@@ -615,22 +779,30 @@ function setupSpotifyWebPlayback() {
     });
 
     spotifyPlayer.addListener("initialization_error", ({ message }) => {
-      els.playState.textContent = "播放器初始化失敗";
+      if (musicSource === "spotify") {
+        els.playState.textContent = "播放器初始化失敗";
+      }
       console.error(message);
     });
 
     spotifyPlayer.addListener("authentication_error", ({ message }) => {
-      els.playState.textContent = "Spotify 認證失敗";
+      if (musicSource === "spotify") {
+        els.playState.textContent = "Spotify 認證失敗";
+      }
       console.error(message);
     });
 
     spotifyPlayer.addListener("account_error", ({ message }) => {
-      els.playState.textContent = "需要 Spotify Premium";
+      if (musicSource === "spotify") {
+        els.playState.textContent = "需要 Spotify Premium";
+      }
       console.error(message);
     });
 
     spotifyPlayer.addListener("playback_error", ({ message }) => {
-      els.playState.textContent = "播放失敗";
+      if (musicSource === "spotify") {
+        els.playState.textContent = "播放失敗";
+      }
       console.error(message);
     });
 
@@ -690,6 +862,7 @@ async function loadSpotifyPlaybackState(token) {
 }
 
 async function refreshSpotifyDisplay() {
+  if (musicSource !== "spotify") return;
   try {
     const token = await getSpotifyToken();
     if (!token) {
@@ -1399,6 +1572,21 @@ async function initDisplayPage() {
   });
 
   els.playPause.addEventListener("click", () => {
+    if (musicSource === "radio") {
+      const audio = ensureRadioAudio();
+      if (audio.paused) {
+        audio.play().catch(() => {
+          els.playState.textContent = "未能播放 RTHK2";
+          els.playPause.classList.add("is-paused");
+        });
+      } else {
+        audio.pause();
+      }
+      return;
+    }
+
+    if (musicSource !== "spotify") return;
+
     playing = !playing;
     els.playPause.classList.toggle("is-paused", !playing);
     els.playPause.setAttribute("aria-label", playing ? "暫停" : "播放");
@@ -1412,6 +1600,39 @@ async function initDisplayPage() {
   els.nextTrack.addEventListener("click", nextSpotifyTrack);
   els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
   els.showQueue.addEventListener("click", showSpotifyQueue);
+  els.musicSourceButton?.addEventListener("click", () => {
+    markPanelActivity();
+    showMusicBackPanel("source");
+  });
+  els.youtubeSettingsButton?.addEventListener("click", () => {
+    markPanelActivity();
+    showMusicBackPanel("youtube");
+  });
+  els.musicBackButton?.addEventListener("click", () => {
+    markPanelActivity();
+    els.musicCard?.classList.remove("is-flipped");
+  });
+  els.musicSourceOptions.forEach((button) => {
+    button.addEventListener("click", () => {
+      markPanelActivity();
+      setMusicSource(button.dataset.sourceOption);
+    });
+  });
+  els.youtubeSourceBackButton?.addEventListener("click", () => {
+    markPanelActivity();
+    showMusicBackPanel("source");
+  });
+  els.youtubeForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    markPanelActivity();
+    const value = els.youtubeUrlInput?.value || "";
+    if (!parseYouTubeVideoId(value)) {
+      els.playState.textContent = "YouTube link 不正確";
+      return;
+    }
+    localStorage.setItem("youtubeUrl", value.trim());
+    setMusicSource("youtube");
+  });
   els.marketPortfolioButton?.addEventListener("click", () => {
     markPanelActivity();
     setMarketBackMode("portfolio");
@@ -1454,6 +1675,7 @@ async function initDisplayPage() {
   });
 
   els.spotifyLogin.addEventListener("click", async () => {
+    if (musicSource !== "spotify") return;
     const token = await getSpotifyToken();
     if (!token) {
       await loginSpotify();
@@ -1483,6 +1705,9 @@ async function initDisplayPage() {
 
   resizeStage();
   renderEmptySpotifyState();
+  musicSource = getSavedMusicSource();
+  if (els.youtubeUrlInput) els.youtubeUrlInput.value = getSavedYoutubeUrl();
+  renderMusicSource();
   loadSpotlightHomeImage();
   updateClock();
   setupSpotifyWebPlayback();

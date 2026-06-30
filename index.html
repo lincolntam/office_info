@@ -21,29 +21,61 @@
         </section>
 
         <section id="spotify" class="stack-panel" aria-label="Spotify">
-          <article class="smart-card music-card">
-            <img id="albumBackdrop" class="album-backdrop" src="./assets/taeyeon-four-seasons.jpg" alt="" />
-            <div class="hero-scrim music-scrim"></div>
-            <div class="music-topline">
-              <button id="spotifyLogin" class="device-pill" type="button">&#36899;&#25509; Spotify</button>
-            </div>
-            <div class="music-copy">
-              <p id="trackTitle">&#26410;&#26377;&#25773;&#25918;&#20839;&#23481;</p>
-              <span id="trackArtist">&#36899;&#25509; Spotify &#24460;&#26371;&#33258;&#21205;&#26356;&#26032;</span>
-            </div>
-            <button id="playPause" class="widget-play-button" type="button" aria-label="pause">
-              <span class="pause-icon" aria-hidden="true"></span>
-            </button>
-            <div class="spotify-widget-controls" aria-label="Spotify controls">
-              <button id="saveTrack" type="button" aria-label="save track">+</button>
-              <div class="progress-shell" aria-hidden="true">
-                <span id="progressBar" class="widget-progress"></span>
+          <article id="musicCard" class="smart-card music-card" data-music-source="spotify">
+            <div class="music-face music-front">
+              <img id="albumBackdrop" class="album-backdrop" src="./assets/taeyeon-four-seasons.jpg" alt="" />
+              <div class="hero-scrim music-scrim"></div>
+              <div id="youtubeLayer" class="youtube-layer" hidden>
+                <iframe
+                  id="youtubePlayer"
+                  title="YouTube Live player"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                ></iframe>
+                <div id="youtubeEmpty" class="youtube-empty">
+                  <strong>YouTube Live</strong>
+                  <span>&#35531;&#20808;&#36664;&#20837; YouTube &#36899;&#32080;</span>
+                </div>
+                <button id="youtubeSettingsButton" class="music-more-button youtube-more-button" type="button" aria-label="YouTube settings">...</button>
               </div>
-              <button id="nextTrack" type="button" aria-label="next track">&#9197;</button>
-              <button id="connectDevice" type="button" aria-label="connect device">&#9678;</button>
-              <button id="showQueue" type="button" aria-label="play queue">&#9649;</button>
+              <div class="music-topline">
+                <button id="spotifyLogin" class="device-pill" type="button">&#36899;&#25509; Spotify</button>
+              </div>
+              <div class="music-copy">
+                <p id="trackTitle">&#26410;&#26377;&#25773;&#25918;&#20839;&#23481;</p>
+                <span id="trackArtist">&#36899;&#25509; Spotify &#24460;&#26371;&#33258;&#21205;&#26356;&#26032;</span>
+              </div>
+              <button id="musicSourceButton" class="music-more-button music-source-button" type="button" aria-label="music source">...</button>
+              <button id="playPause" class="widget-play-button" type="button" aria-label="pause">
+                <span class="pause-icon" aria-hidden="true"></span>
+              </button>
+              <div class="spotify-widget-controls" aria-label="Spotify controls">
+                <button id="saveTrack" type="button" aria-label="save track">+</button>
+                <div class="progress-shell" aria-hidden="true">
+                  <span id="progressBar" class="widget-progress"></span>
+                </div>
+                <button id="nextTrack" type="button" aria-label="next track">&#9197;</button>
+                <button id="connectDevice" type="button" aria-label="connect device">&#9678;</button>
+                <button id="showQueue" type="button" aria-label="play queue">&#9649;</button>
+              </div>
+              <p id="playState" class="play-state">Spotify &#25773;&#25918;</p>
             </div>
-            <p id="playState" class="play-state">Spotify &#25773;&#25918;</p>
+            <div class="music-face music-back" aria-label="music settings">
+              <button id="musicBackButton" class="music-close-button" type="button" aria-label="back to player">&times;</button>
+              <div id="musicSourcePanel" class="music-back-panel is-active">
+                <p>&#38899;&#27138;&#20358;&#28304;</p>
+                <button class="music-source-option" type="button" data-source-option="spotify">Spotify</button>
+                <button class="music-source-option" type="button" data-source-option="youtube">YouTube Live</button>
+                <button class="music-source-option" type="button" data-source-option="radio">Radio</button>
+              </div>
+              <form id="youtubeForm" class="music-back-panel youtube-form">
+                <p>YouTube Live</p>
+                <label for="youtubeUrlInput">YouTube link</label>
+                <input id="youtubeUrlInput" type="url" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false" />
+                <button type="submit">&#30906;&#23450;</button>
+                <button id="youtubeSourceBackButton" class="music-secondary-button" type="button">&#22238;&#21040;&#38899;&#27138;&#20358;&#28304;</button>
+              </form>
+            </div>
           </article>
         </section>
 
