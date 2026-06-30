@@ -344,6 +344,11 @@ button {
   border: 0;
 }
 
+.youtube-layer iframe[hidden],
+.youtube-empty[hidden] {
+  display: none !important;
+}
+
 .youtube-empty {
   position: absolute;
   inset: 0;

@@ -448,6 +448,15 @@ function ensureRadioAudio() {
   radioAudio.preload = "none";
   if (window.Hls?.isSupported()) {
     radioHls = new Hls({ lowLatencyMode: true });
+    radioHls.on(Hls.Events.ERROR, (_, data) => {
+      if (!data?.fatal) return;
+      isRadioPlaying = false;
+      if (musicSource === "radio") {
+        els.playPause.classList.add("is-paused");
+        els.playState.textContent =
+          data.type === Hls.ErrorTypes.NETWORK_ERROR ? "RTHK2 網絡讀取失敗" : "RTHK2 播放格式失敗";
+      }
+    });
     radioHls.loadSource(RTHK2_STREAM_URL);
     radioHls.attachMedia(radioAudio);
   } else if (radioAudio.canPlayType("application/vnd.apple.mpegurl")) {
@@ -720,6 +729,43 @@ async function transferPlaybackToBrowser(shouldPlay = true) {
     }),
   });
   setSpotifyConnectedUi(true);
+}
+
+function waitForSpotifyDevice(timeoutMs = 3500) {
+  if (spotifyDeviceId) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      if (spotifyDeviceId) {
+        clearInterval(timer);
+        resolve(true);
+      } else if (Date.now() - startedAt >= timeoutMs) {
+        clearInterval(timer);
+        resolve(false);
+      }
+    }, 100);
+  });
+}
+
+async function ensureSpotifyPlaybackReady() {
+  const token = await getSpotifyToken();
+  if (!token) {
+    await loginSpotify();
+    return false;
+  }
+
+  setupSpotifyWebPlayback();
+  if (!spotifyPlayer && window.Spotify?.Player && window.onSpotifyWebPlaybackSDKReady) {
+    await window.onSpotifyWebPlaybackSDKReady();
+  }
+
+  const hasDevice = await waitForSpotifyDevice();
+  if (!hasDevice) {
+    els.playState.textContent = "Spotify 播放器未準備好";
+    return false;
+  }
+
+  return true;
 }
 
 async function spotifyApi(path, options = {}) {
@@ -1609,7 +1655,7 @@ async function initDisplayPage() {
     });
   });
 
-  els.playPause.addEventListener("click", () => {
+  els.playPause.addEventListener("click", async () => {
     if (musicSource === "radio") {
       const audio = ensureRadioAudio();
       if (audio.paused) {
@@ -1625,12 +1671,24 @@ async function initDisplayPage() {
 
     if (musicSource !== "spotify") return;
 
-    playing = !playing;
-    els.playPause.classList.toggle("is-paused", !playing);
-    els.playPause.setAttribute("aria-label", playing ? "暫停" : "播放");
-    els.playState.textContent = playing ? "正在播放" : "已暫停";
-    if (spotifyPlayer) {
-      spotifyPlayer.togglePlay();
+    if (!(await ensureSpotifyPlaybackReady())) return;
+
+    if (isSpotifyPlaying) {
+      await spotifyPlayer.pause();
+      isSpotifyPlaying = false;
+      playing = false;
+      els.playPause.classList.add("is-paused");
+      els.playPause.setAttribute("aria-label", "播放");
+      els.playState.textContent = "已暫停";
+    } else {
+      await transferPlaybackToBrowser(true);
+      await spotifyPlayer.resume();
+      isSpotifyPlaying = true;
+      playing = true;
+      els.playPause.classList.remove("is-paused");
+      els.playPause.setAttribute("aria-label", "暫停");
+      els.playState.textContent = "正在播放";
+      refreshSpotifyDisplay();
     }
   });
 
