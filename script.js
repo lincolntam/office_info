@@ -14,7 +14,12 @@ const DEFAULT_MARKET_SYMBOLS = ["0700.HK", "1810.HK", "9988.HK"];
 const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
 const DEFAULT_MUSIC_SOURCE = "spotify";
 const DEFAULT_YOUTUBE_URL = "";
-const RTHK2_STREAM_URL = "https://rthkaudio2-lh.akamaihd.net/i/radio2_1@355866/master.m3u8";
+const RTHK2_STREAM_URLS = [
+  "https://stm.rthk.hk/radio2",
+  "http://stm.rthk.hk/radio2",
+  "https://rthkaudio2-lh.akamaihd.net/i/radio2_1@355866/index_56_a-p.m3u8",
+  "https://rthkaudio2-lh.akamaihd.net/i/radio2_1@355866/master.m3u8",
+];
 const RTHK2_PROGRAMS = [
   { start: "00:00", name: "深夜第二台" },
   { start: "06:00", name: "晨光第一線" },
@@ -254,6 +259,8 @@ let musicSource = DEFAULT_MUSIC_SOURCE;
 let radioAudio = null;
 let radioHls = null;
 let isRadioPlaying = false;
+let radioStreamIndex = 0;
+let radioRetrying = false;
 
 const DEFAULT_PORTFOLIO_ITEMS = [
   { market: "HK", symbol: "0700.HK", lots: 0 },
@@ -442,26 +449,59 @@ function updateRadioProgramText() {
   els.trackArtist.textContent = "RTHK2 · 香港電台第二台";
 }
 
-function ensureRadioAudio() {
-  if (radioAudio) return radioAudio;
-  radioAudio = new Audio(RTHK2_STREAM_URL);
-  radioAudio.preload = "none";
-  if (window.Hls?.isSupported()) {
+function destroyRadioHls() {
+  if (!radioHls) return;
+  radioHls.destroy();
+  radioHls = null;
+}
+
+function setupRadioStream(url) {
+  if (!radioAudio) return;
+  destroyRadioHls();
+  radioAudio.removeAttribute("src");
+  radioAudio.load();
+
+  if (url.endsWith(".m3u8") && window.Hls?.isSupported()) {
     radioHls = new Hls({ lowLatencyMode: true });
     radioHls.on(Hls.Events.ERROR, (_, data) => {
-      if (!data?.fatal) return;
-      isRadioPlaying = false;
-      if (musicSource === "radio") {
-        els.playPause.classList.add("is-paused");
-        els.playState.textContent =
-          data.type === Hls.ErrorTypes.NETWORK_ERROR ? "RTHK2 網絡讀取失敗" : "RTHK2 播放格式失敗";
-      }
+      if (data?.fatal) tryNextRadioStream();
     });
-    radioHls.loadSource(RTHK2_STREAM_URL);
+    radioHls.loadSource(url);
     radioHls.attachMedia(radioAudio);
-  } else if (radioAudio.canPlayType("application/vnd.apple.mpegurl")) {
-    radioAudio.src = RTHK2_STREAM_URL;
+  } else {
+    radioAudio.src = url;
   }
+}
+
+async function tryNextRadioStream() {
+  if (!radioAudio || radioRetrying) return;
+  if (radioStreamIndex >= RTHK2_STREAM_URLS.length - 1) {
+    isRadioPlaying = false;
+    if (musicSource === "radio") {
+      els.playPause.classList.add("is-paused");
+      els.playState.textContent = "未能播放 RTHK2";
+    }
+    return;
+  }
+
+  radioRetrying = true;
+  radioStreamIndex += 1;
+  setupRadioStream(RTHK2_STREAM_URLS[radioStreamIndex]);
+  try {
+    await radioAudio.play();
+  } catch {
+    radioRetrying = false;
+    tryNextRadioStream();
+    return;
+  }
+  radioRetrying = false;
+}
+
+function ensureRadioAudio() {
+  if (radioAudio) return radioAudio;
+  radioAudio = new Audio();
+  radioAudio.preload = "none";
+  setupRadioStream(RTHK2_STREAM_URLS[radioStreamIndex]);
   radioAudio.addEventListener("play", () => {
     isRadioPlaying = true;
     if (musicSource === "radio") {
@@ -479,10 +519,7 @@ function ensureRadioAudio() {
   });
   radioAudio.addEventListener("error", () => {
     isRadioPlaying = false;
-    if (musicSource === "radio") {
-      els.playPause.classList.add("is-paused");
-      els.playState.textContent = window.Hls ? "未能播放 RTHK2" : "未載入 HLS 播放器";
-    }
+    tryNextRadioStream();
   });
   return radioAudio;
 }
