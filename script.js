@@ -15,6 +15,17 @@ const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
 const DEFAULT_MUSIC_SOURCE = "spotify";
 const DEFAULT_YOUTUBE_URL = "";
 const RTHK2_STREAM_URL = "https://rthkaudio2-lh.akamaihd.net/i/radio2_1@355866/master.m3u8";
+const RTHK2_PROGRAMS = [
+  { start: "00:00", name: "深夜第二台" },
+  { start: "06:00", name: "晨光第一線" },
+  { start: "10:00", name: "自在 8 點半" },
+  { start: "12:00", name: "音樂情人" },
+  { start: "14:00", name: "Made in Hong Kong 李志剛" },
+  { start: "16:00", name: "日常 8 點半" },
+  { start: "18:00", name: "瘋 Show 快活人" },
+  { start: "20:00", name: "騷動音樂" },
+  { start: "22:00", name: "夜媽媽" },
+];
 
 const HKO_WEATHER_LOCATIONS = [
   { place: "\u4eac\u58eb\u67cf", lat: 22.312, lon: 114.172 },
@@ -241,6 +252,7 @@ let marketQuotes = [];
 let marketQuoteMap = new Map();
 let musicSource = DEFAULT_MUSIC_SOURCE;
 let radioAudio = null;
+let radioHls = null;
 let isRadioPlaying = false;
 
 const DEFAULT_PORTFOLIO_ITEMS = [
@@ -411,13 +423,40 @@ function getYoutubeEmbedUrl(url = getSavedYoutubeUrl()) {
   return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0` : "";
 }
 
+function timeToMinutes(value) {
+  const [hour, minute] = value.split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function getRthk2CurrentProgram(date = new Date()) {
+  const minutes = date.getHours() * 60 + date.getMinutes();
+  return RTHK2_PROGRAMS.reduce((current, program) => {
+    return minutes >= timeToMinutes(program.start) ? program : current;
+  }, RTHK2_PROGRAMS[RTHK2_PROGRAMS.length - 1]);
+}
+
+function updateRadioProgramText() {
+  if (musicSource !== "radio") return;
+  const program = getRthk2CurrentProgram();
+  els.trackTitle.textContent = program.name;
+  els.trackArtist.textContent = "RTHK2 · 香港電台第二台";
+}
+
 function ensureRadioAudio() {
   if (radioAudio) return radioAudio;
   radioAudio = new Audio(RTHK2_STREAM_URL);
   radioAudio.preload = "none";
+  if (window.Hls?.isSupported()) {
+    radioHls = new Hls({ lowLatencyMode: true });
+    radioHls.loadSource(RTHK2_STREAM_URL);
+    radioHls.attachMedia(radioAudio);
+  } else if (radioAudio.canPlayType("application/vnd.apple.mpegurl")) {
+    radioAudio.src = RTHK2_STREAM_URL;
+  }
   radioAudio.addEventListener("play", () => {
     isRadioPlaying = true;
     if (musicSource === "radio") {
+      updateRadioProgramText();
       els.playPause.classList.remove("is-paused");
       els.playState.textContent = "RTHK2 正在播放";
     }
@@ -433,7 +472,7 @@ function ensureRadioAudio() {
     isRadioPlaying = false;
     if (musicSource === "radio") {
       els.playPause.classList.add("is-paused");
-      els.playState.textContent = "未能播放 RTHK2";
+      els.playState.textContent = window.Hls ? "未能播放 RTHK2" : "未載入 HLS 播放器";
     }
   });
   return radioAudio;
@@ -481,12 +520,11 @@ function renderYoutubeSource() {
 
 function renderRadioSource() {
   els.albumBackdrop.src = "./assets/taeyeon-four-seasons.jpg";
-  els.trackTitle.textContent = "RTHK2";
-  els.trackArtist.textContent = "香港電台第二台";
+  updateRadioProgramText();
   els.progressBar.style.width = "0%";
   els.playPause.classList.toggle("is-paused", !isRadioPlaying);
   els.playPause.setAttribute("aria-label", isRadioPlaying ? "暫停 RTHK2" : "播放 RTHK2");
-  els.playState.textContent = isRadioPlaying ? "RTHK2 正在播放" : "RTHK2 已準備";
+  els.playState.textContent = isRadioPlaying ? "RTHK2 正在播放" : "目前節目";
 }
 
 function renderMusicSource() {
@@ -1721,6 +1759,7 @@ async function initDisplayPage() {
   updateActivePanel();
   setInterval(updateClock, 1000);
   setInterval(refreshSpotifyDisplay, 30000);
+  setInterval(updateRadioProgramText, 60 * 1000);
   setInterval(loadHkoWeather, 10 * 60 * 1000);
   setInterval(() => setWeatherVisual(currentWeatherCondition), 60 * 1000);
   setInterval(loadMarketData, 60 * 1000);

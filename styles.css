@@ -229,39 +229,37 @@ button {
   display: grid;
   place-items: center;
   border: 0;
-  background: rgba(235, 248, 255, 0.92);
-  color: rgba(12, 25, 33, 0.92);
-  font-weight: 850;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 820;
   cursor: pointer;
 }
 
 .music-more-button {
-  width: 62px;
-  height: 38px;
+  width: 54px;
+  height: 32px;
   border-radius: 999px;
   font-size: 20px;
   line-height: 1;
 }
 
 .music-source-button {
-  position: absolute;
-  right: 138px;
-  bottom: 154px;
-  z-index: 2;
+  flex: 0 0 auto;
 }
 
 .music-close-button {
   position: absolute;
-  top: 26px;
-  right: 30px;
+  top: 30px;
+  right: 34px;
   z-index: 3;
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 32px;
   border-radius: 50%;
   background: transparent;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 42px;
-  line-height: 1;
+  font-size: 31px;
+  font-weight: 560;
+  line-height: 0.8;
 }
 
 .music-back-panel {
@@ -372,8 +370,8 @@ button {
 
 .youtube-more-button {
   position: absolute;
-  top: 28px;
-  right: 30px;
+  top: 30px;
+  right: 34px;
   z-index: 4;
 }
 
@@ -389,17 +387,20 @@ button {
 }
 
 .music-card[data-music-source="radio"] .spotify-widget-controls,
-.music-card[data-music-source="radio"] .music-topline {
+.music-card[data-music-source="radio"] .device-pill {
   display: none;
 }
 
 .music-topline {
-  position: relative;
+  position: absolute;
+  top: 30px;
+  right: 34px;
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 30px 32px 0;
+  gap: 4px;
+  padding: 0;
 }
 
 .device-pill {
