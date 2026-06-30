@@ -565,7 +565,7 @@ function renderYoutubeSource() {
 }
 
 function renderRadioSource() {
-  els.albumBackdrop.src = "./assets/taeyeon-four-seasons.jpg";
+  els.albumBackdrop.src = "./assets/radio-bg.jpg";
   updateRadioProgramText();
   els.progressBar.style.width = "0%";
   els.playPause.classList.toggle("is-paused", !isRadioPlaying);
