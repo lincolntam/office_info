@@ -498,14 +498,16 @@ button {
   left: 30px;
   z-index: 1;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 42px 42px 42px;
+  grid-template-columns: 40px minmax(0, 1fr) 40px 40px 40px;
   gap: 14px;
   align-items: center;
 }
 
 .spotify-widget-controls button {
-  width: 38px;
-  height: 38px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -517,37 +519,44 @@ button {
   cursor: pointer;
 }
 
+#previousTrack,
+#nextTrack {
+  font-size: 25px;
+}
+
+#connectDevice {
+  font-size: 29px;
+}
+
 .music-front > .music-volume-control {
   display: none;
 }
 
 .music-volume-control {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
 }
 
 .music-volume-control button {
   position: relative;
   z-index: 2;
-  display: grid;
-  place-items: center;
 }
 
 .volume-icon {
   position: relative;
   display: block;
-  width: 25px;
-  height: 24px;
+  width: 23px;
+  height: 22px;
   color: currentColor;
 }
 
 .volume-icon::before {
   position: absolute;
-  top: 4px;
+  top: 3px;
   left: 1px;
-  width: 17px;
-  height: 16px;
+  width: 16px;
+  height: 15px;
   background: currentColor;
   clip-path: polygon(0 30%, 34% 30%, 78% 0, 78% 100%, 34% 70%, 0 70%);
   content: "";
@@ -555,8 +564,8 @@ button {
 
 .volume-icon::after {
   position: absolute;
-  top: 5px;
-  left: 15px;
+  top: 4px;
+  left: 14px;
   width: 8px;
   height: 12px;
   border: 3px solid currentColor;
@@ -573,7 +582,7 @@ button {
   border: 0;
   border-radius: 0;
   color: currentColor;
-  content: "×";
+  content: "\00d7";
   font-size: 29px;
   font-weight: 800;
   line-height: 1;
