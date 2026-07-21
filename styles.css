@@ -544,48 +544,32 @@ button {
 }
 
 .volume-icon {
-  position: relative;
   display: block;
-  width: 23px;
-  height: 22px;
-  color: currentColor;
+  width: 30px;
+  height: 30px;
+  overflow: visible;
 }
 
-.volume-icon::before {
-  position: absolute;
-  top: 3px;
-  left: 1px;
-  width: 16px;
-  height: 15px;
-  background: currentColor;
-  clip-path: polygon(0 30%, 34% 30%, 78% 0, 78% 100%, 34% 70%, 0 70%);
-  content: "";
+.volume-speaker,
+.volume-wave,
+.volume-x {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.volume-icon::after {
-  position: absolute;
-  top: 4px;
-  left: 14px;
-  width: 8px;
-  height: 12px;
-  border: 3px solid currentColor;
-  border-left: 0;
-  border-radius: 0 999px 999px 0;
-  content: "";
+.volume-x {
+  display: none;
 }
 
-.music-volume-control.is-muted .volume-icon::after {
-  top: -1px;
-  left: 16px;
-  width: auto;
-  height: auto;
-  border: 0;
-  border-radius: 0;
-  color: currentColor;
-  content: "\00d7";
-  font-size: 29px;
-  font-weight: 800;
-  line-height: 1;
+.music-volume-control.is-muted .volume-wave {
+  display: none;
+}
+
+.music-volume-control.is-muted .volume-x {
+  display: block;
 }
 
 .music-volume-control input {
