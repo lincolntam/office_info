@@ -14,6 +14,7 @@ const DEFAULT_MARKET_SYMBOLS = ["0700.HK", "1810.HK", "9988.HK"];
 const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
 const DEFAULT_MUSIC_SOURCE = "spotify";
 const DEFAULT_YOUTUBE_URL = "";
+const DEFAULT_MUSIC_VOLUME = 0.65;
 const RTHK2_STREAM_URLS = [
   "https://stm.rthk.hk/radio2",
   "http://stm.rthk.hk/radio2",
@@ -105,6 +106,8 @@ const els = {
   playPause: document.querySelector("#playPause"),
   playState: document.querySelector("#playState"),
   progressBar: document.querySelector("#progressBar"),
+  musicVolume: document.querySelector("#musicVolume"),
+  volumeIcon: document.querySelector("#volumeIcon"),
   spotifyLogin: document.querySelector("#spotifyLogin"),
   saveTrack: document.querySelector("#saveTrack"),
   nextTrack: document.querySelector("#nextTrack"),
@@ -261,6 +264,7 @@ let radioHls = null;
 let isRadioPlaying = false;
 let radioStreamIndex = 0;
 let radioRetrying = false;
+let musicVolume = DEFAULT_MUSIC_VOLUME;
 
 const DEFAULT_PORTFOLIO_ITEMS = [
   { market: "HK", symbol: "0700.HK", lots: 0 },
@@ -405,6 +409,27 @@ function getSavedYoutubeUrl() {
   return localStorage.getItem("youtubeUrl") || DEFAULT_YOUTUBE_URL;
 }
 
+function getSavedMusicVolume() {
+  const saved = Number(localStorage.getItem("musicVolume"));
+  return Number.isFinite(saved) ? Math.min(Math.max(saved, 0), 1) : DEFAULT_MUSIC_VOLUME;
+}
+
+function renderMusicVolume() {
+  if (!els.musicVolume) return;
+  els.musicVolume.value = String(Math.round(musicVolume * 100));
+  els.musicVolume.parentElement?.classList.toggle("is-muted", musicVolume <= 0);
+}
+
+async function applyMusicVolume() {
+  renderMusicVolume();
+  if (radioAudio) radioAudio.volume = musicVolume;
+  try {
+    if (spotifyPlayer) await spotifyPlayer.setVolume(musicVolume);
+  } catch {
+    // Spotify can reject volume before the web player is ready.
+  }
+}
+
 function parseYouTubeVideoId(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -501,6 +526,7 @@ function ensureRadioAudio() {
   if (radioAudio) return radioAudio;
   radioAudio = new Audio();
   radioAudio.preload = "none";
+  radioAudio.volume = musicVolume;
   setupRadioStream(RTHK2_STREAM_URLS[radioStreamIndex]);
   radioAudio.addEventListener("play", () => {
     isRadioPlaying = true;
@@ -871,7 +897,7 @@ function setupSpotifyWebPlayback() {
       getOAuthToken: async (callback) => {
         callback(await getSpotifyToken());
       },
-      volume: 0.65,
+      volume: musicVolume,
     });
 
     spotifyPlayer.addListener("ready", ({ device_id }) => {
@@ -928,6 +954,7 @@ function setupSpotifyWebPlayback() {
     });
 
     await spotifyPlayer.connect();
+    applyMusicVolume();
   };
 }
 
@@ -1733,6 +1760,12 @@ async function initDisplayPage() {
   els.nextTrack.addEventListener("click", nextSpotifyTrack);
   els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
   els.showQueue.addEventListener("click", showSpotifyQueue);
+  els.musicVolume?.addEventListener("input", () => {
+    markPanelActivity();
+    musicVolume = Number(els.musicVolume.value) / 100;
+    localStorage.setItem("musicVolume", String(musicVolume));
+    applyMusicVolume();
+  });
   els.musicSourceButton?.addEventListener("click", () => {
     markPanelActivity();
     showMusicBackPanel("source");
@@ -1839,7 +1872,9 @@ async function initDisplayPage() {
   resizeStage();
   renderEmptySpotifyState();
   musicSource = getSavedMusicSource();
+  musicVolume = getSavedMusicVolume();
   if (els.youtubeUrlInput) els.youtubeUrlInput.value = getSavedYoutubeUrl();
+  renderMusicVolume();
   renderMusicSource();
   loadSpotlightHomeImage();
   updateClock();
