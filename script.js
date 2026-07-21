@@ -1316,6 +1316,7 @@ function normalizePortfolioSymbol(value, market = "HK") {
     if (/^\d{1,4}$/.test(symbol)) return `${symbol.padStart(4, "0")}.HK`;
     if (/^\d{5}$/.test(symbol)) return `${symbol}.HK`;
   }
+  if (market === "US") return symbol.replace(/\.US$/i, "") || "AAPL";
   return symbol || (market === "US" ? "AAPL" : "0700.HK");
 }
 
@@ -1447,11 +1448,20 @@ function buildMarketQuoteMap(quotes = []) {
   return map;
 }
 
-function calculatePortfolioTotals(items = getSavedPortfolioItems()) {
+function mergeQuoteMaps(...maps) {
+  const merged = new Map();
+  maps.forEach((map) => {
+    if (!(map instanceof Map)) return;
+    map.forEach((quote, key) => merged.set(key, quote));
+  });
+  return merged;
+}
+
+function calculatePortfolioTotals(items = getSavedPortfolioItems(), quoteMap = marketQuoteMap) {
   return items.reduce(
     (totals, item) => {
       const normalized = normalizePortfolioItem(item);
-      const quote = marketQuoteMap.get(normalized.symbol);
+      const quote = quoteMap.get(normalized.symbol);
       const price = Number(quote?.price || 0);
       const quantity = normalized.lots * (MARKET_LOT_SIZE[normalized.market] || 1);
       if (Number.isFinite(price) && Number.isFinite(quantity)) {
@@ -1521,10 +1531,11 @@ function buildValuePath(values, allValues) {
 }
 
 function renderMarketPortfolio(seriesQuoteMap = marketQuoteMap) {
-  const totals = calculatePortfolioTotals();
+  const quoteMap = seriesQuoteMap === marketQuoteMap ? marketQuoteMap : mergeQuoteMaps(marketQuoteMap, seriesQuoteMap);
+  const totals = calculatePortfolioTotals(getSavedPortfolioItems(), quoteMap);
   if (els.marketHkTotal) els.marketHkTotal.textContent = formatMarketCurrency(totals.HK, "HKD");
   if (els.marketUsTotal) els.marketUsTotal.textContent = formatMarketCurrency(totals.US, "USD");
-  const series = getPortfolioSeries(getSavedPortfolioItems(), seriesQuoteMap);
+  const series = getPortfolioSeries(getSavedPortfolioItems(), quoteMap);
   const relativeSeries = {
     HK: getRelativePortfolioSeries(series.HK),
     US: getRelativePortfolioSeries(series.US),
@@ -1549,7 +1560,9 @@ async function loadPortfolioTrendData(portfolioSymbols = getPortfolioSymbols()) 
     );
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Portfolio trend request failed");
-    renderMarketPortfolio(buildMarketQuoteMap(data.quotes || []));
+    const quoteMap = buildMarketQuoteMap(data.quotes || []);
+    quoteMap.forEach((quote, key) => marketQuoteMap.set(key, quote));
+    renderMarketPortfolio(marketQuoteMap);
   } catch {
     renderMarketPortfolio();
   }
