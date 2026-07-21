@@ -517,15 +517,19 @@ button {
   cursor: pointer;
 }
 
+.music-front > .music-volume-control {
+  display: none;
+}
+
 .music-volume-control {
-  position: absolute;
-  right: 152px;
-  bottom: 120px;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 24px 110px;
-  gap: 9px;
-  align-items: center;
+  position: relative;
+  width: 38px;
+  height: 38px;
+}
+
+.music-volume-control button {
+  position: relative;
+  z-index: 2;
 }
 
 .volume-icon {
@@ -564,16 +568,30 @@ button {
 }
 
 .music-volume-control input {
-  width: 110px;
+  position: absolute;
+  top: 50%;
+  right: 44px;
+  z-index: 1;
+  width: 112px;
   height: 4px;
   margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
   accent-color: rgba(235, 248, 255, 0.94);
   cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.music-volume-control:hover input,
+.music-volume-control:focus-within input {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .progress-shell {
+  position: relative;
   height: 5px;
-  overflow: hidden;
   border-radius: 999px;
   background: rgba(235, 248, 255, 0.24);
 }
@@ -585,6 +603,16 @@ button {
   border-radius: 999px;
   background: rgba(235, 248, 255, 0.92);
   transition: width 180ms linear;
+}
+
+.progress-shell input {
+  position: absolute;
+  inset: -11px 0;
+  width: 100%;
+  height: 27px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .play-state {

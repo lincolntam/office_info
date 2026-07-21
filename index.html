@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-Hant-HK">
   <head>
     <meta charset="utf-8" />
@@ -50,17 +50,19 @@
                 <span class="pause-icon" aria-hidden="true"></span>
               </button>
               <div class="spotify-widget-controls" aria-label="Spotify controls">
-                <button id="saveTrack" type="button" aria-label="save track">+</button>
-                <div class="progress-shell" aria-hidden="true">
+                <button id="previousTrack" type="button" aria-label="&#19978;&#19968;&#39318;">&#9198;</button>
+                <div class="progress-shell">
                   <span id="progressBar" class="widget-progress"></span>
+                  <input id="seekBar" type="range" min="0" max="1000" value="0" aria-label="&#27468;&#26354;&#36914;&#24230;" />
                 </div>
                 <button id="nextTrack" type="button" aria-label="next track">&#9197;</button>
                 <button id="connectDevice" type="button" aria-label="connect device">&#9678;</button>
-                <button id="showQueue" type="button" aria-label="play queue">&#9649;</button>
-              </div>
-              <div class="music-volume-control" aria-label="volume">
-                <span id="volumeIcon" class="volume-icon" aria-hidden="true"></span>
-                <input id="musicVolume" type="range" min="0" max="100" value="65" aria-label="音量" />
+                <div class="music-volume-control" aria-label="&#38899;&#37327;">
+                  <button id="volumeToggle" type="button" aria-label="&#38748;&#38899;">
+                    <span id="volumeIcon" class="volume-icon" aria-hidden="true"></span>
+                  </button>
+                  <input id="musicVolume" type="range" min="0" max="100" value="65" aria-label="&#38899;&#37327;" />
+                </div>
               </div>
               <p id="playState" class="play-state">Spotify &#25773;&#25918;</p>
             </div>

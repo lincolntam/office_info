@@ -106,13 +106,14 @@ const els = {
   playPause: document.querySelector("#playPause"),
   playState: document.querySelector("#playState"),
   progressBar: document.querySelector("#progressBar"),
+  seekBar: document.querySelector("#seekBar"),
   musicVolume: document.querySelector("#musicVolume"),
   volumeIcon: document.querySelector("#volumeIcon"),
+  volumeToggle: document.querySelector("#volumeToggle"),
   spotifyLogin: document.querySelector("#spotifyLogin"),
-  saveTrack: document.querySelector("#saveTrack"),
+  previousTrack: document.querySelector("#previousTrack"),
   nextTrack: document.querySelector("#nextTrack"),
   connectDevice: document.querySelector("#connectDevice"),
-  showQueue: document.querySelector("#showQueue"),
   weatherDate: document.querySelector("#weatherDate"),
   weatherCard: document.querySelector("#weatherCard"),
   weatherPhoto: document.querySelector("#weatherPhoto"),
@@ -265,6 +266,8 @@ let isRadioPlaying = false;
 let radioStreamIndex = 0;
 let radioRetrying = false;
 let musicVolume = DEFAULT_MUSIC_VOLUME;
+let previousMusicVolume = DEFAULT_MUSIC_VOLUME;
+let isSeeking = false;
 
 const DEFAULT_PORTFOLIO_ITEMS = [
   { market: "HK", symbol: "0700.HK", lots: 0 },
@@ -363,6 +366,7 @@ function renderEmptySpotifyState() {
   els.trackArtist.textContent = "請在 Spotify 播放歌曲";
   els.albumBackdrop.src = nowPlaying.albumImage;
   els.progressBar.style.width = "0%";
+  if (els.seekBar) els.seekBar.value = "0";
   currentTrackId = null;
   currentDurationMs = 0;
   currentProgressMs = 0;
@@ -418,6 +422,7 @@ function renderMusicVolume() {
   if (!els.musicVolume) return;
   els.musicVolume.value = String(Math.round(musicVolume * 100));
   els.musicVolume.parentElement?.classList.toggle("is-muted", musicVolume <= 0);
+  els.volumeToggle?.setAttribute("aria-label", musicVolume <= 0 ? "取消靜音" : "靜音");
 }
 
 async function applyMusicVolume() {
@@ -428,6 +433,23 @@ async function applyMusicVolume() {
   } catch {
     // Spotify can reject volume before the web player is ready.
   }
+}
+
+function setMusicVolume(value) {
+  const nextVolume = Math.min(Math.max(Number(value), 0), 1);
+  if (nextVolume > 0) previousMusicVolume = nextVolume;
+  musicVolume = nextVolume;
+  localStorage.setItem("musicVolume", String(musicVolume));
+  applyMusicVolume();
+}
+
+function toggleMusicMute() {
+  if (musicVolume > 0) {
+    previousMusicVolume = musicVolume;
+    setMusicVolume(0);
+    return;
+  }
+  setMusicVolume(previousMusicVolume || DEFAULT_MUSIC_VOLUME);
 }
 
 function parseYouTubeVideoId(value) {
@@ -594,6 +616,7 @@ function renderRadioSource() {
   els.albumBackdrop.src = "./assets/radio-bg.jpg";
   updateRadioProgramText();
   els.progressBar.style.width = "0%";
+  if (els.seekBar) els.seekBar.value = "0";
   els.playPause.classList.toggle("is-paused", !isRadioPlaying);
   els.playPause.setAttribute("aria-label", isRadioPlaying ? "暫停 RTHK2" : "播放 RTHK2");
   els.playState.textContent = isRadioPlaying ? "RTHK2 正在播放" : "目前節目";
@@ -657,15 +680,49 @@ function renderSpotifyTrack(track) {
   setSpotifyConnectedUi(true);
 }
 
-function updateProgressBar() {
+function getCurrentSpotifyProgressMs() {
+  if (!currentDurationMs) return 0;
+  const elapsed = isSpotifyPlaying ? Date.now() - currentProgressUpdatedAt : 0;
+  return Math.min(currentProgressMs + elapsed, currentDurationMs);
+}
+
+function setProgressUi(progressMs) {
   if (!currentDurationMs) {
     els.progressBar.style.width = "0%";
+    if (els.seekBar) els.seekBar.value = "0";
     return;
   }
 
-  const elapsed = isSpotifyPlaying ? Date.now() - currentProgressUpdatedAt : 0;
-  const progressNow = Math.min(currentProgressMs + elapsed, currentDurationMs);
-  els.progressBar.style.width = `${(progressNow / currentDurationMs) * 100}%`;
+  const percent = Math.min(Math.max(progressMs / currentDurationMs, 0), 1);
+  els.progressBar.style.width = `${percent * 100}%`;
+  if (els.seekBar && !isSeeking) {
+    els.seekBar.value = String(Math.round(percent * Number(els.seekBar.max || 1000)));
+  }
+}
+
+function updateProgressBar() {
+  setProgressUi(getCurrentSpotifyProgressMs());
+}
+
+async function seekSpotifyTrack() {
+  if (!currentDurationMs || !els.seekBar) return;
+  if (!(await ensureSpotifyPlaybackReady())) return;
+
+  const ratio = Number(els.seekBar.value) / Number(els.seekBar.max || 1000);
+  const positionMs = Math.round(currentDurationMs * ratio);
+  try {
+    if (spotifyPlayer?.seek) {
+      await spotifyPlayer.seek(positionMs);
+    } else {
+      await spotifyApi(`/me/player/seek?position_ms=${positionMs}`, { method: "PUT" });
+    }
+    currentProgressMs = positionMs;
+    currentProgressUpdatedAt = Date.now();
+    setProgressUi(positionMs);
+    els.playState.textContent = "已移動播放位置";
+  } catch {
+    els.playState.textContent = "未能移動播放位置";
+  }
 }
 
 async function sha256(text) {
@@ -858,6 +915,20 @@ async function saveCurrentTrack() {
     els.playState.textContent = response.ok ? "已加入你的音樂庫" : "加入失敗";
   } catch {
     els.playState.textContent = "加入失敗";
+  }
+}
+
+async function previousSpotifyTrack() {
+  try {
+    if (spotifyPlayer?.previousTrack) {
+      await spotifyPlayer.previousTrack();
+    } else {
+      await spotifyApi("/me/player/previous", { method: "POST" });
+    }
+    els.playState.textContent = "上一首";
+    setTimeout(refreshSpotifyDisplay, 700);
+  } catch {
+    els.playState.textContent = "未能切換上一首";
   }
 }
 
@@ -1756,15 +1827,28 @@ async function initDisplayPage() {
     }
   });
 
-  els.saveTrack.addEventListener("click", saveCurrentTrack);
+  els.previousTrack?.addEventListener("click", previousSpotifyTrack);
   els.nextTrack.addEventListener("click", nextSpotifyTrack);
   els.connectDevice.addEventListener("click", () => transferPlaybackToBrowser(true));
-  els.showQueue.addEventListener("click", showSpotifyQueue);
+  els.volumeToggle?.addEventListener("click", () => {
+    markPanelActivity();
+    toggleMusicMute();
+  });
   els.musicVolume?.addEventListener("input", () => {
     markPanelActivity();
-    musicVolume = Number(els.musicVolume.value) / 100;
-    localStorage.setItem("musicVolume", String(musicVolume));
-    applyMusicVolume();
+    setMusicVolume(Number(els.musicVolume.value) / 100);
+  });
+  els.seekBar?.addEventListener("input", () => {
+    markPanelActivity();
+    if (!currentDurationMs) return;
+    isSeeking = true;
+    const ratio = Number(els.seekBar.value) / Number(els.seekBar.max || 1000);
+    setProgressUi(currentDurationMs * ratio);
+  });
+  els.seekBar?.addEventListener("change", async () => {
+    markPanelActivity();
+    await seekSpotifyTrack();
+    isSeeking = false;
   });
   els.musicSourceButton?.addEventListener("click", () => {
     markPanelActivity();
@@ -1873,6 +1957,7 @@ async function initDisplayPage() {
   renderEmptySpotifyState();
   musicSource = getSavedMusicSource();
   musicVolume = getSavedMusicVolume();
+  previousMusicVolume = musicVolume || DEFAULT_MUSIC_VOLUME;
   if (els.youtubeUrlInput) els.youtubeUrlInput.value = getSavedYoutubeUrl();
   renderMusicVolume();
   renderMusicSource();
