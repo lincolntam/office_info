@@ -391,9 +391,23 @@ button {
   display: none;
 }
 
-.music-card[data-music-source="radio"] .spotify-widget-controls,
 .music-card[data-music-source="radio"] .device-pill {
   display: none;
+}
+
+.music-card[data-music-source="radio"] .spotify-widget-controls {
+  grid-template-columns: minmax(0, 1fr) 40px;
+}
+
+.music-card[data-music-source="radio"] #previousTrack,
+.music-card[data-music-source="radio"] .progress-shell,
+.music-card[data-music-source="radio"] #nextTrack,
+.music-card[data-music-source="radio"] #connectDevice {
+  display: none;
+}
+
+.music-card[data-music-source="radio"] .music-volume-control {
+  grid-column: 2;
 }
 
 .music-topline {
