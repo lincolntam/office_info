@@ -35,6 +35,51 @@ const RTHK2_PROGRAMS = [
 ];
 
 const MTR_LINES = {
+  TWL: {
+    zh: "荃灣綫",
+    en: "Tsuen Wan Line",
+    color: "#e2231a",
+    leftDestinations: ["TSW"],
+    rightDestinations: ["CEN"],
+    destinations: {
+      TSW: { zh: "往荃灣", en: "to Tsuen Wan", platform: "1" },
+      CEN: { zh: "往中環", en: "to Central", platform: "2" },
+    },
+  },
+  ISL: {
+    zh: "港島綫",
+    en: "Island Line",
+    color: "#0860a8",
+    leftDestinations: ["KET"],
+    rightDestinations: ["CHW"],
+    destinations: {
+      KET: { zh: "往堅尼地城", en: "to Kennedy Town", platform: "1" },
+      CHW: { zh: "往柴灣", en: "to Chai Wan", platform: "2" },
+    },
+  },
+  KTL: {
+    zh: "觀塘綫",
+    en: "Kwun Tong Line",
+    color: "#00a040",
+    leftDestinations: ["WHA"],
+    rightDestinations: ["TIK"],
+    destinations: {
+      WHA: { zh: "往黃埔", en: "to Whampoa", platform: "1" },
+      TIK: { zh: "往調景嶺", en: "to Tiu Keng Leng", platform: "2" },
+    },
+  },
+  TKL: {
+    zh: "將軍澳綫",
+    en: "Tseung Kwan O Line",
+    color: "#8d1b8c",
+    leftDestinations: ["POA", "LHP"],
+    rightDestinations: ["NOP"],
+    destinations: {
+      POA: { zh: "往寶琳", en: "to Po Lam", platform: "1" },
+      LHP: { zh: "往康城", en: "to LOHAS Park", platform: "1" },
+      NOP: { zh: "往北角", en: "to North Point", platform: "2" },
+    },
+  },
   TCL: {
     zh: "東涌綫",
     en: "Tung Chung Line",
@@ -80,19 +125,129 @@ const MTR_LINES = {
       HOK: { zh: "往香港", en: "to Hong Kong", platform: "4" },
     },
   },
+  SIL: {
+    zh: "南港島綫",
+    en: "South Island Line",
+    color: "#bac429",
+    leftDestinations: ["SOH"],
+    rightDestinations: ["ADM"],
+    destinations: {
+      SOH: { zh: "往海怡半島", en: "to South Horizons", platform: "1" },
+      ADM: { zh: "往金鐘", en: "to Admiralty", platform: "2" },
+    },
+  },
+  DRL: {
+    zh: "迪士尼綫",
+    en: "Disneyland Resort Line",
+    color: "#f6a4c9",
+    leftDestinations: ["DIS"],
+    rightDestinations: ["SUN"],
+    destinations: {
+      DIS: { zh: "往迪士尼", en: "to Disneyland Resort", platform: "1" },
+      SUN: { zh: "往欣澳", en: "to Sunny Bay", platform: "2" },
+    },
+  },
 };
 
 const MTR_STATIONS = {
+  TSW: { zh: "荃灣", en: "Tsuen Wan", lines: ["TWL"] },
+  TWH: { zh: "大窩口", en: "Tai Wo Hau", lines: ["TWL"] },
+  KWH: { zh: "葵興", en: "Kwai Hing", lines: ["TWL"] },
+  KWF: { zh: "葵芳", en: "Kwai Fong", lines: ["TWL"] },
+  LAK: { zh: "荔景", en: "Lai King", lines: ["TWL", "TCL"] },
+  MEF: { zh: "美孚", en: "Mei Foo", lines: ["TWL", "TML"] },
+  LCK: { zh: "荔枝角", en: "Lai Chi Kok", lines: ["TWL"] },
+  CSW: { zh: "長沙灣", en: "Cheung Sha Wan", lines: ["TWL"] },
+  SSP: { zh: "深水埗", en: "Sham Shui Po", lines: ["TWL"] },
+  PRE: { zh: "太子", en: "Prince Edward", lines: ["TWL", "KTL"] },
+  MOK: { zh: "旺角", en: "Mong Kok", lines: ["TWL", "KTL"] },
+  YMT: { zh: "油麻地", en: "Yau Ma Tei", lines: ["TWL", "KTL"] },
+  JOR: { zh: "佐敦", en: "Jordan", lines: ["TWL"] },
+  TST: { zh: "尖沙咀", en: "Tsim Sha Tsui", lines: ["TWL"] },
+  CEN: { zh: "中環", en: "Central", lines: ["TWL", "ISL"] },
+  KET: { zh: "堅尼地城", en: "Kennedy Town", lines: ["ISL"] },
+  HKU: { zh: "香港大學", en: "HKU", lines: ["ISL"] },
+  SYP: { zh: "西營盤", en: "Sai Ying Pun", lines: ["ISL"] },
+  SHW: { zh: "上環", en: "Sheung Wan", lines: ["ISL"] },
+  WAC: { zh: "灣仔", en: "Wan Chai", lines: ["ISL"] },
+  CAB: { zh: "銅鑼灣", en: "Causeway Bay", lines: ["ISL"] },
+  TIH: { zh: "天后", en: "Tin Hau", lines: ["ISL"] },
+  FOH: { zh: "炮台山", en: "Fortress Hill", lines: ["ISL"] },
+  NOP: { zh: "北角", en: "North Point", lines: ["ISL", "TKL"] },
+  QUB: { zh: "鰂魚涌", en: "Quarry Bay", lines: ["ISL", "TKL"] },
+  TAK: { zh: "太古", en: "Tai Koo", lines: ["ISL"] },
+  SWH: { zh: "西灣河", en: "Sai Wan Ho", lines: ["ISL"] },
+  SKW: { zh: "筲箕灣", en: "Shau Kei Wan", lines: ["ISL"] },
+  HFC: { zh: "杏花邨", en: "Heng Fa Chuen", lines: ["ISL"] },
+  CHW: { zh: "柴灣", en: "Chai Wan", lines: ["ISL"] },
+  WHA: { zh: "黃埔", en: "Whampoa", lines: ["KTL"] },
+  HOM: { zh: "何文田", en: "Ho Man Tin", lines: ["KTL", "TML"] },
+  SKM: { zh: "石硤尾", en: "Shek Kip Mei", lines: ["KTL"] },
+  LOF: { zh: "樂富", en: "Lok Fu", lines: ["KTL"] },
+  WTS: { zh: "黃大仙", en: "Wong Tai Sin", lines: ["KTL"] },
+  CHH: { zh: "彩虹", en: "Choi Hung", lines: ["KTL"] },
+  KOB: { zh: "九龍灣", en: "Kowloon Bay", lines: ["KTL"] },
+  NTK: { zh: "牛頭角", en: "Ngau Tau Kok", lines: ["KTL"] },
+  KWT: { zh: "觀塘", en: "Kwun Tong", lines: ["KTL"] },
+  LAT: { zh: "藍田", en: "Lam Tin", lines: ["KTL"] },
+  YAT: { zh: "油塘", en: "Yau Tong", lines: ["KTL", "TKL"] },
+  TIK: { zh: "調景嶺", en: "Tiu Keng Leng", lines: ["KTL", "TKL"] },
+  TKO: { zh: "將軍澳", en: "Tseung Kwan O", lines: ["TKL"] },
+  LHP: { zh: "康城", en: "LOHAS Park", lines: ["TKL"] },
+  HAH: { zh: "坑口", en: "Hang Hau", lines: ["TKL"] },
+  POA: { zh: "寶琳", en: "Po Lam", lines: ["TKL"] },
+  HOK: { zh: "香港", en: "Hong Kong", lat: 22.2849, lon: 114.1583, lines: ["TCL", "AEL"] },
+  KOW: { zh: "九龍", en: "Kowloon", lat: 22.3049, lon: 114.1615, lines: ["TCL", "AEL"] },
+  OLY: { zh: "奧運", en: "Olympic", lines: ["TCL"] },
+  NAC: { zh: "南昌", en: "Nam Cheong", lines: ["TCL", "TML"] },
   TSY: { zh: "青衣", en: "Tsing Yi", lat: 22.3584, lon: 114.1075, lines: ["TCL", "AEL"] },
+  SUN: { zh: "欣澳", en: "Sunny Bay", lines: ["TCL", "DRL"] },
+  TUC: { zh: "東涌", en: "Tung Chung", lat: 22.2893, lon: 113.9415, lines: ["TCL"] },
+  AIR: { zh: "機場", en: "Airport", lines: ["AEL"] },
+  AWE: { zh: "博覽館", en: "AsiaWorld-Expo", lines: ["AEL"] },
+  ADM: { zh: "金鐘", en: "Admiralty", lat: 22.2795, lon: 114.1655, lines: ["TWL", "ISL", "EAL", "SIL"] },
+  EXC: { zh: "會展", en: "Exhibition Centre", lines: ["EAL"] },
+  HUH: { zh: "紅磡", en: "Hung Hom", lines: ["EAL", "TML", "KTL"] },
+  MKK: { zh: "旺角東", en: "Mong Kok East", lines: ["EAL"] },
+  KOT: { zh: "九龍塘", en: "Kowloon Tong", lines: ["EAL", "KTL"] },
   TAW: { zh: "大圍", en: "Tai Wai", lat: 22.3721, lon: 114.1788, lines: ["EAL", "TML"] },
   SHT: { zh: "沙田", en: "Sha Tin", lat: 22.3828, lon: 114.1879, lines: ["EAL"] },
   FOT: { zh: "火炭", en: "Fo Tan", lat: 22.3953, lon: 114.1987, lines: ["EAL"] },
-  ADM: { zh: "金鐘", en: "Admiralty", lat: 22.2795, lon: 114.1655, lines: ["EAL"] },
-  HOK: { zh: "香港", en: "Hong Kong", lat: 22.2849, lon: 114.1583, lines: ["TCL", "AEL"] },
-  KOW: { zh: "九龍", en: "Kowloon", lat: 22.3049, lon: 114.1615, lines: ["TCL", "AEL"] },
-  TUC: { zh: "東涌", en: "Tung Chung", lat: 22.2893, lon: 113.9415, lines: ["TCL"] },
+  RAC: { zh: "馬場", en: "Racecourse", lines: ["EAL"] },
+  UNI: { zh: "大學", en: "University", lines: ["EAL"] },
+  TAP: { zh: "大埔墟", en: "Tai Po Market", lines: ["EAL"] },
+  TWO: { zh: "太和", en: "Tai Wo", lines: ["EAL"] },
+  FAN: { zh: "粉嶺", en: "Fanling", lines: ["EAL"] },
+  SHS: { zh: "上水", en: "Sheung Shui", lines: ["EAL"] },
+  LOW: { zh: "羅湖", en: "Lo Wu", lines: ["EAL"] },
+  LMC: { zh: "落馬洲", en: "Lok Ma Chau", lines: ["EAL"] },
+  MOS: { zh: "馬鞍山", en: "Ma On Shan", lines: ["TML"] },
+  HEO: { zh: "恆安", en: "Heng On", lines: ["TML"] },
+  TSH: { zh: "大水坑", en: "Tai Shui Hang", lines: ["TML"] },
+  SHM: { zh: "石門", en: "Shek Mun", lines: ["TML"] },
+  CIO: { zh: "第一城", en: "City One", lines: ["TML"] },
+  STW: { zh: "沙田圍", en: "Sha Tin Wai", lines: ["TML"] },
+  CKT: { zh: "車公廟", en: "Che Kung Temple", lines: ["TML"] },
+  HIK: { zh: "顯徑", en: "Hin Keng", lines: ["TML"] },
+  DIH: { zh: "鑽石山", en: "Diamond Hill", lines: ["KTL", "TML"] },
+  KAT: { zh: "啟德", en: "Kai Tak", lines: ["TML"] },
+  SUW: { zh: "宋皇臺", en: "Sung Wong Toi", lines: ["TML"] },
+  TKW: { zh: "土瓜灣", en: "To Kwa Wan", lines: ["TML"] },
+  ETS: { zh: "尖東", en: "East Tsim Sha Tsui", lines: ["TML"] },
+  AUS: { zh: "柯士甸", en: "Austin", lines: ["TML"] },
+  TWW: { zh: "荃灣西", en: "Tsuen Wan West", lines: ["TML"] },
+  KSR: { zh: "錦上路", en: "Kam Sheung Road", lines: ["TML"] },
+  YUL: { zh: "元朗", en: "Yuen Long", lines: ["TML"] },
+  LOP: { zh: "朗屏", en: "Long Ping", lines: ["TML"] },
+  TIS: { zh: "天水圍", en: "Tin Shui Wai", lines: ["TML"] },
+  SIH: { zh: "兆康", en: "Siu Hong", lines: ["TML"] },
   TUM: { zh: "屯門", en: "Tuen Mun", lat: 22.3952, lon: 113.9739, lines: ["TML"] },
   WKS: { zh: "烏溪沙", en: "Wu Kai Sha", lat: 22.4293, lon: 114.2436, lines: ["TML"] },
+  OCP: { zh: "海洋公園", en: "Ocean Park", lines: ["SIL"] },
+  WCH: { zh: "黃竹坑", en: "Wong Chuk Hang", lines: ["SIL"] },
+  LET: { zh: "利東", en: "Lei Tung", lines: ["SIL"] },
+  SOH: { zh: "海怡半島", en: "South Horizons", lines: ["SIL"] },
+  DIS: { zh: "迪士尼", en: "Disneyland Resort", lines: ["DRL"] },
 };
 
 const HKO_WEATHER_LOCATIONS = [
@@ -237,6 +392,7 @@ const els = {
   mtrLineEn: document.querySelector("#mtrLineEn"),
   mtrLeftRows: document.querySelector("#mtrLeftRows"),
   mtrRightRows: document.querySelector("#mtrRightRows"),
+  mtrModeLabel: document.querySelector("#mtrModeLabel"),
   mtrUpdated: document.querySelector("#mtrUpdated"),
   loginForm: document.querySelector("#loginForm"),
   loginKicker: document.querySelector("#loginKicker"),
@@ -349,6 +505,7 @@ let radioRetrying = false;
 let musicVolume = DEFAULT_MUSIC_VOLUME;
 let previousMusicVolume = DEFAULT_MUSIC_VOLUME;
 let isSeeking = false;
+let mtrTimeDisplayMode = localStorage.getItem("mtrTimeDisplayMode") === "mins" ? "mins" : "time";
 
 const DEFAULT_PORTFOLIO_ITEMS = [
   { market: "HK", symbol: "0700.HK", lots: 0 },
@@ -536,6 +693,7 @@ function getNearestMtrConfig(latitude, longitude) {
   let nearestDistance = Infinity;
 
   Object.entries(MTR_STATIONS).forEach(([stationCode, station]) => {
+    if (!Number.isFinite(station.lat) || !Number.isFinite(station.lon)) return;
     const latDistance = station.lat - latitude;
     const lonDistance = station.lon - longitude;
     const distance = latDistance * latDistance + lonDistance * lonDistance;
@@ -562,6 +720,37 @@ function updateMtrHeader(config = getSavedMtrConfig()) {
   if (els.mtrCard) els.mtrCard.style.setProperty("--mtr-line-color", line.color);
 }
 
+function formatMtrMins(train = {}) {
+  const rawMins = Number.parseInt(train.ttnt, 10);
+  if (Number.isFinite(rawMins)) {
+    if (rawMins <= 0) return "Arriving";
+    return `${rawMins} min`;
+  }
+
+  const arrivalTime = new Date(train.time);
+  if (!Number.isNaN(arrivalTime.getTime())) {
+    const mins = Math.max(0, Math.round((arrivalTime.getTime() - Date.now()) / 60000));
+    if (mins <= 0) return "Arriving";
+    return `${mins} min`;
+  }
+
+  return "--";
+}
+
+function updateMtrTimeDisplay() {
+  els.mtrCard?.classList.toggle("is-mins", mtrTimeDisplayMode === "mins");
+
+  document.querySelectorAll(".mtr-time").forEach((timeNode) => {
+    timeNode.textContent =
+      mtrTimeDisplayMode === "mins" ? timeNode.dataset.minsValue || "--" : timeNode.dataset.timeValue || "--:--";
+  });
+
+  if (els.mtrModeLabel) {
+    els.mtrModeLabel.textContent =
+      mtrTimeDisplayMode === "mins" ? "MTR Next Trains (In Mins)" : "MTR Next Trains (In Time)";
+  }
+}
+
 function renderMtrRows(container, trains = [], destinationCode, lineCode = MTR_DEFAULT_CONFIG.line) {
   if (!container) return;
   const line = getMtrLineProfile(lineCode);
@@ -576,6 +765,8 @@ function renderMtrRows(container, trains = [], destinationCode, lineCode = MTR_D
     .map((train) => {
       const info = line.destinations[train.dest] || fallback;
       const platform = train.plat || info.platform || "";
+      const timeText = formatMtrTime(train.time);
+      const minsText = formatMtrMins(train);
       return `
         <div class="mtr-train-row">
           <span class="mtr-platform">${escapeHtml(platform || "-")}</span>
@@ -583,11 +774,14 @@ function renderMtrRows(container, trains = [], destinationCode, lineCode = MTR_D
             <strong>${escapeHtml(info.zh)}</strong>
             <span>${escapeHtml(info.en)}</span>
           </span>
-          <time class="mtr-time">${escapeHtml(formatMtrTime(train.time))}</time>
+          <time class="mtr-time" data-time-value="${escapeHtml(timeText)}" data-mins-value="${escapeHtml(minsText)}">${escapeHtml(
+            mtrTimeDisplayMode === "mins" ? minsText : timeText,
+          )}</time>
         </div>
       `;
     })
     .join("");
+  updateMtrTimeDisplay();
 }
 
 function splitMtrSchedule(data = {}, config = getSavedMtrConfig()) {
@@ -658,7 +852,7 @@ function renderMtrSettings(config = getSavedMtrConfig()) {
 function setMtrBackMode(mode = "settings") {
   const isTransport = mode === "transport";
   if (els.mtrBackTitle) {
-    els.mtrBackTitle.textContent = isTransport ? "交通選擇" : "MTR 設定";
+    els.mtrBackTitle.textContent = isTransport ? "交通選擇" : "Transport 設定";
   }
   els.mtrSettingsPanel?.classList.toggle("is-active", !isTransport);
   els.mtrTransportPanel?.classList.toggle("is-active", isTransport);
@@ -2255,6 +2449,13 @@ async function initDisplayPage() {
   els.mtrBackButton?.addEventListener("click", () => {
     markPanelActivity();
     els.mtrCard?.classList.remove("is-flipped");
+  });
+  els.mtrCard?.addEventListener("click", (event) => {
+    if (!event.target.closest(".mtr-time")) return;
+    markPanelActivity();
+    mtrTimeDisplayMode = mtrTimeDisplayMode === "mins" ? "time" : "mins";
+    localStorage.setItem("mtrTimeDisplayMode", mtrTimeDisplayMode);
+    updateMtrTimeDisplay();
   });
   els.mtrTransportOptions.forEach((button) => {
     button.addEventListener("click", () => {

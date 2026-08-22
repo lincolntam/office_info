@@ -1437,6 +1437,21 @@ button {
   font-weight: 950;
   line-height: 1;
   letter-spacing: 0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.mtr-time:active {
+  opacity: 0.72;
+}
+
+.mtr-card.is-mins .mtr-train-row {
+  grid-template-columns: 36px 1fr 92px;
+}
+
+.mtr-card.is-mins .mtr-time {
+  font-size: 20px;
 }
 
 .mtr-footer {
