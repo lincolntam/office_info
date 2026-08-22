@@ -267,18 +267,30 @@
             <div class="mtr-face mtr-back" aria-label="MTR settings">
               <div class="mtr-paper-texture"></div>
               <div class="market-topline mtr-settings-topline">
-                <span>MTR 設定</span>
-                <button id="mtrBackButton" class="market-more-button market-close-button" type="button" aria-label="返回 MTR">&times;</button>
+                <span id="mtrBackTitle">MTR 設定</span>
+                <div class="market-action-group">
+                  <button id="mtrTransportButton" class="market-more-button" type="button" aria-label="交通選擇">...</button>
+                  <button id="mtrBackButton" class="market-more-button market-close-button" type="button" aria-label="返回 MTR">&times;</button>
+                </div>
               </div>
-              <form id="mtrForm" class="mtr-settings-form">
-                <p>選擇車站及路線。</p>
-                <label for="mtrStationSelect">車站</label>
-                <select id="mtrStationSelect"></select>
-                <label for="mtrLineSelect">路線</label>
-                <select id="mtrLineSelect"></select>
-                <button id="mtrLocateButton" class="mtr-secondary-button" type="button">使用最近車站</button>
-                <button type="submit">確定</button>
-              </form>
+              <div id="mtrSettingsPanel" class="mtr-back-panel is-active">
+                <form id="mtrForm" class="mtr-settings-form">
+                  <p>選擇車站及路線。</p>
+                  <label for="mtrStationSelect">車站</label>
+                  <select id="mtrStationSelect"></select>
+                  <label for="mtrLineSelect">路線</label>
+                  <select id="mtrLineSelect"></select>
+                  <button id="mtrLocateButton" class="mtr-secondary-button" type="button">使用最近車站</button>
+                  <button type="submit">確定</button>
+                </form>
+              </div>
+              <div id="mtrTransportPanel" class="mtr-back-panel">
+                <div class="mtr-transport-options" aria-label="交通工具選擇">
+                  <button class="is-active" type="button" data-transport-option="mtr">MTR</button>
+                  <button type="button" data-transport-option="bus">Bus</button>
+                </div>
+                <p class="mtr-transport-note">目前顯示 MTR 下一班車；Bus 可先預留作下一頁。</p>
+              </div>
             </div>
           </article>
         </section>

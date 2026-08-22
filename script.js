@@ -221,7 +221,12 @@ const els = {
   marketStatus: document.querySelector("#marketStatus"),
   mtrCard: document.querySelector("#mtrCard"),
   mtrFlipButton: document.querySelector("#mtrFlipButton"),
+  mtrBackTitle: document.querySelector("#mtrBackTitle"),
   mtrBackButton: document.querySelector("#mtrBackButton"),
+  mtrTransportButton: document.querySelector("#mtrTransportButton"),
+  mtrSettingsPanel: document.querySelector("#mtrSettingsPanel"),
+  mtrTransportPanel: document.querySelector("#mtrTransportPanel"),
+  mtrTransportOptions: [...document.querySelectorAll("[data-transport-option]")],
   mtrForm: document.querySelector("#mtrForm"),
   mtrStationSelect: document.querySelector("#mtrStationSelect"),
   mtrLineSelect: document.querySelector("#mtrLineSelect"),
@@ -648,6 +653,30 @@ function renderMtrSettings(config = getSavedMtrConfig()) {
     })
     .join("");
   els.mtrLineSelect.value = normalized.line;
+}
+
+function setMtrBackMode(mode = "settings") {
+  const isTransport = mode === "transport";
+  if (els.mtrBackTitle) {
+    els.mtrBackTitle.textContent = isTransport ? "交通選擇" : "MTR 設定";
+  }
+  els.mtrSettingsPanel?.classList.toggle("is-active", !isTransport);
+  els.mtrTransportPanel?.classList.toggle("is-active", isTransport);
+}
+
+function setTransportSource(source) {
+  const normalized = source === "bus" ? "bus" : "mtr";
+  localStorage.setItem("transportSource", normalized);
+  els.mtrTransportOptions.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.transportOption === normalized);
+  });
+
+  if (normalized === "mtr") {
+    setMtrBackMode("settings");
+    return;
+  }
+
+  setMtrStatus("Bus 頁面預留中");
 }
 
 function locateNearestMtrStation() {
@@ -2216,11 +2245,22 @@ async function initDisplayPage() {
   els.mtrFlipButton?.addEventListener("click", () => {
     markPanelActivity();
     renderMtrSettings();
+    setMtrBackMode("settings");
     els.mtrCard?.classList.add("is-flipped");
+  });
+  els.mtrTransportButton?.addEventListener("click", () => {
+    markPanelActivity();
+    setMtrBackMode("transport");
   });
   els.mtrBackButton?.addEventListener("click", () => {
     markPanelActivity();
     els.mtrCard?.classList.remove("is-flipped");
+  });
+  els.mtrTransportOptions.forEach((button) => {
+    button.addEventListener("click", () => {
+      markPanelActivity();
+      setTransportSource(button.dataset.transportOption);
+    });
   });
   els.mtrStationSelect?.addEventListener("change", () => {
     const station = els.mtrStationSelect.value;
@@ -2288,6 +2328,8 @@ async function initDisplayPage() {
   loadHkoWeather();
   loadMarketData();
   renderMtrSettings();
+  setMtrBackMode("settings");
+  setTransportSource(localStorage.getItem("transportSource") || "mtr");
   updateMtrHeader();
   if (!localStorage.getItem("mtrConfig") && navigator.geolocation) {
     locateNearestMtrStation();
