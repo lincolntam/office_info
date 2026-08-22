@@ -1233,40 +1233,46 @@ button {
 
 .mtr-card {
   display: grid;
-  grid-template-rows: 74px 32px 1fr 30px;
-  padding: 22px 30px 20px;
-  border: 14px solid #efeee8;
-  background: #cbd8d4;
-  color: #1f2c2d;
+  grid-template-rows: 72px 29px 1fr 28px;
+  padding: 20px 28px 18px;
+  border: 18px solid #f1f0eb;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 30%),
+    #cbd8d4;
+  color: #263334;
   font-family:
     "Arial Narrow", "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif;
   box-shadow:
-    inset 0 0 0 2px rgba(66, 77, 76, 0.32),
-    inset 0 0 42px rgba(14, 28, 29, 0.16),
-    0 0 0 1px rgba(255, 255, 255, 0.38);
+    inset 0 0 0 2px rgba(39, 48, 49, 0.34),
+    inset 0 0 38px rgba(20, 34, 34, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .mtr-card::before {
   position: absolute;
-  inset: 14px;
+  inset: 18px;
   z-index: 0;
   content: "";
-  border: 2px solid rgba(42, 51, 52, 0.34);
+  border: 2px solid rgba(40, 50, 51, 0.4);
+  border-radius: 3px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 42%),
-    radial-gradient(circle at 50% 22%, rgba(245, 130, 32, 0.13), transparent 19%);
-  box-shadow: inset 0 0 34px rgba(35, 51, 51, 0.18);
+    radial-gradient(circle at 50% 24%, rgba(245, 130, 32, 0.08), transparent 15%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 48%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    inset 0 0 32px rgba(28, 43, 43, 0.16);
   pointer-events: none;
 }
 
 .mtr-paper-texture {
   position: absolute;
-  inset: 14px;
+  inset: 18px;
   z-index: 0;
-  opacity: 0.24;
+  opacity: 0.3;
   background:
-    repeating-linear-gradient(0deg, rgba(21, 38, 39, 0.18) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.34) 0 1px, transparent 1px 5px);
+    repeating-linear-gradient(0deg, rgba(35, 50, 51, 0.18) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 5px);
   mix-blend-mode: multiply;
   pointer-events: none;
 }
@@ -1284,21 +1290,21 @@ button {
   display: grid;
   justify-items: center;
   align-content: center;
-  line-height: 1.04;
+  line-height: 1;
   text-align: center;
 }
 
 .mtr-station-header strong {
-  color: #223031;
-  font-size: 30px;
+  color: #263334;
+  font-size: 29px;
   font-weight: 900;
   letter-spacing: 0;
 }
 
 .mtr-station-header span {
-  margin-top: 5px;
-  color: #2e3d3f;
-  font-size: 19px;
+  margin-top: 4px;
+  color: #344243;
+  font-size: 18px;
   font-weight: 900;
 }
 
@@ -1306,17 +1312,17 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 28px;
+  height: 26px;
   margin-top: 0;
   padding: 0 12px;
   border: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.08)),
-    linear-gradient(90deg, #f58220 0 8px, rgba(43, 55, 56, 0.86) 8px);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.14)),
+    linear-gradient(90deg, #f58220 0 6px, rgba(49, 61, 62, 0.86) 6px);
   color: #fffaf2;
   font-size: 16px;
   font-weight: 950;
-  box-shadow: inset 0 -3px 0 rgba(245, 130, 32, 0.76);
+  box-shadow: inset 0 -2px 0 rgba(245, 130, 32, 0.82);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.38);
 }
 
@@ -1327,24 +1333,24 @@ button {
 
 .mtr-station-dot {
   position: absolute;
-  top: 126px;
+  top: 119px;
   left: 50%;
-  width: 50px;
-  height: 50px;
-  border: 6px solid #2c3839;
+  width: 48px;
+  height: 48px;
+  border: 6px solid #344142;
   border-radius: 50%;
   background: #dce7e2;
   transform: translate(-50%, -50%);
   box-shadow:
-    0 0 0 4px rgba(245, 130, 32, 0.88),
+    0 0 0 4px rgba(245, 130, 32, 0.72),
     inset 0 0 0 3px rgba(255, 255, 255, 0.48);
 }
 
 .mtr-board {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 44px;
-  padding-top: 18px;
+  gap: 38px;
+  padding-top: 14px;
 }
 
 .mtr-train-list {
@@ -1354,50 +1360,50 @@ button {
 
 .mtr-train-row {
   display: grid;
-  grid-template-columns: 44px 1fr 76px;
+  grid-template-columns: 40px 1fr 72px;
   align-items: center;
-  min-height: 57px;
-  border-bottom: 2px solid rgba(31, 44, 45, 0.18);
+  min-height: 55px;
+  border-bottom: 2px solid rgba(37, 49, 50, 0.17);
 }
 
 .mtr-platform {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 3px solid rgba(245, 130, 32, 0.82);
-  background: #2f3b3c;
+  border: 3px solid rgba(245, 130, 32, 0.72);
+  background: #344142;
   color: #fffaf2;
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 900;
   line-height: 1;
-  box-shadow: 0 1px 0 rgba(73, 48, 19, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .mtr-destination {
   display: grid;
-  line-height: 1.05;
+  line-height: 1.02;
 }
 
 .mtr-destination strong {
-  color: #1e2b2c;
-  font-size: 22px;
+  color: #253333;
+  font-size: 23px;
   font-weight: 900;
   letter-spacing: 0;
 }
 
 .mtr-destination span {
   margin-top: 2px;
-  color: #29393a;
+  color: #303f40;
   font-size: 15px;
   font-weight: 900;
 }
 
 .mtr-time {
   justify-self: end;
-  color: #172323;
-  font-size: 29px;
+  color: #202d2e;
+  font-size: 30px;
   font-weight: 950;
   line-height: 1;
   letter-spacing: 0;
@@ -1407,14 +1413,14 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 6px;
+  margin-top: 4px;
   padding: 0 10px;
   border-top: 0;
   background:
-    linear-gradient(90deg, #f58220 0 8px, rgba(70, 82, 83, 0.32) 8px),
+    linear-gradient(90deg, #f58220 0 6px, rgba(70, 82, 83, 0.34) 6px),
     repeating-linear-gradient(90deg, rgba(31, 44, 45, 0.1) 0 1px, transparent 1px 4px);
   color: #243032;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 950;
   text-shadow: none;
 }
