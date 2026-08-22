@@ -1233,8 +1233,8 @@ button {
 
 .mtr-card {
   display: grid;
-  grid-template-rows: 72px 29px 1fr 28px;
-  padding: 20px 28px 18px;
+  grid-template-rows: 76px 24px 1fr 28px;
+  padding: 18px 28px 18px;
   border: 18px solid #f1f0eb;
   border-radius: 10px;
   background:
@@ -1257,7 +1257,7 @@ button {
   border: 2px solid rgba(40, 50, 51, 0.4);
   border-radius: 3px;
   background:
-    radial-gradient(circle at 50% 24%, rgba(245, 130, 32, 0.08), transparent 15%),
+    radial-gradient(circle at 50% 21.5%, rgba(245, 130, 32, 0.035), transparent 12%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 48%);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.3),
@@ -1296,7 +1296,7 @@ button {
 
 .mtr-station-header strong {
   color: #263334;
-  font-size: 29px;
+  font-size: 27px;
   font-weight: 900;
   letter-spacing: 0;
 }
@@ -1304,7 +1304,7 @@ button {
 .mtr-station-header span {
   margin-top: 4px;
   color: #344243;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 900;
 }
 
@@ -1312,45 +1312,47 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 26px;
+  height: 22px;
   margin-top: 0;
-  padding: 0 12px;
+  padding: 0 10px;
   border: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.14)),
-    linear-gradient(90deg, #f58220 0 6px, rgba(49, 61, 62, 0.86) 6px);
-  color: #fffaf2;
-  font-size: 16px;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.12)),
+    rgba(50, 61, 62, 0.78);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
   font-weight: 950;
-  box-shadow: inset 0 -2px 0 rgba(245, 130, 32, 0.82);
+  box-shadow:
+    inset 0 -1px 0 rgba(245, 130, 32, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.38);
 }
 
 .mtr-line-strip b {
-  font-size: 16px;
+  font-size: 13px;
   letter-spacing: 0;
 }
 
 .mtr-station-dot {
   position: absolute;
-  top: 119px;
+  top: 118px;
   left: 50%;
-  width: 48px;
-  height: 48px;
-  border: 6px solid #344142;
+  width: 39px;
+  height: 39px;
+  border: 4px solid #2e3b3c;
   border-radius: 50%;
   background: #dce7e2;
   transform: translate(-50%, -50%);
   box-shadow:
-    0 0 0 4px rgba(245, 130, 32, 0.72),
-    inset 0 0 0 3px rgba(255, 255, 255, 0.48);
+    0 0 0 1px rgba(245, 130, 32, 0.52),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.45);
 }
 
 .mtr-board {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 38px;
-  padding-top: 14px;
+  gap: 42px;
+  padding-top: 18px;
 }
 
 .mtr-train-list {
@@ -1360,7 +1362,7 @@ button {
 
 .mtr-train-row {
   display: grid;
-  grid-template-columns: 40px 1fr 72px;
+  grid-template-columns: 36px 1fr 72px;
   align-items: center;
   min-height: 55px;
   border-bottom: 2px solid rgba(37, 49, 50, 0.17);
@@ -1369,13 +1371,13 @@ button {
 .mtr-platform {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 29px;
+  height: 29px;
   border-radius: 50%;
-  border: 3px solid rgba(245, 130, 32, 0.72);
+  border: 2px solid rgba(245, 130, 32, 0.5);
   background: #344142;
   color: #fffaf2;
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 900;
   line-height: 1;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
@@ -1388,7 +1390,7 @@ button {
 
 .mtr-destination strong {
   color: #253333;
-  font-size: 23px;
+  font-size: 22px;
   font-weight: 900;
   letter-spacing: 0;
 }
@@ -1396,14 +1398,14 @@ button {
 .mtr-destination span {
   margin-top: 2px;
   color: #303f40;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 900;
 }
 
 .mtr-time {
   justify-self: end;
   color: #202d2e;
-  font-size: 30px;
+  font-size: 27px;
   font-weight: 950;
   line-height: 1;
   letter-spacing: 0;
@@ -1417,7 +1419,7 @@ button {
   padding: 0 10px;
   border-top: 0;
   background:
-    linear-gradient(90deg, #f58220 0 6px, rgba(70, 82, 83, 0.34) 6px),
+    linear-gradient(90deg, rgba(245, 130, 32, 0.6) 0 4px, rgba(70, 82, 83, 0.26) 4px),
     repeating-linear-gradient(90deg, rgba(31, 44, 45, 0.1) 0 1px, transparent 1px 4px);
   color: #243032;
   font-size: 15px;
