@@ -15,6 +15,8 @@ const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
 const DEFAULT_MUSIC_SOURCE = "spotify";
 const DEFAULT_YOUTUBE_URL = "";
 const DEFAULT_MUSIC_VOLUME = 0.65;
+const MTR_DEFAULT_LINE = "TCL";
+const MTR_DEFAULT_STATION = "TSY";
 const RTHK2_STREAM_URLS = [
   "https://stm.rthk.hk/radio2",
   "http://stm.rthk.hk/radio2",
@@ -32,6 +34,11 @@ const RTHK2_PROGRAMS = [
   { start: "20:00", name: "騷動音樂" },
   { start: "22:00", name: "夜媽媽" },
 ];
+
+const MTR_DESTINATIONS = {
+  TUC: { zh: "往東涌", en: "to Tung Chung", platform: "3" },
+  HOK: { zh: "往香港", en: "to Hong Kong", platform: "4" },
+};
 
 const HKO_WEATHER_LOCATIONS = [
   { place: "\u4eac\u58eb\u67cf", lat: 22.312, lon: 114.172 },
@@ -157,6 +164,10 @@ const els = {
   marketMetrics: [...document.querySelectorAll(".market-metric")],
   marketLines: [...document.querySelectorAll("[data-market-line]")],
   marketStatus: document.querySelector("#marketStatus"),
+  mtrCard: document.querySelector("#mtrCard"),
+  mtrLeftRows: document.querySelector("#mtrLeftRows"),
+  mtrRightRows: document.querySelector("#mtrRightRows"),
+  mtrUpdated: document.querySelector("#mtrUpdated"),
   loginForm: document.querySelector("#loginForm"),
   loginKicker: document.querySelector("#loginKicker"),
   loginEmail: document.querySelector("#loginEmail"),
@@ -390,6 +401,100 @@ async function loadSpotlightHomeImage() {
     }
   } catch {
     els.homeBackdrop.src = "./assets/space-launch.svg";
+  }
+}
+
+function formatMtrTime(value) {
+  if (!value) return "--:--";
+  const text = String(value);
+  const timeMatch = text.match(/(\d{2}):(\d{2})(?::\d{2})?/);
+  if (timeMatch) return `${timeMatch[1]}:${timeMatch[2]}`;
+
+  const date = new Date(text);
+  if (!Number.isNaN(date.getTime())) {
+    return new Intl.DateTimeFormat("zh-HK", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date);
+  }
+
+  return "--:--";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderMtrRows(container, trains = [], destinationCode) {
+  if (!container) return;
+  const fallback = MTR_DESTINATIONS[destinationCode] || MTR_DESTINATIONS.TUC;
+  const rows = [...trains].slice(0, 4);
+
+  while (rows.length < 4) {
+    rows.push({ dest: destinationCode, plat: fallback.platform, time: "" });
+  }
+
+  container.innerHTML = rows
+    .map((train) => {
+      const info = MTR_DESTINATIONS[train.dest] || fallback;
+      const platform = train.plat || info.platform || "";
+      return `
+        <div class="mtr-train-row">
+          <span class="mtr-platform">${escapeHtml(platform || "-")}</span>
+          <span class="mtr-destination">
+            <strong>${escapeHtml(info.zh)}</strong>
+            <span>${escapeHtml(info.en)}</span>
+          </span>
+          <time class="mtr-time">${escapeHtml(formatMtrTime(train.time))}</time>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function splitMtrSchedule(data = {}) {
+  const schedule = data.data?.[`${MTR_DEFAULT_LINE}-${MTR_DEFAULT_STATION}`] || {};
+  const up = Array.isArray(schedule.UP) ? schedule.UP : [];
+  const down = Array.isArray(schedule.DOWN) ? schedule.DOWN : [];
+  const allTrains = [...up, ...down];
+  const toTungChung = allTrains.filter((train) => train.dest === "TUC");
+  const toHongKong = allTrains.filter((train) => train.dest === "HOK");
+
+  return {
+    TUC: toTungChung.length ? toTungChung : down,
+    HOK: toHongKong.length ? toHongKong : up,
+  };
+}
+
+function setMtrStatus(text) {
+  if (els.mtrUpdated) els.mtrUpdated.textContent = text;
+}
+
+async function loadMtrTimes() {
+  if (!els.mtrCard) return;
+  const endpoint = isLocalStatic()
+    ? `https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=${MTR_DEFAULT_LINE}&sta=${MTR_DEFAULT_STATION}`
+    : `/api/mtr?line=${MTR_DEFAULT_LINE}&station=${MTR_DEFAULT_STATION}`;
+
+  try {
+    const response = await fetch(endpoint, isLocalStatic() ? {} : { credentials: "include" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.status === 0) throw new Error(data.message || "MTR request failed");
+
+    const schedule = splitMtrSchedule(data);
+    renderMtrRows(els.mtrLeftRows, schedule.TUC, "TUC");
+    renderMtrRows(els.mtrRightRows, schedule.HOK, "HOK");
+    setMtrStatus(`Updated ${formatMtrTime(data.sys_time || new Date().toISOString())}`);
+  } catch {
+    renderMtrRows(els.mtrLeftRows, [], "TUC");
+    renderMtrRows(els.mtrRightRows, [], "HOK");
+    setMtrStatus("MTR 暫時未能更新");
   }
 }
 
@@ -1981,6 +2086,7 @@ async function initDisplayPage() {
   refreshSpotifyDisplay();
   loadHkoWeather();
   loadMarketData();
+  loadMtrTimes();
   scrollToHash();
   requestAnimationFrame(scrollToHash);
   setTimeout(scrollToHash, 150);
@@ -1991,6 +2097,7 @@ async function initDisplayPage() {
   setInterval(loadHkoWeather, 10 * 60 * 1000);
   setInterval(() => setWeatherVisual(currentWeatherCondition), 60 * 1000);
   setInterval(loadMarketData, 60 * 1000);
+  setInterval(loadMtrTimes, 10 * 1000);
   setInterval(rotatePanelIfIdle, 15000);
 }
 

@@ -1231,6 +1231,160 @@ button {
   color: rgba(255, 255, 255, 0.9);
 }
 
+.mtr-card {
+  display: grid;
+  grid-template-rows: 86px 34px 1fr 34px;
+  padding: 18px 20px 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 42%),
+    radial-gradient(circle at 22% 14%, rgba(255, 255, 255, 0.24), transparent 30%),
+    #c6d0ce;
+  color: #2f3838;
+  font-family:
+    "Arial Narrow", "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif;
+}
+
+.mtr-paper-texture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.26;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 1px, transparent 1px 5px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.mtr-station-header,
+.mtr-line-strip,
+.mtr-board,
+.mtr-footer,
+.mtr-station-dot {
+  position: relative;
+  z-index: 1;
+}
+
+.mtr-station-header {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  line-height: 1.04;
+  text-align: center;
+}
+
+.mtr-station-header strong {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.mtr-station-header span {
+  margin-top: 6px;
+  font-size: 21px;
+  font-weight: 850;
+}
+
+.mtr-line-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 26px;
+  margin-top: 2px;
+  padding: 0 12px;
+  background: rgba(45, 54, 56, 0.76);
+  color: rgba(244, 248, 246, 0.9);
+  font-size: 17px;
+  font-weight: 850;
+}
+
+.mtr-line-strip b {
+  font-size: 16px;
+}
+
+.mtr-station-dot {
+  position: absolute;
+  top: 101px;
+  left: 50%;
+  width: 54px;
+  height: 54px;
+  border: 5px solid rgba(45, 54, 56, 0.92);
+  border-radius: 50%;
+  background: #cbd5d2;
+  transform: translate(-50%, -50%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28);
+}
+
+.mtr-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 54px;
+  padding-top: 22px;
+}
+
+.mtr-train-list {
+  display: grid;
+  gap: 0;
+}
+
+.mtr-train-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 86px;
+  align-items: center;
+  min-height: 65px;
+  border-bottom: 1px solid rgba(45, 54, 56, 0.24);
+}
+
+.mtr-platform {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(45, 54, 56, 0.82);
+  color: #d7dfdc;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.mtr-destination {
+  display: grid;
+  line-height: 1.05;
+}
+
+.mtr-destination strong {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.mtr-destination span {
+  margin-top: 2px;
+  font-size: 17px;
+  font-weight: 850;
+}
+
+.mtr-time {
+  justify-self: end;
+  font-size: 31px;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.mtr-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 10px;
+  background: rgba(45, 54, 56, 0.28);
+  color: rgba(37, 45, 46, 0.92);
+  font-size: 17px;
+  font-weight: 900;
+}
+
 .weather-card {
   border-radius: 0;
   background: #172214;
