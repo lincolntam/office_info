@@ -15,8 +15,7 @@ const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
 const DEFAULT_MUSIC_SOURCE = "spotify";
 const DEFAULT_YOUTUBE_URL = "";
 const DEFAULT_MUSIC_VOLUME = 0.65;
-const MTR_DEFAULT_LINE = "TCL";
-const MTR_DEFAULT_STATION = "TSY";
+const MTR_DEFAULT_CONFIG = { station: "TSY", line: "TCL" };
 const RTHK2_STREAM_URLS = [
   "https://stm.rthk.hk/radio2",
   "http://stm.rthk.hk/radio2",
@@ -35,9 +34,65 @@ const RTHK2_PROGRAMS = [
   { start: "22:00", name: "夜媽媽" },
 ];
 
-const MTR_DESTINATIONS = {
-  TUC: { zh: "往東涌", en: "to Tung Chung", platform: "3" },
-  HOK: { zh: "往香港", en: "to Hong Kong", platform: "4" },
+const MTR_LINES = {
+  TCL: {
+    zh: "東涌綫",
+    en: "Tung Chung Line",
+    color: "#f58220",
+    leftDestinations: ["TUC"],
+    rightDestinations: ["HOK"],
+    destinations: {
+      TUC: { zh: "往東涌", en: "to Tung Chung", platform: "3" },
+      HOK: { zh: "往香港", en: "to Hong Kong", platform: "4" },
+    },
+  },
+  EAL: {
+    zh: "東鐵綫",
+    en: "East Rail Line",
+    color: "#53b7e8",
+    leftDestinations: ["LOW", "LMC"],
+    rightDestinations: ["ADM"],
+    destinations: {
+      LOW: { zh: "往羅湖", en: "to Lo Wu", platform: "3" },
+      LMC: { zh: "往落馬洲", en: "to Lok Ma Chau", platform: "3" },
+      ADM: { zh: "往金鐘", en: "to Admiralty", platform: "4" },
+    },
+  },
+  TML: {
+    zh: "屯馬綫",
+    en: "Tuen Ma Line",
+    color: "#9a3b26",
+    leftDestinations: ["TUM"],
+    rightDestinations: ["WKS"],
+    destinations: {
+      TUM: { zh: "往屯門", en: "to Tuen Mun", platform: "3" },
+      WKS: { zh: "往烏溪沙", en: "to Wu Kai Sha", platform: "4" },
+    },
+  },
+  AEL: {
+    zh: "機場快綫",
+    en: "Airport Express",
+    color: "#00888a",
+    leftDestinations: ["AWE"],
+    rightDestinations: ["HOK"],
+    destinations: {
+      AWE: { zh: "往博覽館", en: "to AsiaWorld-Expo", platform: "3" },
+      HOK: { zh: "往香港", en: "to Hong Kong", platform: "4" },
+    },
+  },
+};
+
+const MTR_STATIONS = {
+  TSY: { zh: "青衣", en: "Tsing Yi", lat: 22.3584, lon: 114.1075, lines: ["TCL", "AEL"] },
+  TAW: { zh: "大圍", en: "Tai Wai", lat: 22.3721, lon: 114.1788, lines: ["EAL", "TML"] },
+  SHT: { zh: "沙田", en: "Sha Tin", lat: 22.3828, lon: 114.1879, lines: ["EAL"] },
+  FOT: { zh: "火炭", en: "Fo Tan", lat: 22.3953, lon: 114.1987, lines: ["EAL"] },
+  ADM: { zh: "金鐘", en: "Admiralty", lat: 22.2795, lon: 114.1655, lines: ["EAL"] },
+  HOK: { zh: "香港", en: "Hong Kong", lat: 22.2849, lon: 114.1583, lines: ["TCL", "AEL"] },
+  KOW: { zh: "九龍", en: "Kowloon", lat: 22.3049, lon: 114.1615, lines: ["TCL", "AEL"] },
+  TUC: { zh: "東涌", en: "Tung Chung", lat: 22.2893, lon: 113.9415, lines: ["TCL"] },
+  TUM: { zh: "屯門", en: "Tuen Mun", lat: 22.3952, lon: 113.9739, lines: ["TML"] },
+  WKS: { zh: "烏溪沙", en: "Wu Kai Sha", lat: 22.4293, lon: 114.2436, lines: ["TML"] },
 };
 
 const HKO_WEATHER_LOCATIONS = [
@@ -165,6 +220,16 @@ const els = {
   marketLines: [...document.querySelectorAll("[data-market-line]")],
   marketStatus: document.querySelector("#marketStatus"),
   mtrCard: document.querySelector("#mtrCard"),
+  mtrFlipButton: document.querySelector("#mtrFlipButton"),
+  mtrBackButton: document.querySelector("#mtrBackButton"),
+  mtrForm: document.querySelector("#mtrForm"),
+  mtrStationSelect: document.querySelector("#mtrStationSelect"),
+  mtrLineSelect: document.querySelector("#mtrLineSelect"),
+  mtrLocateButton: document.querySelector("#mtrLocateButton"),
+  mtrStationZh: document.querySelector("#mtrStationZh"),
+  mtrStationEn: document.querySelector("#mtrStationEn"),
+  mtrLineZh: document.querySelector("#mtrLineZh"),
+  mtrLineEn: document.querySelector("#mtrLineEn"),
   mtrLeftRows: document.querySelector("#mtrLeftRows"),
   mtrRightRows: document.querySelector("#mtrRightRows"),
   mtrUpdated: document.querySelector("#mtrUpdated"),
@@ -431,9 +496,71 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-function renderMtrRows(container, trains = [], destinationCode) {
+function getMtrLineProfile(lineCode) {
+  return MTR_LINES[lineCode] || MTR_LINES[MTR_DEFAULT_CONFIG.line];
+}
+
+function getMtrStationProfile(stationCode) {
+  return MTR_STATIONS[stationCode] || MTR_STATIONS[MTR_DEFAULT_CONFIG.station];
+}
+
+function normalizeMtrConfig(config = {}) {
+  const station = MTR_STATIONS[config.station] ? config.station : MTR_DEFAULT_CONFIG.station;
+  const stationProfile = getMtrStationProfile(station);
+  const requestedLine = MTR_LINES[config.line] ? config.line : stationProfile.lines[0];
+  const line = stationProfile.lines.includes(requestedLine) ? requestedLine : stationProfile.lines[0];
+  return { station, line };
+}
+
+function getSavedMtrConfig() {
+  try {
+    return normalizeMtrConfig(JSON.parse(localStorage.getItem("mtrConfig") || "{}"));
+  } catch {
+    return { ...MTR_DEFAULT_CONFIG };
+  }
+}
+
+function saveMtrConfig(config) {
+  const normalized = normalizeMtrConfig(config);
+  localStorage.setItem("mtrConfig", JSON.stringify(normalized));
+  return normalized;
+}
+
+function getNearestMtrConfig(latitude, longitude) {
+  let nearestStation = MTR_DEFAULT_CONFIG.station;
+  let nearestDistance = Infinity;
+
+  Object.entries(MTR_STATIONS).forEach(([stationCode, station]) => {
+    const latDistance = station.lat - latitude;
+    const lonDistance = station.lon - longitude;
+    const distance = latDistance * latDistance + lonDistance * lonDistance;
+    if (distance < nearestDistance) {
+      nearestStation = stationCode;
+      nearestDistance = distance;
+    }
+  });
+
+  return normalizeMtrConfig({
+    station: nearestStation,
+    line: MTR_STATIONS[nearestStation].lines[0],
+  });
+}
+
+function updateMtrHeader(config = getSavedMtrConfig()) {
+  const normalized = normalizeMtrConfig(config);
+  const station = getMtrStationProfile(normalized.station);
+  const line = getMtrLineProfile(normalized.line);
+  if (els.mtrStationZh) els.mtrStationZh.textContent = station.zh;
+  if (els.mtrStationEn) els.mtrStationEn.textContent = station.en;
+  if (els.mtrLineZh) els.mtrLineZh.textContent = line.zh;
+  if (els.mtrLineEn) els.mtrLineEn.textContent = line.en;
+  if (els.mtrCard) els.mtrCard.style.setProperty("--mtr-line-color", line.color);
+}
+
+function renderMtrRows(container, trains = [], destinationCode, lineCode = MTR_DEFAULT_CONFIG.line) {
   if (!container) return;
-  const fallback = MTR_DESTINATIONS[destinationCode] || MTR_DESTINATIONS.TUC;
+  const line = getMtrLineProfile(lineCode);
+  const fallback = line.destinations[destinationCode] || Object.values(line.destinations)[0];
   const rows = [...trains].slice(0, 4);
 
   while (rows.length < 4) {
@@ -442,7 +569,7 @@ function renderMtrRows(container, trains = [], destinationCode) {
 
   container.innerHTML = rows
     .map((train) => {
-      const info = MTR_DESTINATIONS[train.dest] || fallback;
+      const info = line.destinations[train.dest] || fallback;
       const platform = train.plat || info.platform || "";
       return `
         <div class="mtr-train-row">
@@ -458,17 +585,20 @@ function renderMtrRows(container, trains = [], destinationCode) {
     .join("");
 }
 
-function splitMtrSchedule(data = {}) {
-  const schedule = data.data?.[`${MTR_DEFAULT_LINE}-${MTR_DEFAULT_STATION}`] || {};
+function splitMtrSchedule(data = {}, config = getSavedMtrConfig()) {
+  const line = getMtrLineProfile(config.line);
+  const schedule = data.data?.[`${config.line}-${config.station}`] || {};
   const up = Array.isArray(schedule.UP) ? schedule.UP : [];
   const down = Array.isArray(schedule.DOWN) ? schedule.DOWN : [];
   const allTrains = [...up, ...down];
-  const toTungChung = allTrains.filter((train) => train.dest === "TUC");
-  const toHongKong = allTrains.filter((train) => train.dest === "HOK");
+  const left = allTrains.filter((train) => line.leftDestinations.includes(train.dest));
+  const right = allTrains.filter((train) => line.rightDestinations.includes(train.dest));
 
   return {
-    TUC: toTungChung.length ? toTungChung : down,
-    HOK: toHongKong.length ? toHongKong : up,
+    left: left.length ? left : down,
+    right: right.length ? right : up,
+    leftFallback: line.leftDestinations[0],
+    rightFallback: line.rightDestinations[0],
   };
 }
 
@@ -478,24 +608,66 @@ function setMtrStatus(text) {
 
 async function loadMtrTimes() {
   if (!els.mtrCard) return;
+  const config = getSavedMtrConfig();
+  updateMtrHeader(config);
   const endpoint = isLocalStatic()
-    ? `https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=${MTR_DEFAULT_LINE}&sta=${MTR_DEFAULT_STATION}`
-    : `/api/mtr?line=${MTR_DEFAULT_LINE}&station=${MTR_DEFAULT_STATION}`;
+    ? `https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=${config.line}&sta=${config.station}`
+    : `/api/mtr?line=${config.line}&station=${config.station}`;
 
   try {
     const response = await fetch(endpoint, isLocalStatic() ? {} : { credentials: "include" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.status === 0) throw new Error(data.message || "MTR request failed");
 
-    const schedule = splitMtrSchedule(data);
-    renderMtrRows(els.mtrLeftRows, schedule.TUC, "TUC");
-    renderMtrRows(els.mtrRightRows, schedule.HOK, "HOK");
+    const schedule = splitMtrSchedule(data, config);
+    renderMtrRows(els.mtrLeftRows, schedule.left, schedule.leftFallback, config.line);
+    renderMtrRows(els.mtrRightRows, schedule.right, schedule.rightFallback, config.line);
     setMtrStatus(`Updated ${formatMtrTime(data.sys_time || new Date().toISOString())}`);
   } catch {
-    renderMtrRows(els.mtrLeftRows, [], "TUC");
-    renderMtrRows(els.mtrRightRows, [], "HOK");
+    const line = getMtrLineProfile(config.line);
+    renderMtrRows(els.mtrLeftRows, [], line.leftDestinations[0], config.line);
+    renderMtrRows(els.mtrRightRows, [], line.rightDestinations[0], config.line);
     setMtrStatus("MTR 暫時未能更新");
   }
+}
+
+function renderMtrSettings(config = getSavedMtrConfig()) {
+  if (!els.mtrStationSelect || !els.mtrLineSelect) return;
+  const normalized = normalizeMtrConfig(config);
+
+  els.mtrStationSelect.innerHTML = Object.entries(MTR_STATIONS)
+    .map(([stationCode, station]) => `<option value="${stationCode}">${station.zh} / ${station.en}</option>`)
+    .join("");
+  els.mtrStationSelect.value = normalized.station;
+
+  const station = getMtrStationProfile(normalized.station);
+  els.mtrLineSelect.innerHTML = station.lines
+    .map((lineCode) => {
+      const line = getMtrLineProfile(lineCode);
+      return `<option value="${lineCode}">${line.zh} / ${line.en}</option>`;
+    })
+    .join("");
+  els.mtrLineSelect.value = normalized.line;
+}
+
+function locateNearestMtrStation() {
+  if (!navigator.geolocation) {
+    setMtrStatus("瀏覽器不支援定位");
+    return;
+  }
+
+  setMtrStatus("正在尋找最近車站");
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const config = saveMtrConfig(getNearestMtrConfig(position.coords.latitude, position.coords.longitude));
+      renderMtrSettings(config);
+      loadMtrTimes();
+    },
+    () => {
+      setMtrStatus("未能取得定位");
+    },
+    { enableHighAccuracy: false, maximumAge: 10 * 60 * 1000, timeout: 8000 },
+  );
 }
 
 function setSpotifyConnectedUi(isConnected) {
@@ -2041,6 +2213,35 @@ async function initDisplayPage() {
     items.push(normalizePortfolioItem({ market: "HK", symbol: "0700.HK", lots: 0 }));
     renderPortfolioEditor(items);
   });
+  els.mtrFlipButton?.addEventListener("click", () => {
+    markPanelActivity();
+    renderMtrSettings();
+    els.mtrCard?.classList.add("is-flipped");
+  });
+  els.mtrBackButton?.addEventListener("click", () => {
+    markPanelActivity();
+    els.mtrCard?.classList.remove("is-flipped");
+  });
+  els.mtrStationSelect?.addEventListener("change", () => {
+    const station = els.mtrStationSelect.value;
+    const line = getMtrStationProfile(station).lines[0];
+    renderMtrSettings({ station, line });
+  });
+  els.mtrLocateButton?.addEventListener("click", () => {
+    markPanelActivity();
+    locateNearestMtrStation();
+  });
+  els.mtrForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    markPanelActivity();
+    const config = saveMtrConfig({
+      station: els.mtrStationSelect?.value,
+      line: els.mtrLineSelect?.value,
+    });
+    updateMtrHeader(config);
+    els.mtrCard?.classList.remove("is-flipped");
+    loadMtrTimes();
+  });
 
   els.spotifyLogin.addEventListener("click", async () => {
     if (musicSource !== "spotify") return;
@@ -2086,6 +2287,11 @@ async function initDisplayPage() {
   refreshSpotifyDisplay();
   loadHkoWeather();
   loadMarketData();
+  renderMtrSettings();
+  updateMtrHeader();
+  if (!localStorage.getItem("mtrConfig") && navigator.geolocation) {
+    locateNearestMtrStation();
+  }
   loadMtrTimes();
   scrollToHash();
   requestAnimationFrame(scrollToHash);
