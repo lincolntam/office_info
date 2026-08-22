@@ -15,7 +15,7 @@ const DEFAULT_WEATHER_PLACE = "\u6c99\u7530";
 const DEFAULT_MUSIC_SOURCE = "spotify";
 const DEFAULT_YOUTUBE_URL = "";
 const DEFAULT_MUSIC_VOLUME = 0.65;
-const MTR_DEFAULT_CONFIG = { station: "TSY", line: "TCL" };
+const MTR_DEFAULT_CONFIG = { station: "FOT", line: "EAL" };
 const RTHK2_STREAM_URLS = [
   "https://stm.rthk.hk/radio2",
   "http://stm.rthk.hk/radio2",

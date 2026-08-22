@@ -1306,10 +1306,12 @@ button {
 
 .mtr-more-button {
   position: absolute;
+  z-index: 6;
   top: 30px;
   right: 34px;
   color: #263334;
   text-shadow: none;
+  pointer-events: auto;
 }
 
 .mtr-station-header {
