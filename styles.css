@@ -1233,35 +1233,40 @@ button {
 
 .mtr-card {
   display: grid;
-  grid-template-rows: 76px 38px 1fr 34px;
-  padding: 16px 22px 16px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.54), transparent 38%),
-    linear-gradient(90deg, rgba(245, 130, 32, 0.08), transparent 34%, rgba(245, 130, 32, 0.08)),
-    #d9e4df;
+  grid-template-rows: 74px 32px 1fr 30px;
+  padding: 22px 30px 20px;
+  border: 14px solid #efeee8;
+  background: #cbd8d4;
   color: #1f2c2d;
   font-family:
     "Arial Narrow", "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif;
+  box-shadow:
+    inset 0 0 0 2px rgba(66, 77, 76, 0.32),
+    inset 0 0 42px rgba(14, 28, 29, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.38);
 }
 
 .mtr-card::before {
   position: absolute;
-  inset: 0;
+  inset: 14px;
+  z-index: 0;
   content: "";
+  border: 2px solid rgba(42, 51, 52, 0.34);
   background:
-    linear-gradient(90deg, transparent 0 49.7%, rgba(245, 130, 32, 0.32) 49.7% 50.3%, transparent 50.3%),
-    radial-gradient(circle at 50% 23.4%, rgba(245, 130, 32, 0.2), transparent 7%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 42%),
+    radial-gradient(circle at 50% 22%, rgba(245, 130, 32, 0.13), transparent 19%);
+  box-shadow: inset 0 0 34px rgba(35, 51, 51, 0.18);
   pointer-events: none;
 }
 
 .mtr-paper-texture {
   position: absolute;
-  inset: 0;
+  inset: 14px;
   z-index: 0;
-  opacity: 0.19;
+  opacity: 0.24;
   background:
-    repeating-linear-gradient(0deg, rgba(21, 38, 39, 0.16) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.35) 0 1px, transparent 1px 5px);
+    repeating-linear-gradient(0deg, rgba(21, 38, 39, 0.18) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.34) 0 1px, transparent 1px 5px);
   mix-blend-mode: multiply;
   pointer-events: none;
 }
@@ -1301,43 +1306,45 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 32px;
-  margin-top: 2px;
-  padding: 0 14px;
-  border-top: 3px solid rgba(255, 255, 255, 0.58);
-  border-bottom: 3px solid rgba(136, 72, 12, 0.36);
-  background: linear-gradient(180deg, #ff9d2e, #f58220);
+  height: 28px;
+  margin-top: 0;
+  padding: 0 12px;
+  border: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.08)),
+    linear-gradient(90deg, #f58220 0 8px, rgba(43, 55, 56, 0.86) 8px);
   color: #fffaf2;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 950;
-  text-shadow: 0 1px 0 rgba(93, 47, 0, 0.4);
+  box-shadow: inset 0 -3px 0 rgba(245, 130, 32, 0.76);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.38);
 }
 
 .mtr-line-strip b {
-  font-size: 17px;
+  font-size: 16px;
   letter-spacing: 0;
 }
 
 .mtr-station-dot {
   position: absolute;
-  top: 108px;
+  top: 126px;
   left: 50%;
-  width: 58px;
-  height: 58px;
-  border: 7px solid #f58220;
+  width: 50px;
+  height: 50px;
+  border: 6px solid #2c3839;
   border-radius: 50%;
   background: #dce7e2;
   transform: translate(-50%, -50%);
   box-shadow:
-    0 0 0 5px rgba(31, 44, 45, 0.86),
-    inset 0 0 0 3px rgba(255, 255, 255, 0.52);
+    0 0 0 4px rgba(245, 130, 32, 0.88),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.48);
 }
 
 .mtr-board {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 50px;
-  padding-top: 24px;
+  gap: 44px;
+  padding-top: 18px;
 }
 
 .mtr-train-list {
@@ -1347,9 +1354,9 @@ button {
 
 .mtr-train-row {
   display: grid;
-  grid-template-columns: 48px 1fr 86px;
+  grid-template-columns: 44px 1fr 76px;
   align-items: center;
-  min-height: 65px;
+  min-height: 57px;
   border-bottom: 2px solid rgba(31, 44, 45, 0.18);
 }
 
@@ -1359,8 +1366,8 @@ button {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.58);
-  background: #f58220;
+  border: 3px solid rgba(245, 130, 32, 0.82);
+  background: #2f3b3c;
   color: #fffaf2;
   font-size: 22px;
   font-weight: 900;
@@ -1375,7 +1382,7 @@ button {
 
 .mtr-destination strong {
   color: #1e2b2c;
-  font-size: 25px;
+  font-size: 22px;
   font-weight: 900;
   letter-spacing: 0;
 }
@@ -1383,14 +1390,14 @@ button {
 .mtr-destination span {
   margin-top: 2px;
   color: #29393a;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 900;
 }
 
 .mtr-time {
   justify-self: end;
   color: #172323;
-  font-size: 31px;
+  font-size: 29px;
   font-weight: 950;
   line-height: 1;
   letter-spacing: 0;
@@ -1400,14 +1407,16 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 8px;
+  margin-top: 6px;
   padding: 0 10px;
-  border-top: 3px solid rgba(255, 255, 255, 0.52);
-  background: linear-gradient(180deg, #ff9d2e, #f58220);
-  color: #fffaf2;
-  font-size: 17px;
+  border-top: 0;
+  background:
+    linear-gradient(90deg, #f58220 0 8px, rgba(70, 82, 83, 0.32) 8px),
+    repeating-linear-gradient(90deg, rgba(31, 44, 45, 0.1) 0 1px, transparent 1px 4px);
+  color: #243032;
+  font-size: 16px;
   font-weight: 950;
-  text-shadow: 0 1px 0 rgba(93, 47, 0, 0.4);
+  text-shadow: none;
 }
 
 .weather-card {
