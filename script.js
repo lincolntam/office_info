@@ -17,9 +17,11 @@ const DEFAULT_YOUTUBE_URL = "";
 const DEFAULT_MUSIC_VOLUME = 0.65;
 const MTR_DEFAULT_CONFIG = { station: "FOT", line: "EAL" };
 const BUS_MAX_STOPS = 10;
+const BUS_DEFAULT_STOPS_VERSION = "2026-08-26-fotan-three-stops";
 const BUS_DEFAULT_STOPS = [
-  { name: "火炭村 FT526", stopId: "C458B4A40BFCC4FF" },
-  { name: "火炭村 FT525", stopId: "408F54D68A80BE8D" },
+  { name: "火炭村", stopId: "72EE8A033E4260A3" },
+  { name: "火炭村", stopId: "C458B4A40BFCC4FF" },
+  { name: "火炭站", stopId: "12DE49878E7A4ED1" },
 ];
 const BUS_DISPLAY_MODES = {
   all: "所有方向",
@@ -903,6 +905,11 @@ function normalizeBusStop(stop = {}) {
 
 function getSavedBusStops() {
   try {
+    if (localStorage.getItem("busStopsDefaultVersion") !== BUS_DEFAULT_STOPS_VERSION) {
+      localStorage.setItem("busStops", JSON.stringify(BUS_DEFAULT_STOPS));
+      localStorage.setItem("busStopsDefaultVersion", BUS_DEFAULT_STOPS_VERSION);
+      return [...BUS_DEFAULT_STOPS];
+    }
     const stops = JSON.parse(localStorage.getItem("busStops") || "[]");
     if (!Array.isArray(stops)) return [...BUS_DEFAULT_STOPS];
     const normalized = stops.map(normalizeBusStop).filter((stop) => stop.stopId).slice(0, BUS_MAX_STOPS);
@@ -915,6 +922,7 @@ function getSavedBusStops() {
 function saveBusStops(stops = []) {
   const normalized = stops.map(normalizeBusStop).filter((stop) => stop.stopId).slice(0, BUS_MAX_STOPS);
   localStorage.setItem("busStops", JSON.stringify(normalized));
+  localStorage.setItem("busStopsDefaultVersion", BUS_DEFAULT_STOPS_VERSION);
   return normalized;
 }
 
@@ -1029,6 +1037,7 @@ function normalizeBusEtaPayload(payload = {}, stops = getSavedBusStops()) {
   const direction = getSavedBusDirection();
   const resultSets = Array.isArray(payload.results) ? payload.results : [];
   const directData = Array.isArray(payload.data) ? [{ stopId: stops[0]?.stopId || "", data: payload.data }] : [];
+  const seen = new Set();
 
   return [...resultSets, ...directData]
     .flatMap((result) => {
@@ -1038,6 +1047,12 @@ function normalizeBusEtaPayload(payload = {}, stops = getSavedBusStops()) {
     })
     .filter((item) => item.eta)
     .filter((item) => mode !== "single" || item.dir === direction)
+    .filter((item) => {
+      const key = [item.route, item.dir, item.service_type, item.dest_tc, item.eta, item.stopId].join("|");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
     .sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
 }
 
