@@ -16,6 +16,16 @@ const DEFAULT_MUSIC_SOURCE = "spotify";
 const DEFAULT_YOUTUBE_URL = "";
 const DEFAULT_MUSIC_VOLUME = 0.65;
 const MTR_DEFAULT_CONFIG = { station: "FOT", line: "EAL" };
+const BUS_MAX_STOPS = 10;
+const BUS_DEFAULT_STOPS = [];
+const BUS_DISPLAY_MODES = {
+  all: "所有方向",
+  single: "單向",
+};
+const BUS_DIRECTIONS = {
+  O: "往程",
+  I: "回程",
+};
 const RTHK2_STREAM_URLS = [
   "https://stm.rthk.hk/radio2",
   "http://stm.rthk.hk/radio2",
@@ -394,6 +404,21 @@ const els = {
   mtrRightRows: document.querySelector("#mtrRightRows"),
   mtrModeLabel: document.querySelector("#mtrModeLabel"),
   mtrUpdated: document.querySelector("#mtrUpdated"),
+  busDisplay: document.querySelector("#busDisplay"),
+  busClock: document.querySelector("#busClock"),
+  busWeatherTemp: document.querySelector("#busWeatherTemp"),
+  busWeatherText: document.querySelector("#busWeatherText"),
+  busAdText: document.querySelector("#busAdText"),
+  busDateText: document.querySelector("#busDateText"),
+  busEtaRows: document.querySelector("#busEtaRows"),
+  busModeLabel: document.querySelector("#busModeLabel"),
+  busUpdated: document.querySelector("#busUpdated"),
+  busSettingsPanel: document.querySelector("#busSettingsPanel"),
+  busForm: document.querySelector("#busForm"),
+  busDisplayMode: document.querySelector("#busDisplayMode"),
+  busDirection: document.querySelector("#busDirection"),
+  busStopRows: document.querySelector("#busStopRows"),
+  busAddStop: document.querySelector("#busAddStop"),
   loginForm: document.querySelector("#loginForm"),
   loginKicker: document.querySelector("#loginKicker"),
   loginEmail: document.querySelector("#loginEmail"),
@@ -538,17 +563,31 @@ async function requireAppLogin() {
 
 function updateClock() {
   const now = new Date();
-  els.clock.textContent = new Intl.DateTimeFormat("zh-HK", {
+  const timeText = new Intl.DateTimeFormat("zh-HK", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   }).format(now);
+  els.clock.textContent = timeText;
   els.clock.dateTime = now.toISOString();
-  els.dateText.textContent = new Intl.DateTimeFormat("zh-HK", {
+  const dateText = new Intl.DateTimeFormat("zh-HK", {
     month: "long",
     day: "numeric",
     weekday: "short",
   }).format(now);
+  els.dateText.textContent = dateText;
+  if (els.busClock) {
+    els.busClock.textContent = timeText;
+    els.busClock.dateTime = now.toISOString();
+  }
+  if (els.busDateText) {
+    els.busDateText.textContent = new Intl.DateTimeFormat("zh-HK", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
+    }).format(now);
+  }
   updateHomeScaleTime();
 }
 
@@ -849,13 +888,205 @@ function renderMtrSettings(config = getSavedMtrConfig()) {
   els.mtrLineSelect.value = normalized.line;
 }
 
+function normalizeBusStop(stop = {}) {
+  return {
+    name: String(stop.name || "").trim(),
+    stopId: String(stop.stopId || stop.id || "").trim(),
+  };
+}
+
+function getSavedBusStops() {
+  try {
+    const stops = JSON.parse(localStorage.getItem("busStops") || "[]");
+    if (!Array.isArray(stops)) return [...BUS_DEFAULT_STOPS];
+    return stops.map(normalizeBusStop).filter((stop) => stop.stopId).slice(0, BUS_MAX_STOPS);
+  } catch {
+    return [...BUS_DEFAULT_STOPS];
+  }
+}
+
+function saveBusStops(stops = []) {
+  const normalized = stops.map(normalizeBusStop).filter((stop) => stop.stopId).slice(0, BUS_MAX_STOPS);
+  localStorage.setItem("busStops", JSON.stringify(normalized));
+  return normalized;
+}
+
+function getSavedBusMode() {
+  return localStorage.getItem("busDisplayMode") === "single" ? "single" : "all";
+}
+
+function getSavedBusDirection() {
+  return localStorage.getItem("busDirection") === "I" ? "I" : "O";
+}
+
+function renderBusSettings(stops = getSavedBusStops()) {
+  if (!els.busStopRows) return;
+  if (els.busDisplayMode) els.busDisplayMode.value = getSavedBusMode();
+  if (els.busDirection) els.busDirection.value = getSavedBusDirection();
+  const rows = stops.length ? stops : [{ name: "", stopId: "" }];
+
+  els.busStopRows.innerHTML = rows
+    .slice(0, BUS_MAX_STOPS)
+    .map(
+      (stop, index) => `
+        <div class="bus-stop-row" data-bus-stop-row>
+          <span>站 ${index + 1}</span>
+          <input type="text" value="${escapeHtml(stop.name)}" placeholder="站名，例如：青衣站" data-bus-stop-name>
+          <input type="text" value="${escapeHtml(stop.stopId)}" placeholder="KMB stop ID" data-bus-stop-id>
+          <button type="button" aria-label="刪除巴士站" data-bus-stop-remove>&times;</button>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function readBusEditorStops() {
+  return [...document.querySelectorAll("[data-bus-stop-row]")]
+    .map((row) =>
+      normalizeBusStop({
+        name: row.querySelector("[data-bus-stop-name]")?.value,
+        stopId: row.querySelector("[data-bus-stop-id]")?.value,
+      }),
+    )
+    .filter((stop) => stop.stopId || stop.name)
+    .slice(0, BUS_MAX_STOPS);
+}
+
+function setBusStatus(text) {
+  if (els.busUpdated) els.busUpdated.textContent = text;
+}
+
+function updateBusWeatherPanel() {
+  if (els.busWeatherTemp) els.busWeatherTemp.textContent = els.weatherTemp?.textContent || "--°C";
+  if (els.busWeatherText) {
+    const desc = els.weatherDesc?.textContent || "香港天氣";
+    const humidity = els.weatherHumidity?.textContent || "--%";
+    els.busWeatherText.textContent = `${desc} · 濕度 ${humidity}`;
+  }
+}
+
+function formatBusEtaTime(value) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+  return new Intl.DateTimeFormat("zh-HK", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function formatBusEtaMins(value) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+  const mins = Math.round((date.getTime() - Date.now()) / 60000);
+  if (mins <= 0) return "Arriving";
+  return String(mins);
+}
+
+function renderBusRows(rows = []) {
+  if (!els.busEtaRows) return;
+  if (!rows.length) {
+    els.busEtaRows.innerHTML = `
+      <div class="bus-empty-state">
+        <strong>未有班次</strong>
+        <span>請在設定加入 KMB stop ID，或稍後再試。</span>
+      </div>
+    `;
+    return;
+  }
+
+  els.busEtaRows.innerHTML = rows
+    .slice(0, 4)
+    .map((eta) => {
+      const mins = formatBusEtaMins(eta.eta);
+      const time = formatBusEtaTime(eta.eta);
+      const stopText = eta.stopName ? ` · ${eta.stopName}` : "";
+      return `
+        <article class="bus-eta-row">
+          <div class="bus-route-block">
+            <strong>${escapeHtml(eta.route || "--")}</strong>
+            <span>往 ${escapeHtml(eta.dest_tc || eta.dest_en || "--")}${escapeHtml(stopText)}</span>
+          </div>
+          <time datetime="${escapeHtml(eta.eta || "")}" title="${escapeHtml(time)}">${escapeHtml(mins)}</time>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function normalizeBusEtaPayload(payload = {}, stops = getSavedBusStops()) {
+  const stopNameById = new Map(stops.map((stop) => [stop.stopId, stop.name]));
+  const mode = getSavedBusMode();
+  const direction = getSavedBusDirection();
+  const resultSets = Array.isArray(payload.results) ? payload.results : [];
+  const directData = Array.isArray(payload.data) ? [{ stopId: stops[0]?.stopId || "", data: payload.data }] : [];
+
+  return [...resultSets, ...directData]
+    .flatMap((result) => {
+      const stopId = result.stopId || result.stop || "";
+      const data = Array.isArray(result.data) ? result.data : [];
+      return data.map((item) => ({ ...item, stopId, stopName: stopNameById.get(stopId) || "" }));
+    })
+    .filter((item) => item.eta)
+    .filter((item) => mode !== "single" || item.dir === direction)
+    .sort((a, b) => new Date(a.eta).getTime() - new Date(b.eta).getTime());
+}
+
+async function loadBusTimes() {
+  if (localStorage.getItem("transportSource") !== "bus") return;
+  updateBusWeatherPanel();
+  const stops = getSavedBusStops();
+  if (!stops.length) {
+    renderBusRows([]);
+    setBusStatus("請先設定巴士站");
+    return;
+  }
+
+  const stopIds = stops.map((stop) => stop.stopId).join(",");
+  const endpoint = isLocalStatic()
+    ? null
+    : `/api/bus?stops=${encodeURIComponent(stopIds)}`;
+
+  try {
+    let data;
+    if (isLocalStatic()) {
+      const results = await Promise.all(
+        stops.map(async (stop) => {
+          const response = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${encodeURIComponent(stop.stopId)}`);
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || "Bus request failed");
+          return { stopId: stop.stopId, data: Array.isArray(payload.data) ? payload.data : [] };
+        }),
+      );
+      data = { results };
+    } else {
+      const response = await fetch(endpoint, { credentials: "include" });
+      data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Bus request failed");
+    }
+    renderBusRows(normalizeBusEtaPayload(data, stops));
+    if (els.busModeLabel) {
+      const mode = getSavedBusMode();
+      els.busModeLabel.textContent = mode === "single" ? `單向 · ${BUS_DIRECTIONS[getSavedBusDirection()]}` : "所有方向";
+    }
+    setBusStatus(`Updated ${formatMtrTime(new Date().toISOString())}`);
+  } catch {
+    renderBusRows([]);
+    setBusStatus("巴士班次暫時未能更新");
+  }
+}
+
 function setMtrBackMode(mode = "settings") {
   const isTransport = mode === "transport";
+  const isBusSettings = mode === "busSettings";
   if (els.mtrBackTitle) {
-    els.mtrBackTitle.textContent = isTransport ? "交通選擇" : "Transport 設定";
+    els.mtrBackTitle.textContent = isTransport ? "交通選擇" : isBusSettings ? "Bus 設定" : "Transport 設定";
   }
-  els.mtrSettingsPanel?.classList.toggle("is-active", !isTransport);
+  els.mtrSettingsPanel?.classList.toggle("is-active", !isTransport && !isBusSettings);
   els.mtrTransportPanel?.classList.toggle("is-active", isTransport);
+  els.busSettingsPanel?.classList.toggle("is-active", isBusSettings);
 }
 
 function setTransportSource(source) {
@@ -864,13 +1095,19 @@ function setTransportSource(source) {
   els.mtrTransportOptions.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.transportOption === normalized);
   });
+  els.mtrCard?.classList.toggle("is-bus", normalized === "bus");
+  if (els.busDisplay) els.busDisplay.hidden = normalized !== "bus";
 
   if (normalized === "mtr") {
     setMtrBackMode("settings");
+    updateMtrHeader();
+    loadMtrTimes();
     return;
   }
 
-  setMtrStatus("Bus 頁面預留中");
+  renderBusSettings();
+  setMtrBackMode("busSettings");
+  loadBusTimes();
 }
 
 function locateNearestMtrStation() {
@@ -2438,8 +2675,13 @@ async function initDisplayPage() {
   });
   els.mtrFlipButton?.addEventListener("click", () => {
     markPanelActivity();
-    renderMtrSettings();
-    setMtrBackMode("settings");
+    if (localStorage.getItem("transportSource") === "bus") {
+      renderBusSettings();
+      setMtrBackMode("busSettings");
+    } else {
+      renderMtrSettings();
+      setMtrBackMode("settings");
+    }
     els.mtrCard?.classList.add("is-flipped");
   });
   els.mtrTransportButton?.addEventListener("click", () => {
@@ -2482,6 +2724,33 @@ async function initDisplayPage() {
     updateMtrHeader(config);
     els.mtrCard?.classList.remove("is-flipped");
     loadMtrTimes();
+  });
+  els.busStopRows?.addEventListener("click", (event) => {
+    const removeButton = event.target.closest("[data-bus-stop-remove]");
+    if (!removeButton) return;
+    markPanelActivity();
+    const items = readBusEditorStops();
+    const row = removeButton.closest("[data-bus-stop-row]");
+    const index = [...document.querySelectorAll("[data-bus-stop-row]")].indexOf(row);
+    items.splice(index, 1);
+    renderBusSettings(items);
+  });
+  els.busAddStop?.addEventListener("click", () => {
+    markPanelActivity();
+    const items = readBusEditorStops();
+    if (items.length >= BUS_MAX_STOPS) return;
+    items.push({ name: "", stopId: "" });
+    renderBusSettings(items);
+  });
+  els.busForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    markPanelActivity();
+    localStorage.setItem("busDisplayMode", els.busDisplayMode?.value === "single" ? "single" : "all");
+    localStorage.setItem("busDirection", els.busDirection?.value === "I" ? "I" : "O");
+    saveBusStops(readBusEditorStops());
+    setTransportSource("bus");
+    els.mtrCard?.classList.remove("is-flipped");
+    loadBusTimes();
   });
 
   els.spotifyLogin.addEventListener("click", async () => {
@@ -2546,7 +2815,10 @@ async function initDisplayPage() {
   setInterval(loadHkoWeather, 10 * 60 * 1000);
   setInterval(() => setWeatherVisual(currentWeatherCondition), 60 * 1000);
   setInterval(loadMarketData, 60 * 1000);
-  setInterval(loadMtrTimes, 10 * 1000);
+  setInterval(() => {
+    if (localStorage.getItem("transportSource") === "mtr") loadMtrTimes();
+  }, 10 * 1000);
+  setInterval(loadBusTimes, 60 * 1000);
   setInterval(rotatePanelIfIdle, 15000);
 }
 

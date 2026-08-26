@@ -259,6 +259,26 @@
                   <div id="mtrRightRows" class="mtr-train-list" aria-label="towards right"></div>
                 </section>
               </div>
+              <div id="busDisplay" class="bus-display" hidden aria-label="實時巴士站班次顯示器">
+                <section class="bus-info-panel">
+                  <time id="busClock" class="bus-clock" datetime="">--:--</time>
+                  <strong id="busWeatherTemp" class="bus-weather-temp">--°C</strong>
+                  <p id="busWeatherText" class="bus-weather-text">香港天氣更新中</p>
+                  <p id="busAdText" class="bus-ad-text">距離下個公眾假期：資料準備中</p>
+                  <span id="busDateText" class="bus-date-text">----</span>
+                </section>
+                <section class="bus-eta-panel">
+                  <header class="bus-eta-header">
+                    <span>路線</span>
+                    <b>分鐘 min(s)</b>
+                  </header>
+                  <div id="busEtaRows" class="bus-eta-rows" aria-live="polite"></div>
+                  <footer class="bus-eta-footer">
+                    <span id="busModeLabel">所有方向</span>
+                    <span id="busUpdated">Updated --:--</span>
+                  </footer>
+                </section>
+              </div>
               <footer class="mtr-footer">
                 <span id="mtrModeLabel">MTR Next Trains (In Time)</span>
                 <span id="mtrUpdated">Updated --:--</span>
@@ -289,7 +309,27 @@
                   <button class="is-active" type="button" data-transport-option="mtr">MTR</button>
                   <button type="button" data-transport-option="bus">Bus</button>
                 </div>
-                <p class="mtr-transport-note">目前顯示 MTR 下一班車；Bus 可先預留作下一頁。</p>
+                <p class="mtr-transport-note">選擇 Transport 顯示 MTR 或實時巴士班次。</p>
+              </div>
+              <div id="busSettingsPanel" class="mtr-back-panel">
+                <form id="busForm" class="bus-settings-form">
+                  <p>設定巴士站位置，最多十個 KMB 巴士站。</p>
+                  <label for="busDisplayMode">顯示模式</label>
+                  <select id="busDisplayMode">
+                    <option value="all">所有方向</option>
+                    <option value="single">單向</option>
+                  </select>
+                  <label for="busDirection">單向方向</label>
+                  <select id="busDirection">
+                    <option value="O">往程</option>
+                    <option value="I">回程</option>
+                  </select>
+                  <div id="busStopRows" class="bus-stop-rows" aria-label="巴士站設定"></div>
+                  <div class="bus-settings-actions">
+                    <button id="busAddStop" class="mtr-secondary-button" type="button">增加巴士站</button>
+                    <button type="submit">確定</button>
+                  </div>
+                </form>
               </div>
             </div>
           </article>
