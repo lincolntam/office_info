@@ -17,7 +17,10 @@ const DEFAULT_YOUTUBE_URL = "";
 const DEFAULT_MUSIC_VOLUME = 0.65;
 const MTR_DEFAULT_CONFIG = { station: "FOT", line: "EAL" };
 const BUS_MAX_STOPS = 10;
-const BUS_DEFAULT_STOPS = [];
+const BUS_DEFAULT_STOPS = [
+  { name: "火炭村 FT526", stopId: "C458B4A40BFCC4FF" },
+  { name: "火炭村 FT525", stopId: "408F54D68A80BE8D" },
+];
 const BUS_DISPLAY_MODES = {
   all: "所有方向",
   single: "單向",
@@ -404,6 +407,9 @@ const els = {
   mtrRightRows: document.querySelector("#mtrRightRows"),
   mtrModeLabel: document.querySelector("#mtrModeLabel"),
   mtrUpdated: document.querySelector("#mtrUpdated"),
+  busCard: document.querySelector("#busCard"),
+  busFlipButton: document.querySelector("#busFlipButton"),
+  busBackButton: document.querySelector("#busBackButton"),
   busDisplay: document.querySelector("#busDisplay"),
   busClock: document.querySelector("#busClock"),
   busWeatherTemp: document.querySelector("#busWeatherTemp"),
@@ -899,7 +905,8 @@ function getSavedBusStops() {
   try {
     const stops = JSON.parse(localStorage.getItem("busStops") || "[]");
     if (!Array.isArray(stops)) return [...BUS_DEFAULT_STOPS];
-    return stops.map(normalizeBusStop).filter((stop) => stop.stopId).slice(0, BUS_MAX_STOPS);
+    const normalized = stops.map(normalizeBusStop).filter((stop) => stop.stopId).slice(0, BUS_MAX_STOPS);
+    return normalized.length ? normalized : [...BUS_DEFAULT_STOPS];
   } catch {
     return [...BUS_DEFAULT_STOPS];
   }
@@ -931,8 +938,8 @@ function renderBusSettings(stops = getSavedBusStops()) {
       (stop, index) => `
         <div class="bus-stop-row" data-bus-stop-row>
           <span>站 ${index + 1}</span>
-          <input type="text" value="${escapeHtml(stop.name)}" placeholder="站名，例如：青衣站" data-bus-stop-name>
-          <input type="text" value="${escapeHtml(stop.stopId)}" placeholder="KMB stop ID" data-bus-stop-id>
+          <input type="text" value="${escapeHtml(stop.name)}" placeholder="站名，例如：火炭村 FT526" data-bus-stop-name>
+          <input type="text" value="${escapeHtml(stop.stopId)}" placeholder="KMB stop ID，例如：C458B4A40BFCC4FF" data-bus-stop-id>
           <button type="button" aria-label="刪除巴士站" data-bus-stop-remove>&times;</button>
         </div>
       `,
@@ -1035,7 +1042,6 @@ function normalizeBusEtaPayload(payload = {}, stops = getSavedBusStops()) {
 }
 
 async function loadBusTimes() {
-  if (localStorage.getItem("transportSource") !== "bus") return;
   updateBusWeatherPanel();
   const stops = getSavedBusStops();
   if (!stops.length) {
@@ -1080,33 +1086,43 @@ async function loadBusTimes() {
 
 function setMtrBackMode(mode = "settings") {
   const isTransport = mode === "transport";
-  const isBusSettings = mode === "busSettings";
   if (els.mtrBackTitle) {
-    els.mtrBackTitle.textContent = isTransport ? "交通選擇" : isBusSettings ? "Bus 設定" : "Transport 設定";
+    els.mtrBackTitle.textContent = isTransport ? "交通選擇" : "Transport 設定";
   }
-  els.mtrSettingsPanel?.classList.toggle("is-active", !isTransport && !isBusSettings);
+  els.mtrSettingsPanel?.classList.toggle("is-active", !isTransport);
   els.mtrTransportPanel?.classList.toggle("is-active", isTransport);
-  els.busSettingsPanel?.classList.toggle("is-active", isBusSettings);
 }
 
-function setTransportSource(source) {
+function getPanelIndexById(id) {
+  return panels.findIndex((panel) => panel.id === id);
+}
+
+function setTransportSource(source, options = {}) {
+  const { scroll = true } = options;
   const normalized = source === "bus" ? "bus" : "mtr";
   localStorage.setItem("transportSource", normalized);
   els.mtrTransportOptions.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.transportOption === normalized);
   });
-  els.mtrCard?.classList.toggle("is-bus", normalized === "bus");
-  if (els.busDisplay) els.busDisplay.hidden = normalized !== "bus";
+  els.mtrCard?.classList.remove("is-bus");
 
   if (normalized === "mtr") {
     setMtrBackMode("settings");
     updateMtrHeader();
     loadMtrTimes();
+    if (scroll) {
+      const mtrIndex = getPanelIndexById("mtr");
+      if (mtrIndex >= 0) scrollToPanel(mtrIndex);
+    }
     return;
   }
 
   renderBusSettings();
-  setMtrBackMode("busSettings");
+  els.mtrCard?.classList.remove("is-flipped");
+  if (scroll) {
+    const busIndex = getPanelIndexById("bus");
+    if (busIndex >= 0) scrollToPanel(busIndex);
+  }
   loadBusTimes();
 }
 
@@ -2675,13 +2691,8 @@ async function initDisplayPage() {
   });
   els.mtrFlipButton?.addEventListener("click", () => {
     markPanelActivity();
-    if (localStorage.getItem("transportSource") === "bus") {
-      renderBusSettings();
-      setMtrBackMode("busSettings");
-    } else {
-      renderMtrSettings();
-      setMtrBackMode("settings");
-    }
+    renderMtrSettings();
+    setMtrBackMode("settings");
     els.mtrCard?.classList.add("is-flipped");
   });
   els.mtrTransportButton?.addEventListener("click", () => {
@@ -2704,6 +2715,15 @@ async function initDisplayPage() {
       markPanelActivity();
       setTransportSource(button.dataset.transportOption);
     });
+  });
+  els.busFlipButton?.addEventListener("click", () => {
+    markPanelActivity();
+    renderBusSettings();
+    els.busCard?.classList.add("is-flipped");
+  });
+  els.busBackButton?.addEventListener("click", () => {
+    markPanelActivity();
+    els.busCard?.classList.remove("is-flipped");
   });
   els.mtrStationSelect?.addEventListener("change", () => {
     const station = els.mtrStationSelect.value;
@@ -2749,7 +2769,7 @@ async function initDisplayPage() {
     localStorage.setItem("busDirection", els.busDirection?.value === "I" ? "I" : "O");
     saveBusStops(readBusEditorStops());
     setTransportSource("bus");
-    els.mtrCard?.classList.remove("is-flipped");
+    els.busCard?.classList.remove("is-flipped");
     loadBusTimes();
   });
 
@@ -2799,8 +2819,10 @@ async function initDisplayPage() {
   loadMarketData();
   renderMtrSettings();
   setMtrBackMode("settings");
-  setTransportSource(localStorage.getItem("transportSource") || "mtr");
+  setTransportSource(localStorage.getItem("transportSource") || "mtr", { scroll: false });
   updateMtrHeader();
+  renderBusSettings();
+  loadBusTimes();
   if (!localStorage.getItem("mtrConfig") && navigator.geolocation) {
     locateNearestMtrStation();
   }
