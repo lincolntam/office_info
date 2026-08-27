@@ -409,6 +409,7 @@ const els = {
   mtrBackTitle: document.querySelector("#mtrBackTitle"),
   mtrBackButton: document.querySelector("#mtrBackButton"),
   mtrTransportButton: document.querySelector("#mtrTransportButton"),
+  transportSettingsButton: document.querySelector("#transportSettingsButton"),
   mtrSettingsPanel: document.querySelector("#mtrSettingsPanel"),
   mtrTransportPanel: document.querySelector("#mtrTransportPanel"),
   mtrTransportOptions: [...document.querySelectorAll("[data-transport-option]")],
@@ -424,6 +425,7 @@ const els = {
   mtrRightRows: document.querySelector("#mtrRightRows"),
   mtrModeLabel: document.querySelector("#mtrModeLabel"),
   mtrUpdated: document.querySelector("#mtrUpdated"),
+  mtrDisplay: document.querySelector("#mtrDisplay"),
   busDisplay: document.querySelector("#busDisplay"),
   busClock: document.querySelector("#busClock"),
   busWeatherTemp: document.querySelector("#busWeatherTemp"),
@@ -1412,6 +1414,22 @@ function getSavedTransportSource() {
   return TRANSPORT_SOURCES.includes(saved) ? saved : "mtr";
 }
 
+function openActiveTransportSettings() {
+  const source = getSavedTransportSource();
+  if (source === "bus") {
+    renderBusSettings();
+    setMtrBackMode("bus");
+    return;
+  }
+  if (source === "minibus") {
+    renderMinibusSettings();
+    setMtrBackMode("minibus");
+    return;
+  }
+  renderMtrSettings();
+  setMtrBackMode("settings");
+}
+
 function setMtrBackMode(mode = "settings") {
   const isTransport = mode === "transport";
   const isBus = mode === "bus";
@@ -1442,13 +1460,19 @@ function setTransportSource(source, options = {}) {
   els.mtrTransportOptions.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.transportOption === normalized);
   });
+  els.mtrCard?.setAttribute("data-transport-source", normalized);
   els.mtrCard?.classList.toggle("is-bus", normalized === "bus");
   els.mtrCard?.classList.toggle("is-minibus", normalized === "minibus");
-  if (els.busDisplay) els.busDisplay.hidden = normalized !== "bus";
-  if (els.minibusDisplay) els.minibusDisplay.hidden = normalized !== "minibus";
+  els.mtrDisplay?.classList.toggle("is-active", normalized === "mtr");
+  els.busDisplay?.classList.toggle("is-active", normalized === "bus");
+  els.minibusDisplay?.classList.toggle("is-active", normalized === "minibus");
+  if (els.mtrFlipButton) {
+    const labels = { mtr: "MTR", bus: "Bus", minibus: "Minibus" };
+    els.mtrFlipButton.setAttribute("aria-label", `${labels[normalized]} 交通選擇`);
+  }
 
   if (normalized === "mtr") {
-    setMtrBackMode("settings");
+    setMtrBackMode("transport");
     updateMtrHeader();
     loadMtrTimes();
     if (scroll) {
@@ -3037,22 +3061,16 @@ async function initDisplayPage() {
   });
   els.mtrFlipButton?.addEventListener("click", () => {
     markPanelActivity();
-    const source = getSavedTransportSource();
-    if (source === "bus") {
-      renderBusSettings();
-      setMtrBackMode("bus");
-    } else if (source === "minibus") {
-      renderMinibusSettings();
-      setMtrBackMode("minibus");
-    } else {
-      renderMtrSettings();
-      setMtrBackMode("settings");
-    }
+    setMtrBackMode("transport");
     els.mtrCard?.classList.add("is-flipped");
   });
   els.mtrTransportButton?.addEventListener("click", () => {
     markPanelActivity();
     setMtrBackMode("transport");
+  });
+  els.transportSettingsButton?.addEventListener("click", () => {
+    markPanelActivity();
+    openActiveTransportSettings();
   });
   els.mtrBackButton?.addEventListener("click", () => {
     markPanelActivity();
@@ -3069,6 +3087,7 @@ async function initDisplayPage() {
     button.addEventListener("click", () => {
       markPanelActivity();
       setTransportSource(button.dataset.transportOption);
+      els.mtrCard?.classList.remove("is-flipped");
     });
   });
   els.mtrStationSelect?.addEventListener("change", () => {

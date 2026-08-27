@@ -1262,6 +1262,7 @@ button {
 }
 
 .mtr-front {
+  padding: 0;
   transform: rotateY(0deg);
 }
 
@@ -1312,6 +1313,26 @@ button {
   color: #263334;
   text-shadow: none;
   pointer-events: auto;
+}
+
+.transport-display {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.mtr-display {
+  grid-template-rows: 76px 24px 1fr 28px;
+  padding: 18px 28px;
+}
+
+.mtr-card[data-transport-source="mtr"] .mtr-display {
+  display: grid;
+}
+
+.mtr-card[data-transport-source="bus"] #busDisplay,
+.mtr-card[data-transport-source="minibus"] #minibusDisplay {
+  display: grid;
 }
 
 .mtr-station-header {
@@ -1470,30 +1491,6 @@ button {
   text-shadow: none;
 }
 
-.mtr-card.is-bus .mtr-station-header,
-.mtr-card.is-bus .mtr-line-strip,
-.mtr-card.is-bus .mtr-station-dot,
-.mtr-card.is-bus .mtr-board,
-.mtr-card.is-bus .mtr-footer,
-.mtr-card.is-minibus .mtr-station-header,
-.mtr-card.is-minibus .mtr-line-strip,
-.mtr-card.is-minibus .mtr-station-dot,
-.mtr-card.is-minibus .mtr-board,
-.mtr-card.is-minibus .mtr-footer {
-  display: none;
-}
-
-.mtr-card.is-bus .mtr-front,
-.mtr-card.is-minibus .mtr-front {
-  display: block;
-  padding: 0;
-}
-
-.mtr-card.is-bus .bus-display,
-.mtr-card.is-minibus .minibus-display {
-  display: grid;
-}
-
 .mtr-settings-topline {
   color: #263334;
 }
@@ -1611,6 +1608,12 @@ button {
   text-align: center;
 }
 
+.transport-settings-button {
+  display: block;
+  min-width: 190px;
+  margin: 22px auto 0;
+}
+
 .bus-card {
   padding: 0;
   border: 0;
@@ -1674,8 +1677,8 @@ button {
 }
 
 .bus-display {
-  position: relative;
-  display: grid;
+  position: absolute;
+  display: none;
   grid-template-columns: 258px 1fr;
   width: 100%;
   height: 100%;

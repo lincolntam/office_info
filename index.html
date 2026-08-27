@@ -242,28 +242,30 @@
             <div class="mtr-face mtr-front">
               <div class="mtr-paper-texture"></div>
               <button id="mtrFlipButton" class="market-more-button mtr-more-button" type="button" aria-label="MTR 設定">...</button>
-              <header class="mtr-station-header">
-                <strong id="mtrStationZh">&#38738;&#34915;</strong>
-                <span id="mtrStationEn">Tsing Yi</span>
-              </header>
-              <div class="mtr-line-strip">
-                <span id="mtrLineZh">東涌綫</span>
-                <b id="mtrLineEn">Tung Chung Line</b>
+              <div id="mtrDisplay" class="transport-display mtr-display" aria-label="MTR Next Trains">
+                <header class="mtr-station-header">
+                  <strong id="mtrStationZh">&#38738;&#34915;</strong>
+                  <span id="mtrStationEn">Tsing Yi</span>
+                </header>
+                <div class="mtr-line-strip">
+                  <span id="mtrLineZh">東涌綫</span>
+                  <b id="mtrLineEn">Tung Chung Line</b>
+                </div>
+                <span class="mtr-station-dot" aria-hidden="true"></span>
+                <div class="mtr-board" aria-label="MTR Next Trains">
+                  <section class="mtr-direction">
+                    <div id="mtrLeftRows" class="mtr-train-list" aria-label="towards left"></div>
+                  </section>
+                  <section class="mtr-direction">
+                    <div id="mtrRightRows" class="mtr-train-list" aria-label="towards right"></div>
+                  </section>
+                </div>
+                <footer class="mtr-footer">
+                  <span id="mtrModeLabel">MTR Next Trains (In Time)</span>
+                  <span id="mtrUpdated">Updated --:--</span>
+                </footer>
               </div>
-              <span class="mtr-station-dot" aria-hidden="true"></span>
-              <div class="mtr-board" aria-label="MTR Next Trains">
-                <section class="mtr-direction">
-                  <div id="mtrLeftRows" class="mtr-train-list" aria-label="towards left"></div>
-                </section>
-                <section class="mtr-direction">
-                  <div id="mtrRightRows" class="mtr-train-list" aria-label="towards right"></div>
-                </section>
-              </div>
-              <footer class="mtr-footer">
-                <span id="mtrModeLabel">MTR Next Trains (In Time)</span>
-                <span id="mtrUpdated">Updated --:--</span>
-              </footer>
-              <div id="busDisplay" class="bus-display" aria-label="實時巴士站班次顯示器" hidden>
+              <div id="busDisplay" class="transport-display bus-display" aria-label="實時巴士站班次顯示器">
                 <section class="bus-info-panel">
                   <time id="busClock" class="bus-clock" datetime="">--:--</time>
                   <strong id="busWeatherTemp" class="bus-weather-temp">--°C</strong>
@@ -283,7 +285,7 @@
                   </footer>
                 </section>
               </div>
-              <div id="minibusDisplay" class="bus-display minibus-display" aria-label="實時專線小巴班次顯示器" hidden>
+              <div id="minibusDisplay" class="transport-display bus-display minibus-display" aria-label="實時專線小巴班次顯示器">
                 <section class="bus-info-panel minibus-info-panel">
                   <time id="minibusClock" class="bus-clock" datetime="">--:--</time>
                   <strong id="minibusWeatherTemp" class="bus-weather-temp">--°C</strong>
@@ -331,6 +333,7 @@
                   <button type="button" data-transport-option="minibus">Minibus</button>
                 </div>
                 <p class="mtr-transport-note">選擇 Transport 顯示 MTR、實時巴士或專線小巴班次。</p>
+                <button id="transportSettingsButton" class="mtr-secondary-button transport-settings-button" type="button">設定目前顯示</button>
               </div>
               <div id="busSettingsPanel" class="mtr-back-panel">
                 <form id="busForm" class="bus-settings-form">
