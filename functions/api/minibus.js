@@ -2,7 +2,9 @@ import { json } from "../_auth.js";
 
 const GMB_STOP_ETA_URL = "https://data.etagmb.gov.hk/eta/stop";
 const GMB_ROUTE_URL = "https://data.etagmb.gov.hk/route";
+const GMB_ROUTE_STOP_URL = "https://data.etagmb.gov.hk/route-stop";
 const MAX_STOPS = 10;
+const GMB_REGIONS = ["HKI", "KLN", "NT"];
 
 function normalizeStops(value = "") {
   return value
@@ -15,7 +17,44 @@ function normalizeStops(value = "") {
 export async function onRequestGet({ request }) {
   const url = new URL(request.url);
   const stops = normalizeStops(url.searchParams.get("stops") || "");
+  const routeQuery = (url.searchParams.get("route") || "").trim();
+  const routeId = (url.searchParams.get("routeId") || "").trim();
+  const routeSeq = (url.searchParams.get("routeSeq") || "").trim();
   const routeCache = new Map();
+
+  if (routeId && routeSeq) {
+    try {
+      const response = await fetch(
+        `${GMB_ROUTE_STOP_URL}/${encodeURIComponent(routeId)}/${encodeURIComponent(routeSeq)}`,
+        { cf: { cacheTtl: 3600, cacheEverything: true } },
+      );
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        return json({ error: payload.message || `Green minibus route stops failed with ${response.status}` }, response.status);
+      }
+      return json(payload);
+    } catch (error) {
+      return json({ error: error instanceof Error ? error.message : "Unable to load green minibus stops" }, 502);
+    }
+  }
+
+  if (routeQuery) {
+    try {
+      const routeResults = await Promise.all(
+        GMB_REGIONS.map(async (region) => {
+          const response = await fetch(`${GMB_ROUTE_URL}/${region}/${encodeURIComponent(routeQuery)}`, {
+            cf: { cacheTtl: 3600, cacheEverything: true },
+          });
+          if (!response.ok) return [];
+          const payload = await response.json().catch(() => ({}));
+          return Array.isArray(payload.data) ? payload.data : [];
+        }),
+      );
+      return json({ data: routeResults.flat() });
+    } catch (error) {
+      return json({ error: error instanceof Error ? error.message : "Unable to search green minibus route", data: [] }, 502);
+    }
+  }
 
   if (!stops.length) {
     return json({ results: [] });

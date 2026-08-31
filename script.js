@@ -32,10 +32,10 @@ const BUS_DIRECTIONS = {
   I: "回程",
 };
 const MINIBUS_MAX_STOPS = 10;
-const MINIBUS_DEFAULT_STOPS_VERSION = "2026-08-26-fotan-minibus";
+const MINIBUS_DEFAULT_STOPS_VERSION = "2026-08-31-fotan-minibus-route-picker";
 const MINIBUS_DEFAULT_STOPS = [
-  { name: "專線小巴", stopId: "20015728" },
-  { name: "專線小巴", stopId: "20015751" },
+  { name: "專線小巴 811 · 火炭", stopId: "20015728", routeCode: "811", routeId: "2007761", routeSeq: "2", stopSeq: "5", destTc: "穗禾苑" },
+  { name: "專線小巴 811 · 火炭", stopId: "20015751", routeCode: "811", routeId: "2007761", routeSeq: "1", stopSeq: "5", destTc: "愉翠苑" },
 ];
 const TRANSPORT_SOURCES = ["mtr", "bus", "minibus"];
 const HK_PUBLIC_HOLIDAYS_2026 = [
@@ -452,8 +452,11 @@ const els = {
   minibusUpdated: document.querySelector("#minibusUpdated"),
   minibusSettingsPanel: document.querySelector("#minibusSettingsPanel"),
   minibusForm: document.querySelector("#minibusForm"),
-  minibusDisplayMode: document.querySelector("#minibusDisplayMode"),
-  minibusDirection: document.querySelector("#minibusDirection"),
+  minibusRouteSearch: document.querySelector("#minibusRouteSearch"),
+  minibusRouteSearchButton: document.querySelector("#minibusRouteSearchButton"),
+  minibusRouteSelect: document.querySelector("#minibusRouteSelect"),
+  minibusRouteDirection: document.querySelector("#minibusRouteDirection"),
+  minibusRouteStopSelect: document.querySelector("#minibusRouteStopSelect"),
   minibusStopRows: document.querySelector("#minibusStopRows"),
   minibusAddStop: document.querySelector("#minibusAddStop"),
   loginForm: document.querySelector("#loginForm"),
@@ -568,6 +571,8 @@ let musicVolume = DEFAULT_MUSIC_VOLUME;
 let previousMusicVolume = DEFAULT_MUSIC_VOLUME;
 let isSeeking = false;
 let mtrTimeDisplayMode = localStorage.getItem("mtrTimeDisplayMode") === "mins" ? "mins" : "time";
+let minibusRouteMatches = [];
+let minibusRouteStops = [];
 
 const DEFAULT_PORTFOLIO_ITEMS = [
   { market: "HK", symbol: "0700.HK", lots: 0 },
@@ -1025,6 +1030,12 @@ function normalizeMinibusStop(stop = {}) {
   return {
     name: String(stop.name || "").trim(),
     stopId: String(stop.stopId || stop.id || "").trim(),
+    routeCode: String(stop.routeCode || stop.route || "").trim(),
+    routeId: String(stop.routeId || stop.route_id || "").trim(),
+    routeSeq: String(stop.routeSeq || stop.route_seq || "").trim(),
+    stopSeq: String(stop.stopSeq || stop.stop_seq || "").trim(),
+    destTc: String(stop.destTc || stop.dest_tc || "").trim(),
+    destEn: String(stop.destEn || stop.dest_en || "").trim(),
   };
 }
 
@@ -1083,11 +1094,11 @@ function getSavedBusDirection() {
 }
 
 function getSavedMinibusMode() {
-  return localStorage.getItem("minibusDisplayMode") === "single" ? "single" : "all";
+  return "all";
 }
 
 function getSavedMinibusDirection() {
-  return localStorage.getItem("minibusDirection") === "I" ? "I" : "O";
+  return "O";
 }
 
 function renderBusSettings(stops = getSavedBusStops()) {
@@ -1113,23 +1124,197 @@ function renderBusSettings(stops = getSavedBusStops()) {
 
 function renderMinibusSettings(stops = getSavedMinibusStops()) {
   if (!els.minibusStopRows) return;
-  if (els.minibusDisplayMode) els.minibusDisplayMode.value = getSavedMinibusMode();
-  if (els.minibusDirection) els.minibusDirection.value = getSavedMinibusDirection();
-  const rows = stops.length ? stops : [{ name: "", stopId: "" }];
+  const rows = stops.length ? stops : [];
+  if (els.minibusRouteSearch && !els.minibusRouteSearch.value) {
+    els.minibusRouteSearch.value = rows[0]?.routeCode || MINIBUS_DEFAULT_STOPS[0]?.routeCode || "811";
+  }
 
-  els.minibusStopRows.innerHTML = rows
+  els.minibusStopRows.innerHTML = rows.length
+    ? rows
     .slice(0, MINIBUS_MAX_STOPS)
     .map(
       (stop, index) => `
         <div class="bus-stop-row" data-minibus-stop-row>
-          <span>站 ${index + 1}</span>
-          <input type="text" value="${escapeHtml(stop.name)}" placeholder="站名，例如：專線小巴" data-minibus-stop-name>
-          <input type="text" value="${escapeHtml(stop.stopId)}" placeholder="小巴 stop ID，例如：20015728" data-minibus-stop-id>
+          <span>${index + 1}</span>
+          <strong class="minibus-stop-route">${escapeHtml(stop.routeCode || "小巴")}</strong>
+          <span class="minibus-stop-summary">${escapeHtml(stop.name || stop.stopId || "--")}${stop.destTc ? ` · 往 ${escapeHtml(stop.destTc)}` : ""}</span>
+          <input type="hidden" value="${escapeHtml(stop.name)}" data-minibus-stop-name>
+          <input type="hidden" value="${escapeHtml(stop.stopId)}" data-minibus-stop-id>
+          <input type="hidden" value="${escapeHtml(stop.routeCode)}" data-minibus-route-code>
+          <input type="hidden" value="${escapeHtml(stop.routeId)}" data-minibus-route-id>
+          <input type="hidden" value="${escapeHtml(stop.routeSeq)}" data-minibus-route-seq>
+          <input type="hidden" value="${escapeHtml(stop.stopSeq)}" data-minibus-stop-seq>
+          <input type="hidden" value="${escapeHtml(stop.destTc)}" data-minibus-dest-tc>
+          <input type="hidden" value="${escapeHtml(stop.destEn)}" data-minibus-dest-en>
           <button type="button" aria-label="刪除小巴站" data-minibus-stop-remove>&times;</button>
         </div>
       `,
     )
+    .join("")
+    : `<div class="bus-empty-state minibus-picker-empty"><strong>未有站點</strong><span>搜尋路線後加入小巴站。</span></div>`;
+}
+
+function normalizeMinibusRoute(route = {}) {
+  return {
+    routeId: String(route.route_id || route.routeId || "").trim(),
+    routeCode: String(route.route_code || route.routeCode || "").trim(),
+    region: String(route.region || "").trim(),
+    description: String(route.description_tc || route.description || "").trim(),
+    directions: Array.isArray(route.directions)
+      ? route.directions.map((direction) => ({
+          routeSeq: String(direction.route_seq || "").trim(),
+          origTc: String(direction.orig_tc || "").trim(),
+          origEn: String(direction.orig_en || "").trim(),
+          destTc: String(direction.dest_tc || "").trim(),
+          destEn: String(direction.dest_en || "").trim(),
+        }))
+      : [],
+  };
+}
+
+function getSelectedMinibusRoute() {
+  return minibusRouteMatches.find((route) => route.routeId === els.minibusRouteSelect?.value) || null;
+}
+
+function renderMinibusRouteOptions(routes = []) {
+  minibusRouteMatches = routes.map(normalizeMinibusRoute).filter((route) => route.routeId && route.routeCode);
+  if (!els.minibusRouteSelect) return;
+  if (!minibusRouteMatches.length) {
+    els.minibusRouteSelect.innerHTML = `<option value="">未找到路線</option>`;
+    renderMinibusDirectionOptions(null);
+    return;
+  }
+  els.minibusRouteSelect.innerHTML = minibusRouteMatches
+    .map((route) => {
+      const label = `${route.routeCode} · ${route.region}${route.description ? ` · ${route.description}` : ""}`;
+      return `<option value="${escapeHtml(route.routeId)}">${escapeHtml(label)}</option>`;
+    })
     .join("");
+  renderMinibusDirectionOptions(minibusRouteMatches[0]);
+}
+
+function renderMinibusDirectionOptions(route) {
+  if (!els.minibusRouteDirection) return;
+  if (!route?.directions?.length) {
+    els.minibusRouteDirection.innerHTML = `<option value="">未有方向</option>`;
+    renderMinibusStopOptions([]);
+    return;
+  }
+  els.minibusRouteDirection.innerHTML = route.directions
+    .map((direction) => {
+      const label = `${direction.origTc || direction.origEn || "--"} → ${direction.destTc || direction.destEn || "--"}`;
+      return `<option value="${escapeHtml(direction.routeSeq)}">${escapeHtml(label)}</option>`;
+    })
+    .join("");
+}
+
+function renderMinibusStopOptions(stops = []) {
+  minibusRouteStops = stops.map((stop) => ({
+    stopSeq: String(stop.stop_seq || stop.stopSeq || "").trim(),
+    stopId: String(stop.stop_id || stop.stopId || "").trim(),
+    nameTc: String(stop.name_tc || stop.name || "").trim(),
+    nameEn: String(stop.name_en || "").trim(),
+  })).filter((stop) => stop.stopId);
+  if (!els.minibusRouteStopSelect) return;
+  if (!minibusRouteStops.length) {
+    els.minibusRouteStopSelect.innerHTML = `<option value="">未有站點</option>`;
+    return;
+  }
+  els.minibusRouteStopSelect.innerHTML = minibusRouteStops
+    .map((stop) => `<option value="${escapeHtml(stop.stopId)}">${escapeHtml(stop.nameTc || stop.nameEn || stop.stopId)}</option>`)
+    .join("");
+}
+
+async function searchMinibusRoutes() {
+  const query = (els.minibusRouteSearch?.value || "").trim();
+  if (!query) {
+    renderMinibusRouteOptions([]);
+    return;
+  }
+  if (els.minibusRouteSelect) els.minibusRouteSelect.innerHTML = `<option value="">搜尋中...</option>`;
+  try {
+    let data;
+    if (isLocalStatic()) {
+      const regions = ["HKI", "KLN", "NT"];
+      const results = await Promise.all(
+        regions.map(async (region) => {
+          const response = await fetch(`https://data.etagmb.gov.hk/route/${region}/${encodeURIComponent(query)}`);
+          if (!response.ok) return [];
+          const payload = await response.json().catch(() => ({}));
+          return Array.isArray(payload.data) ? payload.data : [];
+        }),
+      );
+      data = { data: results.flat() };
+    } else {
+      const response = await fetch(`/api/minibus?route=${encodeURIComponent(query)}`, { credentials: "include" });
+      data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Minibus route search failed");
+    }
+    renderMinibusRouteOptions(Array.isArray(data.data) ? data.data : []);
+    await loadSelectedMinibusStops();
+  } catch {
+    renderMinibusRouteOptions([]);
+  }
+}
+
+function prepareMinibusRoutePicker() {
+  if (!els.minibusRouteSearch) return;
+  if (!els.minibusRouteSearch.value.trim()) {
+    const firstStop = getSavedMinibusStops()[0] || MINIBUS_DEFAULT_STOPS[0];
+    els.minibusRouteSearch.value = firstStop?.routeCode || "811";
+  }
+  if (!minibusRouteMatches.length) {
+    searchMinibusRoutes();
+  }
+}
+
+async function loadSelectedMinibusStops() {
+  const route = getSelectedMinibusRoute();
+  const routeSeq = els.minibusRouteDirection?.value || route?.directions?.[0]?.routeSeq || "";
+  if (!route || !routeSeq) {
+    renderMinibusStopOptions([]);
+    return;
+  }
+  if (els.minibusRouteStopSelect) els.minibusRouteStopSelect.innerHTML = `<option value="">載入中...</option>`;
+  try {
+    let data;
+    if (isLocalStatic()) {
+      const response = await fetch(`https://data.etagmb.gov.hk/route-stop/${encodeURIComponent(route.routeId)}/${encodeURIComponent(routeSeq)}`);
+      data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Minibus stops failed");
+    } else {
+      const response = await fetch(`/api/minibus?routeId=${encodeURIComponent(route.routeId)}&routeSeq=${encodeURIComponent(routeSeq)}`, { credentials: "include" });
+      data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Minibus stops failed");
+    }
+    renderMinibusStopOptions(Array.isArray(data.data?.route_stops) ? data.data.route_stops : []);
+  } catch {
+    renderMinibusStopOptions([]);
+  }
+}
+
+function addSelectedMinibusStop() {
+  const route = getSelectedMinibusRoute();
+  const direction = route?.directions?.find((item) => item.routeSeq === els.minibusRouteDirection?.value);
+  const stop = minibusRouteStops.find((item) => item.stopId === els.minibusRouteStopSelect?.value);
+  if (!route || !direction || !stop) return;
+  const items = readMinibusEditorStops();
+  if (items.length >= MINIBUS_MAX_STOPS) return;
+  const key = [route.routeId, direction.routeSeq, stop.stopId].join("|");
+  if (items.some((item) => [item.routeId, item.routeSeq, item.stopId].join("|") === key)) return;
+  items.push(
+    normalizeMinibusStop({
+      name: stop.nameTc || stop.nameEn || stop.stopId,
+      stopId: stop.stopId,
+      routeCode: route.routeCode,
+      routeId: route.routeId,
+      routeSeq: direction.routeSeq,
+      stopSeq: stop.stopSeq,
+      destTc: direction.destTc,
+      destEn: direction.destEn,
+    }),
+  );
+  renderMinibusSettings(items);
 }
 
 function readBusEditorStops() {
@@ -1150,6 +1335,12 @@ function readMinibusEditorStops() {
       normalizeMinibusStop({
         name: row.querySelector("[data-minibus-stop-name]")?.value,
         stopId: row.querySelector("[data-minibus-stop-id]")?.value,
+        routeCode: row.querySelector("[data-minibus-route-code]")?.value,
+        routeId: row.querySelector("[data-minibus-route-id]")?.value,
+        routeSeq: row.querySelector("[data-minibus-route-seq]")?.value,
+        stopSeq: row.querySelector("[data-minibus-stop-seq]")?.value,
+        destTc: row.querySelector("[data-minibus-dest-tc]")?.value,
+        destEn: row.querySelector("[data-minibus-dest-en]")?.value,
       }),
     )
     .filter((stop) => stop.stopId || stop.name)
@@ -1288,9 +1479,7 @@ function normalizeBusEtaPayload(payload = {}, stops = getSavedBusStops()) {
 }
 
 function normalizeMinibusEtaPayload(payload = {}, stops = getSavedMinibusStops()) {
-  const stopNameById = new Map(stops.map((stop) => [stop.stopId, stop.name]));
-  const mode = getSavedMinibusMode();
-  const direction = getSavedMinibusDirection();
+  const stopConfigById = new Map(stops.map((stop) => [stop.stopId, stop]));
   const resultSets = Array.isArray(payload.results) ? payload.results : [];
   const directData = Array.isArray(payload.data) ? [{ stopId: stops[0]?.stopId || "", data: payload.data }] : [];
   const seen = new Set();
@@ -1298,24 +1487,27 @@ function normalizeMinibusEtaPayload(payload = {}, stops = getSavedMinibusStops()
   return [...resultSets, ...directData]
     .flatMap((result) => {
       const stopId = String(result.stopId || result.stop_id || "");
+      const config = stopConfigById.get(stopId) || {};
       const data = Array.isArray(result.data) ? result.data : [];
-      return data.flatMap((item) => {
+      return data
+        .filter((item) => !config.routeId || String(item.route_id || "") === config.routeId)
+        .filter((item) => !config.routeSeq || String(item.route_seq || item.routeSeq || "") === config.routeSeq)
+        .flatMap((item) => {
         const etaList = Array.isArray(item.eta) ? item.eta : Array.isArray(item.ETA) ? item.ETA : [];
         const routeSeq = String(item.route_seq || item.routeSeq || item.dir || "");
         const normalizedDir = routeSeq === "2" || routeSeq.toUpperCase() === "I" ? "I" : "O";
         return etaList.map((etaItem) => ({
-          route: item.route_code || item.route || item.route_id || "--",
-          dest_tc: item.dest_tc || item.destination_tc || item.dest || item.remarks_tc || "--",
-          dest_en: item.dest_en || item.destination_en || "",
+          route: config.routeCode || item.route_code || item.route || item.route_id || "--",
+          dest_tc: config.destTc || item.dest_tc || item.destination_tc || item.dest || item.remarks_tc || "--",
+          dest_en: config.destEn || item.dest_en || item.destination_en || "",
           dir: normalizedDir,
           eta: etaItem.timestamp || etaItem.eta || etaItem.arrival_time || "",
           stopId,
-          stopName: stopNameById.get(stopId) || "",
+          stopName: config.name || "",
         }));
       });
     })
     .filter((item) => item.eta)
-    .filter((item) => mode !== "single" || item.dir === direction)
     .filter((item) => {
       const key = [item.route, item.dir, item.dest_tc, item.eta, item.stopId].join("|");
       if (seen.has(key)) return false;
@@ -1423,6 +1615,7 @@ function openActiveTransportSettings() {
   }
   if (source === "minibus") {
     renderMinibusSettings();
+    prepareMinibusRoutePicker();
     setMtrBackMode("minibus");
     return;
   }
@@ -1487,6 +1680,7 @@ function setTransportSource(source, options = {}) {
     loadBusTimes();
   } else {
     renderMinibusSettings();
+    prepareMinibusRoutePicker();
     loadMinibusTimes();
   }
   els.mtrCard?.classList.remove("is-flipped");
@@ -3149,16 +3343,30 @@ async function initDisplayPage() {
   });
   els.minibusAddStop?.addEventListener("click", () => {
     markPanelActivity();
-    const items = readMinibusEditorStops();
-    if (items.length >= MINIBUS_MAX_STOPS) return;
-    items.push({ name: "", stopId: "" });
-    renderMinibusSettings(items);
+    addSelectedMinibusStop();
+  });
+  els.minibusRouteSearchButton?.addEventListener("click", () => {
+    markPanelActivity();
+    searchMinibusRoutes();
+  });
+  els.minibusRouteSearch?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    markPanelActivity();
+    searchMinibusRoutes();
+  });
+  els.minibusRouteSelect?.addEventListener("change", async () => {
+    markPanelActivity();
+    renderMinibusDirectionOptions(getSelectedMinibusRoute());
+    await loadSelectedMinibusStops();
+  });
+  els.minibusRouteDirection?.addEventListener("change", async () => {
+    markPanelActivity();
+    await loadSelectedMinibusStops();
   });
   els.minibusForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     markPanelActivity();
-    localStorage.setItem("minibusDisplayMode", els.minibusDisplayMode?.value === "single" ? "single" : "all");
-    localStorage.setItem("minibusDirection", els.minibusDirection?.value === "I" ? "I" : "O");
     saveMinibusStops(readMinibusEditorStops());
     setTransportSource("minibus");
     els.mtrCard?.classList.remove("is-flipped");
@@ -3217,6 +3425,7 @@ async function initDisplayPage() {
   updateMtrHeader();
   renderBusSettings();
   renderMinibusSettings();
+  prepareMinibusRoutePicker();
   if (!localStorage.getItem("mtrConfig") && navigator.geolocation) {
     locateNearestMtrStation();
   }

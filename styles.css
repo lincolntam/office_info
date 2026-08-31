@@ -1916,6 +1916,21 @@ button {
   font-weight: 900;
 }
 
+.minibus-route-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.minibus-route-search .mtr-secondary-button {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
 .bus-stop-rows {
   grid-column: 1 / -1;
   display: grid;
@@ -1936,6 +1951,21 @@ button {
 .bus-stop-row span {
   font-size: 13px;
   font-weight: 950;
+}
+
+.minibus-stop-route {
+  min-width: 0;
+  color: #1f2c2d;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.minibus-stop-summary {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(31, 44, 45, 0.82);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bus-stop-row button {

@@ -357,20 +357,21 @@
               </div>
               <div id="minibusSettingsPanel" class="mtr-back-panel">
                 <form id="minibusForm" class="bus-settings-form">
-                  <p>設定專線小巴站，最多十個站點。</p>
-                  <label for="minibusDisplayMode">顯示模式</label>
-                  <select id="minibusDisplayMode">
-                    <option value="all">所有方向</option>
-                    <option value="single">單向</option>
-                  </select>
-                  <label for="minibusDirection">單向方向</label>
-                  <select id="minibusDirection">
-                    <option value="O">往程</option>
-                    <option value="I">回程</option>
-                  </select>
+                  <p>搜尋小巴路線，再選擇方向及站點。</p>
+                  <label for="minibusRouteSearch">小巴路線</label>
+                  <div class="minibus-route-search">
+                    <input id="minibusRouteSearch" type="text" inputmode="text" placeholder="例如：811">
+                    <button id="minibusRouteSearchButton" class="mtr-secondary-button" type="button">搜尋</button>
+                  </div>
+                  <label for="minibusRouteSelect">路線</label>
+                  <select id="minibusRouteSelect"></select>
+                  <label for="minibusRouteDirection">方向</label>
+                  <select id="minibusRouteDirection"></select>
+                  <label for="minibusRouteStopSelect">站</label>
+                  <select id="minibusRouteStopSelect"></select>
                   <div id="minibusStopRows" class="bus-stop-rows" aria-label="專線小巴站設定"></div>
                   <div class="bus-settings-actions">
-                    <button id="minibusAddStop" class="mtr-secondary-button" type="button">增加小巴站</button>
+                    <button id="minibusAddStop" class="mtr-secondary-button" type="button">加入此站</button>
                     <button type="submit">確定</button>
                   </div>
                 </form>
