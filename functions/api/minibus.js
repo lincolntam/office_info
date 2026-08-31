@@ -5,6 +5,13 @@ const GMB_ROUTE_URL = "https://data.etagmb.gov.hk/route";
 const GMB_ROUTE_STOP_URL = "https://data.etagmb.gov.hk/route-stop";
 const MAX_STOPS = 10;
 const GMB_REGIONS = ["HKI", "KLN", "NT"];
+const GMB_FETCH_OPTIONS = {
+  headers: {
+    Accept: "application/json",
+    Referer: "https://data.etagmb.gov.hk/",
+    "User-Agent": "Mozilla/5.0",
+  },
+};
 
 function normalizeStops(value = "") {
   return value
@@ -26,7 +33,7 @@ export async function onRequestGet({ request }) {
     try {
       const response = await fetch(
         `${GMB_ROUTE_STOP_URL}/${encodeURIComponent(routeId)}/${encodeURIComponent(routeSeq)}`,
-        { cf: { cacheTtl: 3600, cacheEverything: true } },
+        { ...GMB_FETCH_OPTIONS, cf: { cacheTtl: 3600, cacheEverything: true } },
       );
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -43,6 +50,7 @@ export async function onRequestGet({ request }) {
       const routeResults = await Promise.all(
         GMB_REGIONS.map(async (region) => {
           const response = await fetch(`${GMB_ROUTE_URL}/${region}/${encodeURIComponent(routeQuery)}`, {
+            ...GMB_FETCH_OPTIONS,
             cf: { cacheTtl: 3600, cacheEverything: true },
           });
           if (!response.ok) return [];
@@ -68,6 +76,7 @@ export async function onRequestGet({ request }) {
         routeCache.set(
           key,
           fetch(`${GMB_ROUTE_URL}/${encodeURIComponent(key)}`, {
+            ...GMB_FETCH_OPTIONS,
             cf: { cacheTtl: 3600, cacheEverything: true },
           })
             .then((response) => response.json())
@@ -81,6 +90,7 @@ export async function onRequestGet({ request }) {
     const results = await Promise.all(
       stops.map(async (stopId) => {
         const response = await fetch(`${GMB_STOP_ETA_URL}/${encodeURIComponent(stopId)}`, {
+          ...GMB_FETCH_OPTIONS,
           cf: { cacheTtl: 45, cacheEverything: true },
         });
         const payload = await response.json().catch(() => ({}));
