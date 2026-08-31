@@ -32,10 +32,10 @@ const BUS_DIRECTIONS = {
   I: "回程",
 };
 const MINIBUS_MAX_STOPS = 10;
-const MINIBUS_DEFAULT_STOPS_VERSION = "2026-08-31-fotan-minibus-route-picker";
+const MINIBUS_DEFAULT_STOPS_VERSION = "2026-08-31-fotan-minibus-route-picker-v2";
 const MINIBUS_DEFAULT_STOPS = [
   { name: "專線小巴 811 · 火炭", stopId: "20015728", routeCode: "811", routeId: "2007761", routeSeq: "2", stopSeq: "5", destTc: "穗禾苑" },
-  { name: "專線小巴 811 · 火炭", stopId: "20015751", routeCode: "811", routeId: "2007761", routeSeq: "1", stopSeq: "5", destTc: "愉翠苑" },
+  { name: "專線小巴 69K · 火炭", stopId: "20015751", routeCode: "69K", routeId: "2007766", routeSeq: "1", stopSeq: "2", destTc: "沙田渣甸山花園∕華翠園" },
 ];
 const TRANSPORT_SOURCES = ["mtr", "bus", "minibus"];
 const HK_PUBLIC_HOLIDAYS_2026 = [
